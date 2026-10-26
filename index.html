@@ -1,0 +1,162 @@
+<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Bizim Puzzle 💕</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}[hidden]{display:none!important}
+html,body{height:100%;overflow:hidden;font-family:Quicksand,system-ui,sans-serif;color:#7a3552;background:linear-gradient(135deg,#ffe3ec,#fff3e6 50%,#e9e3ff)}
+button,input{font:inherit}
+.card{background:#fffd;backdrop-filter:blur(8px);border-radius:22px;padding:16px;box-shadow:0 8px 26px #d86a9a33}
+#home{height:100%;overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;text-align:center}
+#home .card{width:min(420px,100%)}h1{font-size:2rem}h3{margin-bottom:6px}
+.btn{border:0;border-radius:999px;padding:12px 22px;background:#ff6b9d;color:#fff;font-weight:700;cursor:pointer;box-shadow:0 4px 0 #d94b80;margin-top:8px}
+.btn:active{transform:translateY(3px);box-shadow:none}
+.chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.chip{padding:8px 14px;border-radius:999px;background:#fff;border:2px solid #f8c4d7;cursor:pointer;font-weight:700}
+.chip.on{background:#ff6b9d;color:#fff;border-color:#ff6b9d}
+input[type=text]{width:100%;padding:12px;border-radius:14px;border:2px solid #f8c4d7;text-align:center;margin:6px 0;color:#7a3552}
+#prev{max-width:100%;max-height:150px;border-radius:14px;margin:8px auto 0;display:block}
+#cv{position:fixed;inset:0;width:100%;height:100%;touch-action:none}
+#top{position:fixed;top:8px;left:8px;right:8px;padding:8px 14px;text-align:center;font-weight:700;font-size:.9rem}
+#bar{height:8px;background:#f8d3e0;border-radius:9px;overflow:hidden;margin-bottom:6px}#fill{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff9ec0,#ff6b9d);transition:width .3s}
+#rc{background:#ff6b9d;color:#fff;border-radius:99px;padding:2px 10px;cursor:pointer}
+#dock{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;padding:8px 10px}
+#dock button{border:0;background:#fff;border-radius:50%;width:42px;height:42px;font-size:1.3rem;cursor:pointer;box-shadow:0 3px 0 #f3bcd0}
+#pvw{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;padding:20px}#pvw img{max-width:100%;max-height:100%;border-radius:18px}
+#toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#fff;border-radius:99px;padding:8px 18px;font-weight:700;opacity:0;transition:.3s;pointer-events:none}
+.fl{position:fixed;bottom:60px;font-size:2rem;animation:up 3s ease-out forwards;pointer-events:none}
+@keyframes up{to{transform:translateY(-85vh) rotate(25deg);opacity:0}}
+#win{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:2rem;font-weight:700;text-align:center;text-shadow:0 2px 0 #fff}
+</style></head><body>
+<div id="home">
+ <h1>Bizim Puzzle 💕</h1>
+ <div class="card"><h3>🏠 Oda kur</h3>
+  <input type="text" id="name" placeholder="Adın" maxlength="12">
+  <input type="file" id="file" accept="image/*" hidden>
+  <button class="btn" onclick="file.click()" style="margin-top:0">📸 Fotoğraf seç</button>
+  <img id="prev" hidden>
+  <div class="chips" id="chips"><span class="chip">100</span><span class="chip on">250</span><span class="chip">500</span><span class="chip">1000</span></div>
+  <button class="btn" id="go">Başla 💗</button>
+ </div>
+ <div class="card"><h3>💌 Odaya katıl</h3>
+  <input type="text" id="code" placeholder="Oda kodu" maxlength="4" style="text-transform:uppercase">
+  <button class="btn" id="join" style="margin-top:0">Katıl</button>
+ </div>
+</div>
+<div id="game" hidden>
+ <canvas id="cv"></canvas>
+ <div id="top" class="card"><div id="bar"><i id="fill"></i></div><div id="hud"></div></div>
+ <div id="dock" class="card"><button data-a="pv">🖼️</button><button data-a="gh">👻</button><button data-a="fit">🎯</button><button data-a="snd">🔊</button><button data-r="💗">💗</button><button data-r="😘">😘</button><button data-r="😂">😂</button></div>
+ <div id="pvw" hidden><img id="pvi"></div><div id="toast"></div><div id="win"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),S=100,PAD=25;
+let cols,rows,N,K,img,imgData,hs,vs,pieces=[],order=[],locked=0,cam={x:0,y:0,z:1},me='Sen',partner='',peer,conns=[],isHost=false,room='',count=250,dirty=1,ghost=1,snd=1,rem=null,fitAll=0,sm=0;
+const cv=$('#cv'),cx=cv.getContext('2d'),dpr=Math.min(devicePixelRatio||1,2);
+const rng=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const load=s=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.src=s});
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function toast(t){const e=$('#toast');e.textContent=t;e.style.opacity=1;setTimeout(()=>e.style.opacity=0,2200)}
+function float(e){const s=document.createElement('span');s.className='fl';s.textContent=e;s.style.left=Math.random()*85+5+'vw';document.body.appendChild(s);setTimeout(()=>s.remove(),3000)}
+function beep(){if(!snd)return;try{const a=beep.a||(beep.a=new AudioContext()),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.setValueAtTime(620,a.currentTime);o.frequency.exponentialRampToValueAtTime(900,a.currentTime+.08);g.gain.setValueAtTime(.15,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.15);o.start();o.stop(a.currentTime+.15)}catch(e){}navigator.vibrate&&navigator.vibrate(12)}
+// ---------- parça şekli ----------
+function edge(g,x,y,tx,ty,nx,ny,d,s){const P=(u,v)=>[x+(tx*u+nx*v*d)*s,y+(ty*u+ny*v*d)*s];
+ if(!d){g.lineTo(...P(1,0));return}
+ g.lineTo(...P(.38,0));g.bezierCurveTo(...P(.46,.02),...P(.40,.10),...P(.40,.15));
+ g.bezierCurveTo(...P(.40,.22),...P(.60,.22),...P(.60,.15));g.bezierCurveTo(...P(.60,.10),...P(.54,.02),...P(.62,0));g.lineTo(...P(1,0))}
+function path(g,c,r,o){const s=S;g.beginPath();g.moveTo(o,o);
+ edge(g,o,o,1,0,0,-1,-hs[r][c],s);edge(g,o+s,o,0,1,1,0,vs[r][c+1],s);
+ edge(g,o+s,o+s,-1,0,0,1,hs[r+1][c],s);edge(g,o,o+s,0,-1,-1,0,-vs[r][c],s);g.closePath()}
+function sprite(c,r){const w=Math.ceil((S+2*PAD)*K),cc=document.createElement('canvas');cc.width=cc.height=w;const g=cc.getContext('2d');g.scale(K,K);
+ g.save();path(g,c,r,PAD);g.clip();g.drawImage(img,PAD-c*S,PAD-r*S,cols*S,rows*S);g.restore();
+ path(g,c,r,PAD);g.lineWidth=1.6;g.strokeStyle='#0005';g.stroke();return cc}
+// ---------- kurulum ----------
+async function init(src,c,r,seed,state){
+ img=await load(src);imgData=src;cols=c;rows=r;N=c*r;K=clamp(img.width/cols/S,.3,1.2);
+ const R=rng(seed),rs=()=>R()<.5?1:-1;
+ hs=[...Array(rows+1)].map((_,i)=>[...Array(cols)].map(()=>i==0||i==rows?0:rs()));
+ vs=[...Array(rows)].map(()=>[...Array(cols+1)].map((_,j)=>j==0||j==cols?0:rs()));
+ const BW=cols*S,BH=rows*S;sm=Math.max(BW,BH)*.45;pieces=[];locked=0;
+ for(let i=0;i<N;i++){const cc=i%cols,rr=i/cols|0,p={id:i,hx:cc*S,hy:rr*S,s:sprite(cc,rr),l:0,w:'',by:0};
+  if(state){const t=state[i];p.x=t[0];p.y=t[1];p.l=t[2];p.w=t[3];if(p.l)locked++}
+  else{do{p.x=-sm-S+Math.random()*(BW+2*sm);p.y=-sm-S+Math.random()*(BH+2*sm)}while(p.x>-S*1.5&&p.x<BW+S*.5&&p.y>-S*1.5&&p.y<BH+S*.5)}
+  pieces.push(p)}
+ order=[...pieces.filter(p=>p.l),...pieces.filter(p=>!p.l)];
+ $('#home').hidden=true;$('#game').hidden=false;$('#pvi').src=src;resize();fit(0);hud()}
+function fit(all){const W=innerWidth,H=innerHeight-140,m=all?sm+S:S*1.2,BW=cols*S,BH=rows*S,z=Math.min(W/(BW+2*m),H/(BH+2*m));
+ cam.z=z;cam.x=BW/2-innerWidth/(2*z);cam.y=BH/2-(innerHeight/2)/z;dirty=1}
+function resize(){cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;dirty=1}addEventListener('resize',resize);
+function hud(){if(!img)return;const cnt=n=>pieces.filter(p=>p.l&&p.w==n).length,pn=partner==me?partner+' 💕':partner;
+ $('#fill').style.width=locked/N*100+'%';
+ $('#hud').innerHTML=`💗 ${locked}/${N} · ${me}: ${cnt(me)}${partner?` · ${pn}: ${cnt(partner==me?partner:partner)}`:''} · <span id="rc">Oda ${room}</span>`;
+ $('#rc').onclick=share}
+async function share(){const u=location.origin+location.pathname+'?oda='+room;try{navigator.share?await navigator.share({title:'Bizim Puzzle 💕',text:'Odaya gel: '+room,url:u}):(await navigator.clipboard.writeText(u),toast('Link kopyalandı 💌'))}catch(e){}}
+// ---------- çizim ----------
+function draw(){dirty=0;const W=innerWidth,H=innerHeight,z=cam.z*dpr;cx.setTransform(1,0,0,1,0,0);cx.clearRect(0,0,cv.width,cv.height);
+ cx.setTransform(z,0,0,z,-cam.x*z,-cam.y*z);
+ cx.fillStyle='#ffffffaa';cx.beginPath();cx.roundRect(-10,-10,cols*S+20,rows*S+20,18);cx.fill();
+ if(ghost){cx.globalAlpha=.2;cx.drawImage(img,0,0,cols*S,rows*S);cx.globalAlpha=1}
+ const x0=cam.x-S*1.5,y0=cam.y-S*1.5,x1=cam.x+W/cam.z+S,y1=cam.y+H/cam.z+S,sw=S+2*PAD;
+ for(const p of order){if(p.x<x0||p.y<y0||p.x>x1||p.y>y1)continue;
+  if(drag&&drag.p==p){cx.shadowColor='#0007';cx.shadowBlur=18*cam.z;cx.shadowOffsetY=6*cam.z}
+  cx.drawImage(p.s,p.x-PAD,p.y-PAD,sw,sw);cx.shadowColor='transparent'}
+ if(rem){cx.font=`${26/cam.z}px sans-serif`;cx.fillText('💗',rem.x-10/cam.z,rem.y);cx.font=`${12/cam.z}px Quicksand`;cx.fillStyle='#d94b80';cx.fillText(partner||'',rem.x+14/cam.z,rem.y+14/cam.z)}}
+(function loop(){if(dirty&&img)draw();requestAnimationFrame(loop)})();
+// ---------- etkileşim ----------
+const ptr=new Map();let drag=null,pan=null,pinch=null,lastM=0,lastC=0;
+const toW=(x,y)=>({x:x/cam.z+cam.x,y:y/cam.z+cam.y});
+function zoomAt(sx,sy,nz){const w=toW(sx,sy);cam.z=clamp(nz,.03,4);cam.x=w.x-sx/cam.z;cam.y=w.y-sy/cam.z;dirty=1}
+function hit(w){for(let i=order.length-1;i>=0;i--){const p=order[i];if(p.l||p.by)continue;if(w.x>=p.x-6&&w.x<=p.x+S+6&&w.y>=p.y-6&&w.y<=p.y+S+6)return p}}
+function bring(p){order.splice(order.indexOf(p),1);order.push(p)}
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+cv.onpointerdown=e=>{cv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(ptr.size==2){if(drag)drop();pan=null;const [a,b]=[...ptr.values()];pinch={d:dist(a,b),z:cam.z};return}
+ const w=toW(e.clientX,e.clientY),p=hit(w);
+ if(p){drag={p,dx:w.x-p.x,dy:w.y-p.y};p.by=1;bring(p);send({t:'p',id:p.id})}else pan={x:e.clientX,y:e.clientY,cx:cam.x,cy:cam.y};dirty=1};
+cv.onpointermove=e=>{const w=toW(e.clientX,e.clientY);
+ if(Date.now()-lastC>50){lastC=Date.now();send({t:'c',x:w.x,y:w.y})}
+ if(!ptr.has(e.pointerId))return;ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(pinch&&ptr.size==2){const [a,b]=[...ptr.values()];zoomAt((a.x+b.x)/2,(a.y+b.y)/2,pinch.z*dist(a,b)/pinch.d)}
+ else if(drag){drag.p.x=w.x-drag.dx;drag.p.y=w.y-drag.dy;dirty=1;if(Date.now()-lastM>30){lastM=Date.now();send({t:'m',id:drag.p.id,x:drag.p.x,y:drag.p.y})}}
+ else if(pan){cam.x=pan.cx-(e.clientX-pan.x)/cam.z;cam.y=pan.cy-(e.clientY-pan.y)/cam.z;dirty=1}};
+function drop(){const p=drag.p;drag=null;p.by=0;const ok=Math.hypot(p.x-p.hx,p.y-p.hy)<S*.35;
+ if(ok)lock(p,me,true);send({t:'d',id:p.id,x:ok?p.hx:p.x,y:ok?p.hy:p.y,l:ok?1:0,w:me});dirty=1}
+cv.onpointerup=cv.onpointercancel=e=>{ptr.delete(e.pointerId);if(ptr.size<2)pinch=null;if(drag&&ptr.size==0)drop();pan=null};
+cv.onwheel=e=>{e.preventDefault();zoomAt(e.clientX,e.clientY,cam.z*Math.exp(-e.deltaY*.0015))};
+function lock(p,who,mine){p.l=1;p.w=who;p.x=p.hx;p.y=p.hy;order.splice(order.indexOf(p),1);order.unshift(p);locked++;if(mine)beep();hud();if(locked==N)win()}
+function win(){$('#win').innerHTML='Tamamladınız! 💕<br>Seni seviyorum';for(let i=0;i<40;i++)setTimeout(()=>float(['💗','💖','💕','🎉'][i%4]),i*120);setTimeout(()=>$('#win').innerHTML='',9000)}
+$('#dock').onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;
+ if(b.dataset.r){float(b.dataset.r);send({t:'r',e:b.dataset.r})}
+ if(a=='pv')$('#pvw').hidden=0;if(a=='gh'){ghost=!ghost;dirty=1}if(a=='fit'){fitAll=!fitAll;fit(fitAll)}if(a=='snd'){snd=!snd;b.textContent=snd?'🔊':'🔇'}};
+$('#pvw').onclick=()=>$('#pvw').hidden=1;
+// ---------- ağ ----------
+const send=(m,ex)=>conns.forEach(c=>c!==ex&&c.open&&c.send(m));
+function onData(m,from){apply(m);if(isHost)send(m,from)}
+function apply(m){if(m.t=='init'){partner=m.host;init(m.img,m.cols,m.rows,m.seed,m.pcs);return}if(!img&&m.t!='hi')return;
+ const p=pieces[m.id];
+ if(m.t=='hi'){partner=m.n;hud();toast(m.n+' odaya geldi 💞')}
+ else if(m.t=='p'){p.by=1;bring(p)}else if(m.t=='m'){p.x=m.x;p.y=m.y}
+ else if(m.t=='d'){p.by=0;p.x=m.x;p.y=m.y;if(m.l&&!p.l){lock(p,m.w,false);beep()}}
+ else if(m.t=='c')rem={x:m.x,y:m.y};else if(m.t=='r')float(m.e);dirty=1}
+function mkRoom(seed,tries=0){room=Math.random().toString(36).slice(2,6).toUpperCase();peer=new Peer('bizimpuzzle-'+room);
+ peer.on('open',()=>{init(imgData,cols0,rows0,seed,null)});
+ peer.on('error',e=>{if(e.type=='unavailable-id'&&tries<5)mkRoom(seed,tries+1);else alert('Bağlantı hatası: '+e.type)});
+ peer.on('connection',c=>{c.on('open',()=>{conns.push(c);c.send({t:'init',img:imgData,cols,rows,seed,host:me,pcs:pieces.map(p=>[p.x,p.y,p.l,p.w])})});
+  c.on('data',m=>onData(m,c));c.on('close',()=>{conns=conns.filter(x=>x!=c);toast('Bağlantı koptu 💔')})})}
+function joinRoom(code){room=code.toUpperCase().trim();peer=new Peer();
+ peer.on('open',()=>{const c=peer.connect('bizimpuzzle-'+room,{reliable:true});conns=[c];isHost=false;
+  c.on('open',()=>c.send({t:'hi',n:me}));c.on('data',m=>onData(m,c));c.on('close',()=>toast('Bağlantı koptu 💔'));
+  setTimeout(()=>{if(!img)alert('Oda bulunamadı 😢 Kodu kontrol et')},9000)});
+ peer.on('error',e=>alert('Hata: '+e.type))}
+// ---------- ana sayfa ----------
+let cols0,rows0,file=$('#file');
+$('#chips').onclick=e=>{if(!e.target.classList.contains('chip'))return;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));e.target.classList.add('on');count=+e.target.textContent};
+file.onchange=async()=>{const f=file.files[0];if(!f)return;const i=await load(URL.createObjectURL(f)),s=Math.min(1,1600/Math.max(i.width,i.height)),c=document.createElement('canvas');
+ c.width=i.width*s;c.height=i.height*s;c.getContext('2d').drawImage(i,0,0,c.width,c.height);imgData=c.toDataURL('image/jpeg',.85);$('#prev').src=imgData;$('#prev').hidden=0};
+$('#go').onclick=()=>{if(!imgData)return alert('Önce fotoğraf seç 📸');me=$('#name').value.trim()||'Sen';isHost=true;
+ const a=$('#prev').naturalWidth/$('#prev').naturalHeight;cols0=Math.max(2,Math.round(Math.sqrt(count*a)));rows0=Math.max(2,Math.round(count/cols0));
+ mkRoom(Math.random()*1e9|0)};
+$('#join').onclick=()=>{const c=$('#code').value;if(c.length<4)return alert('4 haneli kodu yaz');me=$('#name').value.trim()||'Aşkım';joinRoom(c)};
+const q=new URLSearchParams(location.search).get('oda');if(q)$('#code').value=q.slice(0,4);
+</script></body></html>
