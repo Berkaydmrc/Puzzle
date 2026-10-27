@@ -44,6 +44,7 @@ small,.note{display:block;font-size:.74rem;color:var(--mu);margin-top:4px}
 #toast{position:fixed;top:76px;left:50%;transform:translateX(-50%);background:#2a1f26;color:#fff;border-radius:12px;padding:10px 16px;font-weight:600;font-size:.85rem;opacity:0;transition:.3s;pointer-events:none;z-index:9;max-width:90vw;text-align:center}
 .fl{position:fixed;bottom:60px;font-size:2rem;animation:up 3s ease-out forwards;pointer-events:none}@keyframes up{to{transform:translateY(-85vh) rotate(25deg);opacity:0}}
 #win{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:1.8rem;font-weight:800;text-align:center;text-shadow:0 2px 0 #fff}
+#fbn{background:#fff0f4;border-radius:12px;padding:10px;margin:6px 0;font-size:.8rem}#fbn .row{margin:8px 0 0}
 </style></head><body>
 <div id="home">
  <div class="brand"><div class="logo" data-i="puz"></div><div><h1>Bizim Puzzle</h1><p>Birlikte oyna, dinle, izle</p></div></div>
@@ -75,15 +76,16 @@ small,.note{display:block;font-size:.74rem;color:var(--mu);margin-top:4px}
      <div id="spres" class="rl"></div><small>Müzik Spotify uygulamanda çalar; seçtiğin şarkı sevgilinde de başlar. İkiniz de Premium olmalı.</small></div></div>
    <div id="p_y" class="pg h"><div class="row"><input class="in" id="in_y" placeholder="YouTube linki"><button class="btn sm go" data-s="y" data-i="play"></button></div><div id="by" class="bx"></div><small>İkinizde de senkron çalar.</small></div>
    <div id="p_f" class="pg h"><div class="row"><input class="in" id="in_f" placeholder="YouTube veya .mp4 linki"><button class="btn sm go" data-s="f" data-i="play"></button></div>
-    <div class="row"><button class="btn sm sec" id="ffl" data-i="up" data-l="Dosyadan gönder"></button><button class="btn sm sec" id="fsc" data-i="screen" data-l="Ekran"></button><button class="ib" id="fst" data-i="stop"></button></div>
-    <div id="fp" class="note" hidden></div><div id="bf" class="bx"></div>
-    <small>Dosya seçince film sevgiline aktarılır, sonra ikinizde senkron oynar (1 GB'a kadar önerilir). Bazı YouTube filmleri gömülü oynatmaya kapalıdır.</small><input type="file" id="ff" accept="video/*" hidden></div>
+    <div class="row"><button class="btn sm sec" id="ffl" data-i="up" data-l="Dosya seç"></button><button class="btn sm sec" id="fsc" data-i="screen" data-l="Ekran"></button><button class="ib" id="fst" data-i="stop"></button></div>
+    <div id="fbn" hidden><b id="fbt"></b><div class="row"><button class="btn sm" id="fhave">Bende var, seç</button><button class="btn sm sec" id="fsend">Bana gönder</button></div></div><div id="fp" class="note" hidden></div><div id="bf" class="bx"></div>
+    <small>Dosya seç: sevgilinde de aynı dosya varsa aktarım olmadan hemen senkron oynar, yoksa 'Bana gönder' ile aktarılır. Link olarak YouTube, .mp4 ve .m3u8 çalışır.</small><input type="file" id="ff" accept="video/*" hidden></div>
   </div>
  </div>
  <div id="dock" class="card"><button class="ib pz" data-a="pv" data-i="img"></button><button class="ib pz" data-a="gh" data-i="eye"></button><button class="ib pz" data-a="fit" data-i="loc"></button><button class="ib" data-a="snd" data-i="vol"></button><button class="ib" data-a="hr" data-i="heart" style="color:var(--ac)"></button></div>
  <div id="pvw" hidden><img id="pvi"></div><div id="toast"></div><div id="win"></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
 <script>
 const $=s=>document.querySelector(s),S=100,PAD=25;
 const IC={back:'<path d="m12 19-7-7 7-7M19 12H5"/>',img:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>',eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',loc:'<circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>',vol:'<path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>',mute:'<path d="M11 5 6 9H2v6h4l5 4zM22 9l-6 6M16 9l6 6"/>',heart:'<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/>',down:'<path d="m6 9 6 6 6-6"/>',up:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',puz:'<rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><path d="M17 13v8M13 17h8"/>',film:'<circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4z"/>',music:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',play:'<path d="M7 4l13 8-13 8z"/>',pause:'<path d="M8 5v14M16 5v14"/>',share:'<path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/>',screen:'<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>',ref:'<path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/>',users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>'};
@@ -123,7 +125,7 @@ async function init(src,c,r,seed,state){
 function fit(all){const W=VW||innerWidth,H=VH||innerHeight*.5,m=all?sm+S:S*1.2,BW=cols*S,BH=rows*S,z=Math.min(W/(BW+2*m),H/(BH+2*m));
  cam.z=z;cam.x=BW/2-W/(2*z);cam.y=BH/2-H/(2*z);dirty=1}
 function resize(){const r=$('#stage').getBoundingClientRect();VW=r.width;VH=r.height;if(!VW)return;cv.width=VW*dpr;cv.height=VH*dpr;dirty=1}addEventListener('resize',resize);
-function hud(){const on=conns.some(c=>c.open),pn=partner?esc(partner==me?partner+' ♥':partner):'',d=`<span class="dot${on?' on':''}"></span>`;
+function hud(){const on=online(),pn=partner?esc(partner==me?partner+' ♥':partner):'',d=`<span class="dot${on?' on':''}"></span>`;
  $('#rc').innerHTML=ic('share')+esc(room);$('#rc').onclick=share;
  if(film){$('#bar').hidden=1;$('#ht').innerHTML=d+'Film &amp; müzik odası'+(pn?' · '+pn:' · bekleniyor');return}
  if(!img)return;const cnt=n=>pieces.filter(p=>p.l&&p.w==n).length;
@@ -164,35 +166,47 @@ $('#dock').onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b
 $('#pvw').onclick=()=>$('#pvw').hidden=1;
 $('#back').onclick=()=>{if(confirm('Odadan çıkmak istiyor musun?')){try{peer&&peer.destroy()}catch(e){}location.href=location.pathname}};
 // ---------- ağ ----------
-const send=(m,ex)=>conns.forEach(c=>c!==ex&&c.open&&c.send(m));
-function onData(m,from){apply(m);if(isHost)send(m,from)}
+const CID=Math.random().toString(36).slice(2,10),seen=new Set(),BR=['wss://broker.hivemq.com:8884/mqtt','wss://broker.emqx.io:8084/mqtt'];let seq=0,mqs=[],off=0,bestRtt=1e9,lastRx=0;
+const online=()=>conns.some(c=>c.open)||Date.now()-lastRx<20000;
+const mqPub=m=>{const j=JSON.stringify(m);mqs.forEach(c=>c.connected&&c.publish(c.tp,j))};
+const send=(m,ex)=>{if(!ex){m._f=CID;m._i=CID+(++seq);mqPub(m)}conns.forEach(c=>c!==ex&&c.open&&c.send(m))};
+function mqStart(code){if(!window.mqtt||mqs.length)return;const tp='bzp5/'+code;
+ BR.forEach(u=>{try{const c=mqtt.connect(u,{clientId:'bzp'+CID+Math.random().toString(36).slice(2,5),reconnectPeriod:3000,connectTimeout:8000});c.tp=tp;
+  c.on('connect',()=>{c.subscribe(tp);if(!isHost)send({t:'hi',n:me});hud()});c.on('message',(t,p)=>{try{onData(JSON.parse(p.toString()),null)}catch(e){}});c.on('error',()=>{});mqs.push(c)}catch(e){}})}
+function onData(m,from){if(m._i){if(m._f==CID||seen.has(m._i))return;seen.add(m._i);if(seen.size>800)seen.clear()}lastRx=Date.now();apply(m);if(isHost&&from)send(m,from)}
 function apply(m){if(m.t=='meta'){inc={n:m.n,a:[],g:0,m};return}
  if(m.t=='ic'){if(!inc)return;inc.a[m.i]=m.d;inc.g++;toast('Puzzle yükleniyor %'+Math.round(inc.g/inc.n*100));if(inc.g==inc.n){const o=JSON.parse(inc.a.join('')),h=inc.m;inc=null;partner=h.host;init(o.img,h.cols,h.rows,h.seed,o.pcs)}return}
  if(m.t=='fm'){enterFilm(m.host);return}
  if(!img&&!film&&m.t!='hi')return;
  const p=pieces[m.id];
- if(m.t=='hi'){partner=m.n;hud();toast(m.n+' odaya katıldı')}
+ if(m.t=='hi'){if(partner!=m.n){partner=m.n;toast(m.n+' odaya katıldı')}hud();if(isHost){if(film)send({t:'fm',host:me});for(const k in slots){if(slots[k].u)send({t:'ms',s:k,u:slots[k].u})}}}
+ else if(m.t=='pi')send({t:'po',a:m.a,b:Date.now()});
+ else if(m.t=='po'){const r=Date.now()-m.a;if(r<bestRtt*1.5+20){bestRtt=Math.min(r,bestRtt*1.2+5);off=m.b-(m.a+r/2)}}
+ else if(m.t=='buf'){const o=slots[m.s];if(o&&(o.v||(o.p&&o.p.seekTo))){const A=AD(o);if(m.b&&o.want&&A.pl()){o.hold=1;o.ig=Date.now()+700;A.pause();setTimeout(()=>{if(o.hold){o.hold=0;o.ig=Date.now()+700;A.play()}},6000)}else if(!m.b&&o.hold){o.hold=0;o.ig=Date.now()+700;A.play()}}}
+ else if(m.t=='fann'){ann=m;$('#fbt').textContent=m.n+' ('+Math.round(m.z/1048576)+' MB)';$('#fbn').hidden=0;openP('f')}
+ else if(m.t=='freq'){if(F)sendFile(F)}
+ else if(m.t=='fok')toast('Sevgilinde de dosya var, senkron başladı')
  else if(m.t=='p'){p.by=1;bring(p)}else if(m.t=='m'){p.x=m.x;p.y=m.y}
  else if(m.t=='d'){p.by=0;p.x=m.x;p.y=m.y;if(m.l&&!p.l){lock(p,m.w,false);beep()}}
  else if(m.t=='r')float(m.e);
  else if(m.t=='ms'){loadSlot(m.s,m.u);openP(m.s);toast((partner||'Sevgilin')+' bir video açtı')}
  else if(m.t=='my')remoteAct(m);
- else if(m.t=='fmeta'){fm=m;openP('f');prog(0,'Film geliyor')}
+ else if(m.t=='fmeta'){fm=m;prog.z=m.z;openP('f');prog(0,'Film geliyor')}
  else if(m.t=='sp'){if(!localStorage.spt)toast((partner||'Sevgilin')+' müzik açtı, sende Spotify bağlı değil');else if(m.b){spPlay(m.b);toast('Birlikte dinliyorsunuz')}else spCtl(m.a)}
  else if(m.t=='w'){if(m.k=='stream'){openP('f');toast('Yayın başlıyor...')}else{$('#bf').innerHTML='';toast('Yayın bitti')}}dirty=1}
 const PO={config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turn:openrelay.metered.ca:443?transport=tcp'],username:'openrelayproject',credential:'openrelayproject'}]}};
 function sendInit(c){const j=JSON.stringify({img:imgData,pcs:pieces.map(p=>[Math.round(p.x),Math.round(p.y),p.l,p.w])}),n=Math.ceil(j.length/12000);
  c.send({t:'meta',n,cols,rows,seed:SEED,host:me});for(let i=0;i<n;i++)c.send({t:'ic',i,d:j.slice(i*12000,(i+1)*12000)})}
 function mkRoom(seed,tries=0){SEED=seed;room=Math.random().toString(36).slice(2,6).toUpperCase();peer=new Peer('bizimpuzzle-'+room,PO);
- peer.on('open',()=>film?enterFilm():init(imgData,cols0,rows0,seed,null));
+ peer.on('open',()=>{mqStart(room);film?enterFilm():init(imgData,cols0,rows0,seed,null)});
  peer.on('error',e=>{if(e.type=='unavailable-id'&&tries<5)mkRoom(seed,tries+1);else alert('Bağlantı hatası: '+e.type)});
  peer.on('call',onCall);
  peer.on('connection',c=>{if(c.label=='file'){recvFile(c);return}
   c.on('open',()=>{conns.push(c);hud();film?c.send({t:'fm',host:me}):sendInit(c)});c.on('data',m=>onData(m,c));
   c.on('close',()=>{conns=conns.filter(x=>x!=c);hud();toast('Bağlantı koptu')});c.on('error',()=>toast('Bağlantı hatası'))})}
-function joinRoom(code){room=code.toUpperCase().trim();peer=new Peer(PO);isHost=false;peer.on('call',onCall);peer.on('connection',c=>{if(c.label=='file')recvFile(c)});
+function joinRoom(code){room=code.toUpperCase().trim();peer=new Peer(PO);isHost=false;mqStart(room);peer.on('call',onCall);peer.on('connection',c=>{if(c.label=='file')recvFile(c)});
  peer.on('open',()=>{const c=peer.connect('bizimpuzzle-'+room,{reliable:true,serialization:'json'});conns=[c];
-  c.on('open',()=>{c.send({t:'hi',n:me});toast('Bağlandı, oda yükleniyor...')});c.on('data',m=>onData(m,c));c.on('close',()=>{hud();toast('Bağlantı koptu')});c.on('error',()=>toast('Bağlantı hatası'));
+  c.on('open',()=>{send({t:'hi',n:me});toast('Bağlandı, oda yükleniyor...')});c.on('data',m=>onData(m,c));c.on('close',()=>{hud();toast('Bağlantı koptu')});c.on('error',()=>toast('Bağlantı hatası'));
   setTimeout(()=>{if(!img&&!film)alert('Oda bulunamadı ya da bağlantı kurulamadı. Kodu kontrol edip tekrar dene')},25000)});
  peer.on('error',e=>alert('Hata: '+e.type))}
 // ---------- film & youtube ----------
@@ -206,26 +220,43 @@ window.onYouTubeIframeAPIReady=()=>ytq.forEach(f=>f());
 function parse(u){let m;if(m=u.match(/(?:youtu\.be\/|v=|embed\/|shorts\/|live\/)([\w-]{11})/))return{k:'yt',id:m[1]};if(m=u.match(/[?&]list=([\w-]+)/))return{k:'yt',list:m[1]};return{k:'vid',src:u}}
 function mkVid(b){b.innerHTML='';const v=document.createElement('video');v.playsInline=true;v.controls=true;v.preload='auto';b.appendChild(v);return v}
 function showVid(b,st,mute){const v=mkVid(b);v.srcObject=st;v.muted=!!mute;v.autoplay=true;v.play().catch(()=>toast('Oynat tuşuna dokun'))}
-function mountVideo(s,src){const v=mkVid($('#b'+s)),o=slots[s]={k:'vid',v};v.src=src;v.onplay=v.onpause=v.onseeked=()=>{if(!o.ig)send({t:'my',s,a:v.paused?'pause':'play',c:v.currentTime})}}
-function loadSlot(s,u){const x=parse(u),b=$('#b'+s);b.innerHTML='';if(x.k=='vid')return mountVideo(s,x.src);const d=document.createElement('div');b.appendChild(d);const o=slots[s]={k:'yt'};
+function loadHls(cb){if(window.Hls)return cb();const t=document.createElement('script');t.src='https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js';t.onload=cb;t.onerror=()=>toast('Video bileşeni yüklenemedi');document.head.appendChild(t)}
+function vErr(t){const e=$('#fp');e.hidden=0;e.textContent=t;toast(t)}
+function attach(v,url,o){const nat=v.canPlayType('application/vnd.apple.mpegurl'),useH=()=>loadHls(()=>{if(!Hls.isSupported())return vErr('Bu cihaz bu video biçimini açamıyor');const h=new Hls({maxBufferLength:40});o.hls=h;h.loadSource(url);h.attachMedia(v);
+  h.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal)vErr(d.type=='networkError'?'Kaynak bu siteden erişime kapalı (CORS/ağ). Bu bağlantı yalnızca iPhone/Safari\'de açılabilir.':'Video çözülemedi')})});
+ if(/m3u8/i.test(url)&&!nat)return useH();
+ v.src=url;v.onerror=()=>{if(!o.th&&!nat){o.th=1;v.removeAttribute('src');useH()}else vErr('Video açılamadı. Link doğrudan bir video/yayın bağlantısı olmalı')}}
+function adapter(o){const v=o.v,p=o.p;return v?{t:()=>v.currentTime,pl:()=>!v.paused,seek:x=>{v.currentTime=x},play:()=>v.play().catch(()=>toast('Oynat tuşuna dokun')),pause:()=>v.pause(),rate:r=>{v.playbackRate=r}}:{t:()=>p.getCurrentTime(),pl:()=>p.getPlayerState()==1,seek:x=>p.seekTo(x,true),play:()=>p.playVideo(),pause:()=>p.pauseVideo(),rate:()=>{}}}
+const AD=o=>o.A||(o.A=adapter(o));
+function emit(s,a){const o=slots[s];if(!o||Date.now()<(o.ig||0))return;o.lead=1;o.want=a=='play';send({t:'my',s,a,c:AD(o).t(),at:Date.now()})}
+function mountVideo(s,src,isFile){$('#fp').hidden=1;const v=mkVid($('#b'+s)),o=slots[s]={k:'vid',v,u:isFile?'':src};let dt;
+ if(isFile)v.src=src;else attach(v,src,o);
+ v.onplay=()=>emit(s,'play');v.onpause=()=>{if(!v.seeking&&!v.ended)emit(s,'pause')};
+ v.onseeking=()=>{clearTimeout(dt);dt=setTimeout(()=>emit(s,v.paused?'pause':'play'),120)};
+ v.onwaiting=()=>send({t:'buf',s,b:1});v.onplaying=v.oncanplay=()=>send({t:'buf',s,b:0})}
+function loadSlot(s,u){const x=parse(u),b=$('#b'+s);b.innerHTML='';$('#fp').hidden=1;if(x.k=='vid')return mountVideo(s,x.src);const d=document.createElement('div');b.appendChild(d);const o=slots[s]={k:'yt',u};
  ytReady(()=>{o.p=new YT.Player(d,{width:'100%',height:'100%',videoId:x.id,playerVars:x.id?{playsinline:1}:{listType:'playlist',list:x.list,playsinline:1},
-  events:{onStateChange:e=>{if(o.ig||(e.data!=1&&e.data!=2))return;send({t:'my',s,a:e.data==1?'play':'pause',c:o.p.getCurrentTime()})}}})});
+  events:{onStateChange:e=>{if(e.data==1){emit(s,'play');send({t:'buf',s,b:0})}else if(e.data==2)emit(s,'pause');else if(e.data==3)send({t:'buf',s,b:1})}}})});
  if(x.id)setTimeout(()=>{if(slots[s]===o&&!(o.p&&o.p.getPlayerState))b.innerHTML=`<iframe src="https://www.youtube.com/embed/${x.id}?playsinline=1" allow="autoplay;encrypted-media;fullscreen" allowfullscreen></iframe>`},5000)}
-function remoteAct(m){const o=slots[m.s];if(!o)return;o.ig=1;setTimeout(()=>o.ig=0,1200);const p=o.p,v=o.v;
- if(p&&p.seekTo){if(Math.abs(p.getCurrentTime()-m.c)>1.5)p.seekTo(m.c,true);m.a=='play'?p.playVideo():p.pauseVideo()}
- else if(v){if(Math.abs(v.currentTime-m.c)>1.5)v.currentTime=m.c;m.a=='play'?v.play().catch(()=>toast('Oynat tuşuna dokun')):v.pause()}}
-document.querySelectorAll('.go').forEach(b=>b.onclick=()=>{const s=b.dataset.s,u=$('#in_'+s).value.trim();if(u){loadSlot(s,u);send({t:'ms',s,u})}});
-function prog(p,t){const e=$('#fp');e.hidden=p>=1;e.textContent=(t||'Aktarılıyor')+' %'+Math.round(Math.min(p,1)*100)}
-async function sendFile(f){send({t:'fmeta',n:f.name,z:f.size,y:f.type});const ids=isHost?conns.map(c=>c.peer):['bizimpuzzle-'+room];
+function remoteAct(m){const o=slots[m.s];if(!o||!(o.v||(o.p&&o.p.seekTo)))return;const A=AD(o),age=Math.max(0,Math.min(3,(Date.now()-(m.at-off))/1000)),tg=m.c+(m.a=='pause'?0:age);
+ if(m.a=='tick'){if(o.lead||!o.want||o.hold)return;const d=tg-A.t();if(Math.abs(d)>1.2){o.ig=Date.now()+700;A.seek(tg)}else if(Math.abs(d)>.12)A.rate(1+clamp(d*.5,-.08,.08));else A.rate(1);return}
+ o.ig=Date.now()+700;o.lead=0;o.want=m.a=='play';A.rate(1);if(Math.abs(A.t()-tg)>.35)A.seek(tg);o.want?A.play():A.pause()}
+document.querySelectorAll('.go').forEach(b=>b.onclick=()=>{const s=b.dataset.s,u=$('#in_'+s).value.trim();if(!u)return;loadSlot(s,u);send({t:'ms',s,u})});
+setInterval(()=>{for(const k in slots){const o=slots[k];if(o.lead&&(o.v||(o.p&&o.p.getPlayerState))){const A=AD(o);if(A.pl())send({t:'my',s:k,a:'tick',c:A.t(),at:Date.now()})}}},2500);
+setInterval(()=>{if(partner||isHost)send({t:'pi',a:Date.now()});hud()},6000);
+let F=null,ann=null;
+function prog(p,t){const e=$('#fp');e.hidden=p>=1;if(!prog.s||p===0)prog.s=Date.now();const sp=p*(prog.z||0)/1048576/Math.max(1,(Date.now()-prog.s)/1000);e.textContent=(t||'Aktarılıyor')+' %'+Math.round(Math.min(p,1)*100)+(p>0?' · '+sp.toFixed(1)+' MB/sn':'')}
+async function sendFile(f){prog.z=f.size;prog(0,'Gönderiliyor');send({t:'fmeta',n:f.name,z:f.size,y:f.type});const ids=isHost?conns.map(c=>c.peer):['bizimpuzzle-'+room];
  for(const id of ids){const c=peer.connect(id,{serialization:'raw',label:'file',reliable:true});await new Promise(r=>c.on('open',r));
-  for(let o=0;o<f.size;o+=1048576){const b=await f.slice(o,o+1048576).arrayBuffer();for(let k=0;k<b.byteLength;k+=16384)c.send(b.slice(k,k+16384));
-   while((c.dataChannel&&c.dataChannel.bufferedAmount>4e6)||c.bufferSize>100)await sleep(50);prog((o+1048576)/f.size,'Gönderiliyor')}}
- prog(1);toast('Film sevgiline gönderildi, birlikte izleyebilirsiniz')}
-function recvFile(c){const ch=[];let got=0;c.on('data',d=>{ch.push(d);got+=d.byteLength;prog(got/fm.z,'Film geliyor');if(got>=fm.z){mountVideo('f',URL.createObjectURL(new Blob(ch,{type:fm.y||'video/mp4'})));openP('f');toast('Film hazır, iyi seyirler');try{c.close()}catch(e){}}})}
-$('#ffl').onclick=()=>$('#ff').click();
-$('#ff').onchange=e=>{const f=e.target.files[0];if(!f)return;mountVideo('f',URL.createObjectURL(f));openP('f');
- if(!conns.some(c=>c.open))return toast('Sevgilin odada değil, film sadece sende açıldı');
- if(f.size>1.5e9&&!confirm('Dosya çok büyük, telefonda sorun çıkarabilir. Yine de gönderilsin mi?'))return;sendFile(f)};
+  for(let o=0;o<f.size;o+=4194304){const b=await f.slice(o,o+4194304).arrayBuffer();for(let k=0;k<b.byteLength;k+=65536){c.send(b.slice(k,k+65536));if((c.dataChannel&&c.dataChannel.bufferedAmount>4e6)||c.bufferSize>50)await sleep(15)}prog(Math.min(1,(o+4194304)/f.size),'Gönderiliyor')}}
+ prog(1);toast('Film sevgiline gönderildi')}
+function recvFile(c){const ch=[];let got=0;c.on('data',d=>{ch.push(d);got+=d.byteLength;prog(got/fm.z,'Film geliyor');if(got>=fm.z){mountVideo('f',URL.createObjectURL(new Blob(ch,{type:fm.y||'video/mp4'})),true);openP('f');toast('Film hazır, iyi seyirler');try{c.close()}catch(e){}}})}
+$('#ffl').onclick=$('#fhave').onclick=()=>$('#ff').click();
+$('#ff').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+ if(ann&&f.size==ann.z){mountVideo('f',URL.createObjectURL(f),true);openP('f');$('#fbn').hidden=1;send({t:'fok'});ann=null;return toast('Aynı dosya, hemen senkron oynuyor')}
+ ann=null;$('#fbn').hidden=1;F=f;mountVideo('f',URL.createObjectURL(f),true);openP('f');
+ if(!partner)return toast('Film sadece sende açıldı');send({t:'fann',n:f.name,z:f.size,y:f.type});toast('Sevgiline soruldu: dosyası varsa hemen başlar')};
+$('#fsend').onclick=()=>{$('#fbn').hidden=1;fm={z:ann.z,y:ann.y};prog.z=ann.z;prog(0,'Film geliyor');send({t:'freq'})};
 function callAll(st){myStream=st;send({t:'w',k:'stream'});(isHost?conns.map(c=>c.peer):['bizimpuzzle-'+room]).forEach(id=>calls.push(peer.call(id,st)))}
 function onCall(c){c.answer();c.on('stream',st=>{openP('f');showVid($('#bf'),st,0)})}
 function stopShare(){if(myStream){myStream.getTracks().forEach(t=>t.stop());myStream=null}calls.forEach(c=>c.close());calls=[];send({t:'w',k:'stop'});$('#bf').innerHTML=''}
