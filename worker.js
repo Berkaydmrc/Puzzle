@@ -107,7 +107,7 @@ details summary{color:var(--mu);font-size:.82rem;cursor:pointer;margin-bottom:8p
 .rt{width:12vw;max-width:48px;aspect-ratio:1;border-radius:8px;border:0;background:#f0d9a8;color:#2a1c05;font:inherit;font-weight:800;font-size:1.25rem;box-shadow:inset 0 -3px 0 #b99a5a;position:relative;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .rt small{position:absolute;right:4px;bottom:2px;font-size:.5em;font-weight:700}.rt.sel{outline:3px solid var(--ac);transform:translateY(-4px)}
 .wlog{display:grid;gap:3px;max-height:120px;overflow:auto;font-size:.78rem;color:var(--mu)}
-.wc.pd{touch-action:none;cursor:grab}.wc.dt{outline:3px solid var(--ac2);outline-offset:-3px;filter:brightness(1.25)}.wc:focus-visible,.rt:focus-visible{outline:3px solid var(--ac);outline-offset:1px}
+.wc.po{background:#f0d9a855;color:#fff;outline:2px dashed var(--ac2);outline-offset:-2px;pointer-events:none}.wc.pd{touch-action:none;cursor:grab}.wc.dt{outline:3px solid var(--ac2);outline-offset:-3px;filter:brightness(1.25)}.wc:focus-visible,.rt:focus-visible{outline:3px solid var(--ac);outline-offset:1px}
 .dgh{position:fixed;z-index:9999;pointer-events:none;transform:translate(-50%,-70%) scale(1.15);box-shadow:0 8px 20px #0008;width:44px;display:grid;place-items:center}body.dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
 .az{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.az button{min-height:40px;border-radius:9px;border:1px solid var(--bd);background:var(--s2);color:var(--tx);font:inherit;font-weight:700;cursor:pointer}
 `;
@@ -133,7 +133,7 @@ let TH=0;const toast=(m,bad)=>{const t=$('#tt');t.textContent=m;t.className='on'
 let T=localStorage.t||sessionStorage.t||'',ME=null,PT='',PTe=0,PEND=cleanCode(new URLSearchParams(location.search).get('oda'));
 try{ME=JSON.parse(localStorage.me||sessionStorage.me||'null')}catch(e){}
 let LK={film:0,puzzle:0,music:0,word:2},PM=0,MS=null,WG=null,CFG=null,WP=new Map(),WS=-1,WU={};
-let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0,ROOM_MODE=1,ROOM_NEW=0,AUTO=0;
+let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0,ROOM_MODE=1,ROOM_NEW=0,AUTO=0,WPO=null,PSL='',PST=0;
 const ov=h('div',{class:'ov',onclick:()=>{ov.classList.remove('on');if(st&&st.url)pl.play()}},ic('play',34),h('span',{text:'Dokun ve başlat'}));document.body.append(ov);
 const mount=(...n)=>{A.replaceChildren(...n);window.scrollTo(0,0)};
 async function api(p,m,b){let r;try{r=await fetch('/api/'+p,{method:m||'GET',headers:{authorization:'Bearer '+T,'content-type':'application/json'},body:b?JSON.stringify(b):undefined})}catch(e){throw 'Sunucuya ulaşılamadı. Bağlantını kontrol et.'}
@@ -222,6 +222,7 @@ const rnd=h('button',{type:'button',class:'btn sec sm',onclick:()=>{pp.value=Arr
 body.append(h('div',{class:'card'},h('h2',{text:'Hesaplar ('+us.length+')'}),h('div',{},rows)),
 h('form',{class:'card',onsubmit:e=>{e.preventDefault();act(async()=>{await api('users','POST',{name:nn.value.trim(),pass:pp.value,role:ad.checked?'admin':'user'});nn.value=pp.value=''},'Hesap açıldı ✓')}},h('h2',{text:'Yeni hesap aç'}),nn,pp,rnd,h('label',{class:'chk'},ad,h('span',{text:'Yönetici yetkisi ver'})),h('button',{class:'btn full',type:'submit'},'Hesabı oluştur')))}
 function adminSec(body){body.append(h('div',{class:'card'},h('h2',{text:'Hesabım'}),ME.def?h('div',{class:'tag wa',text:'Varsayılan şifre kullanılıyor'}):null,h('button',{class:'btn full',onclick:passModal},ic('key'),'Şifremi değiştir'),
+h('button',{class:'btn sec full',onclick:async()=>{try{const r=await api('tdktest?w=av');modal('TDK bağlantı testi',h('pre',{style:'white-space:pre-wrap;word-break:break-all;font-size:.8rem',text:JSON.stringify(r,null,1)}),[h('button',{class:'btn sec',onclick:e=>e.target.closest('.mo').remove()},'Kapat')])}catch(x){toast(x,1)}}},'TDK sözlük bağlantısını sına'),
 h('button',{class:'btn sec full',onclick:async()=>{if(!confirm('Tüm cihazlardaki oturumların kapatılsın mı?'))return;try{await api('me/revoke','POST');logout()}catch(x){toast(x,1)}}},'Tüm cihazlarda oturumu kapat')),
 h('div',{class:'card'},h('h3',{text:'Güvenlik notları'}),h('small',{text:'Oturum anahtarı sunucuda otomatik üretilip saklanır. İstersen Cloudflare > Settings > Variables bölümünden SECRET ve ADMIN_PASS değişkenlerini kendin de tanımlayabilirsin. ADMIN_PASS değiştirilirse yönetici şifresi bir kez o değere sıfırlanır (şifreni unutursan kurtarma yolu budur).'})))}
 // ---------- oda ----------
@@ -271,13 +272,13 @@ if(prevWho){for(const x of who)if(!prevWho.includes(x)&&x!=ME.name)toast(x+' oda
 const key=st.url+'|'+st.ref;if(canUse('film')&&key!=loadedKey){loadedKey=key;load(st);const u=$('#vu');if(u&&document.activeElement!==u)u.value=st.url}
 holdUI();tick()}
 function connect(k,mode){clearTimeout(wsTm);wsTm=0;const w=new WebSocket((location.protocol=='https:'?'wss://':'ws://')+location.host+'/ws?room='+encodeURIComponent(k)+'&mode='+encodeURIComponent(mode||ROOM_MODE||1)+(ROOM_NEW?'&new=1':'')+'&t='+encodeURIComponent(T));ws=w;wsLast=Date.now();const smp=[];
-w.onopen=()=>{wsTry=0;wsLast=Date.now();const d=$('#dot');if(d)d.className='dot on';const p=()=>{if(w.readyState!=1)return;if(Date.now()-wsLast>15000){reconnectNow();return}try{w.send(JSON.stringify({t:'ping',i:Date.now()}))}catch(e){}};p();setTimeout(p,600);setTimeout(p,1500);w.p=setInterval(p,5000);while(wsq.length&&w.readyState==1){try{w.send(wsq.shift())}catch(e){break}}};
+w.onopen=()=>{PSL='';wsTry=0;wsLast=Date.now();const d=$('#dot');if(d)d.className='dot on';const p=()=>{if(w.readyState!=1)return;if(Date.now()-wsLast>15000){reconnectNow();return}try{w.send(JSON.stringify({t:'ping',i:Date.now()}))}catch(e){}};p();setTimeout(p,600);setTimeout(p,1500);w.p=setInterval(p,5000);while(wsq.length&&w.readyState==1){try{w.send(wsq.shift())}catch(e){break}}};
 w.onmessage=e=>{wsLast=Date.now();let m;try{m=JSON.parse(e.data)}catch(x){return}
 if(m.t=='roomMode'){ROOM_NEW=0;const nm=[1,2,3].includes(+m.mode)?+m.mode:ROOM_MODE;if(nm!==ROOM_MODE){viewRoom(RM,nm,false);return}}
 else if(m.t=='st'){if(m.i){const rtt=Date.now()-m.i;smp.push([rtt,m.now+rtt/2-Date.now()]);if(smp.length>8)smp.shift();off=smp.reduce((a,b)=>b[0]<a[0]?b:a)[1]}else if(!smp.length)off=m.now-Date.now();onState(m)}
 else if(m.t=='pz')pzSet(m.pz);else if(m.t=='pzm')pzMove(m);else if(m.t=='chat')chatAdd(m);else if(m.t=='hist')m.c.forEach(chatAdd);
 else if(m.t=='sys'){chatSys(m.x);toast(m.x)}else if(m.t=='react')fly(m.e,m.n);
-else if(m.t=='locks'){LK=m.lk;lockUI()}else if(m.t=='wg')wgSet(m.g);else if(m.t=='werr')toast(m.e,1);else if(m.t=='wchk')wgChk(m)};
+else if(m.t=='locks'){LK=m.lk;lockUI()}else if(m.t=='wpend'){WPO=m.p&&m.p.length&&m.by!=ME.name?{mv:m.mv,p:new Map(m.p.map(x=>[x.i,x]))}:null;wgRender()}else if(m.t=='wg')wgSet(m.g);else if(m.t=='werr')toast(m.e,1);else if(m.t=='wchk')wgChk(m)};
 w.onerror=()=>{if(ws===w){const p=$('#pres');if(p)p.textContent='WebSocket bağlantı hatası; yeniden deneniyor…'}};
 w.onclose=ev=>{clearInterval(w.p);if(ws!==w)return;const d=$('#dot');if(d)d.className='dot';
 if(ev.code==4000){toast('Oda yönetici tarafından kapatıldı',1);return viewLobby()}
@@ -542,7 +543,7 @@ M('1',[[0,3],[3,0],[2,6],[6,2],[6,6],[7,3],[3,7]]);M('2',[[1,5],[5,1],[5,5]]);M(
 const WPL={'1':'H2','2':'H3','3':'K2','4':'K3'};
 const myTurn=()=>!!(WG&&!WG.over&&WG.pl[WG.tn]==ME.name);
 function wordCard(){
-WU={};const cells=[];
+WU={};PSL='';WPO=null;const cells=[];
 const wb=h('div',{class:'wb'});
 for(let i=0;i<225;i++){const c=h('div',{class:'wc',role:'button',tabindex:i==112?'0':'-1','aria-label':'Satır '+((i/15|0)+1)+', sütun '+(i%15+1),onclick:()=>wcell(i),onkeydown:e=>wkey(e,i),onpointerdown:e=>{if(WP.has(i))dgStart(e,WP.get(i).ri,i)}});cells.push(c);wb.append(c)}
 const sc=h('div',{class:'wsc'}),stx=h('div',{class:'lbl',style:'margin:0;font-size:.85rem'}),rk=h('div',{class:'rk'}),last=h('div',{class:'stack',style:'gap:6px'}),log=h('div',{class:'wlog'});
@@ -590,13 +591,14 @@ if(g.bagN<7)return toast('Torbada en az 7 harf olmalı',1);
 const box=h('div',{class:'rk'},g.rk.map((l,ri)=>h('button',{type:'button',class:'rt',onclick:e=>{const b=e.currentTarget;if(pick.has(ri)){pick.delete(ri);b.classList.remove('sel')}else{pick.add(ri);b.classList.add('sel')}}},l=='*'?'★':l)));
 const m=modal('Değiştirmek istediğin harfleri seç',box,[h('button',{class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),h('button',{class:'btn',onclick:()=>{if(!pick.size)return toast('En az bir harf seç',1);m.remove();send({t:'wex',ix:[...pick]})}},'Değiştir')])}
 function wgSet(g){const p=WG;WG=g;
-if(!p||p.mv!=g.mv||(p.rk||[]).join()!=(g.rk||[]).join()){if(DG)dgEnd();WP=new Map();WS=-1}else{for(const i of [...WP.keys()])if(g&&g.bd[i])WP.delete(i)}wgRender()}
+if(!p||p.mv!=g.mv||(p.rk||[]).join()!=(g.rk||[]).join()){if(DG)dgEnd();WP=new Map();WS=-1;PSL='';if(!p||p.mv!=g.mv)WPO=null}else{for(const i of [...WP.keys()])if(g&&g.bd[i])WP.delete(i)}wgRender()}
 function wgChk(m){if(WG&&WG.mv==m.mv&&WG.last){for(const r of m.r){const w=WG.last.words.find(x=>x.w==r.w);if(w)w.ok=r.ok}wgRender()}}
 function wgRender(){const U=WU;if(!U.root||TAB!=3||!canUse('word'))return;if(DG&&DG.mv){WRQ=1;return}const g=WG;
-const used=new Set([...WP.values()].map(x=>x.ri));
-U.cells.forEach((c,i)=>{const t=g&&g.bd[i],pd=WP.get(i);let cls='wc',kids=[];
+const used=new Set([...WP.values()].map(x=>x.ri)),po=(WPO&&g&&WPO.mv==g.mv&&!myTurn())?WPO.p:null;
+U.cells.forEach((c,i)=>{const t=g&&g.bd[i],pd=WP.get(i),pq=po&&po.get(i);let cls='wc',kids=[];
 if(t){cls+=' t'+(g.bj[i]?' j':'')+(g.last&&g.last.cells.indexOf(i)>=0?' n':'');kids=[t];if(!g.bj[i])kids.push(h('small',{class:'v',text:WLV[t]}))}
 else if(pd){cls+=' t pd'+(pd.j?' j':'');kids=[pd.l];if(!pd.j)kids.push(h('small',{class:'v',text:WLV[pd.l]}))}
+else if(pq){cls+=' po';kids=[pq.l]}
 else{const p=WPRE[i];if(p!='.')cls+=' p'+p;kids=i==112?['★']:p!='.'?[h('i',{text:WPL[p]})]:[]}
 c.className=cls;c.replaceChildren(...kids)});
 const has=!!g;U.bnew.style.display=(!g||g.over)?'':'none';U.acts.style.display=(g&&!g.over&&g.rk)?'':'none';U.rk.style.display=(g&&g.rk&&!g.over)?'':'none';
@@ -611,7 +613,8 @@ const row=[];if(g.canUndo&&!g.over)row.push(h('button',{type:'button',class:'btn
 if(L.by!=ME.name&&g.rk&&!g.over&&!g.ob)row.push(h('button',{type:'button',class:'btn dng sm',onclick:()=>send({t:'wobj'})},'İtiraz et'));
 if(g.ob)items.push(h('small',{class:'err',text:'İtiraz edildi. '+L.by+' isterse hamleyi geri alabilir.'}));
 if(row.length)items.push(h('div',{class:'row wrap'},row))}}
-U.last.replaceChildren(...items);U.log.replaceChildren(...g.log.slice().reverse().map(x=>h('div',{text:x})))}
+U.last.replaceChildren(...items);U.log.replaceChildren(...g.log.slice().reverse().map(x=>h('div',{text:x})));pendSync()}
+function pendSync(){if(!myTurn())return;const p=[...WP.entries()].map(([i,x])=>({i,l:x.l,j:x.j})),sj=JSON.stringify(p);if(sj==PSL)return;PSL=sj;clearTimeout(PST);PST=setTimeout(()=>send({t:'wpend',p}),120)}
 
 // ---------- başlat ----------
 {const qs=new URLSearchParams(location.search),oc=qs.get('code'),os=qs.get('state')||'';
@@ -701,6 +704,14 @@ export default {
         const rs = await (await dbf(env, '/rooms')).json();
         await Promise.all(rs.slice(0, 50).map(x => roomStub(env, x.room).fetch('https://do/locks', { method: 'POST', body: JSON.stringify({ lk: r }) }).catch(() => { })));
         return J(r);
+      }
+      if (p == '/api/tdktest') {
+        const w = trLower(u.searchParams.get('w') || 'av'), t0 = Date.now();
+        try {
+          const r = await fetch('https://sozluk.gov.tr/gts?ara=' + encodeURIComponent(w), { headers: { 'user-agent': UA, accept: 'application/json', referer: 'https://sozluk.gov.tr/', 'accept-language': 'tr-TR,tr;q=0.9' }, signal: AbortSignal.timeout(6000) });
+          const tx = await r.text();
+          return J({ kelime: w, status: r.status, ms: Date.now() - t0, tip: r.headers.get('content-type') || '', govde: tx.slice(0, 300) });
+        } catch (e) { return J({ kelime: w, hata: String(e), ms: Date.now() - t0 }) }
       }
       if (p == '/api/users') {
         if (req.method == 'GET') return dbf(env, '/list');
@@ -962,7 +973,7 @@ function wordShape(w) {
 async function tdkOne(q) {
   for (let t = 0; t < 2; t++) {
     try {
-      const r = await fetch('https://sozluk.gov.tr/gts?ara=' + encodeURIComponent(q), { headers: { 'user-agent': UA, accept: 'application/json' }, signal: AbortSignal.timeout(4000) });
+      const r = await fetch('https://sozluk.gov.tr/gts?ara=' + encodeURIComponent(q), { headers: { 'user-agent': UA, accept: 'application/json', referer: 'https://sozluk.gov.tr/', 'accept-language': 'tr-TR,tr;q=0.9' }, signal: AbortSignal.timeout(4000) });
       if (!r.ok) continue;
       const j = await r.json();
       if (Array.isArray(j)) {
@@ -996,7 +1007,7 @@ export class Do {
     this.s = s; this.env = env; this.rl = new Map(); this.hb = []; this.pzi = null; this.ok = 0;
     s.blockConcurrencyWhile(async () => {
       const g = await s.storage.get(['st', 'pzp', 'chat', 'code', 'rooms', 'lk', 'ms', 'wg', 'roomMode']);
-      this.st = g.get('st') || fresh(); this.pzp = g.get('pzp') || null; this.chat = g.get('chat') || []; this.code = g.get('code') || ''; this.rooms = g.get('rooms') || {}; this.lk = normLk(g.get('lk')); this.ms = g.get('ms') || null; this.wg = g.get('wg') || null; this.roomMode = [1,2,3].includes(+g.get('roomMode')) ? +g.get('roomMode') : 1; this.roomModeSet = [1,2,3].includes(+g.get('roomMode'));
+      this.st = g.get('st') || fresh(); this.pend = null; this.pzp = g.get('pzp') || null; this.chat = g.get('chat') || []; this.code = g.get('code') || ''; this.rooms = g.get('rooms') || {}; this.lk = normLk(g.get('lk')); this.ms = g.get('ms') || null; this.wg = g.get('wg') || null; this.roomMode = [1,2,3].includes(+g.get('roomMode')) ? +g.get('roomMode') : 1; this.roomModeSet = [1,2,3].includes(+g.get('roomMode'));
     });
   }
   socks() { return this.s.getWebSockets().filter(w => w.readyState === 1) }
@@ -1045,6 +1056,7 @@ export class Do {
       sv.send(JSON.stringify({ t: 'locks', lk: this.lk }));
       if (this.pzp && this.can('puzzle', att)) sv.send(JSON.stringify({ t: 'pz', pz: { ...this.pzp, img: await this.img() } }));
       if (this.wg && this.can('word', att)) sv.send(JSON.stringify({ t: 'wg', g: wgView(this.wg, att.n) }));
+      if (this.pend && this.pend.by !== att.n && this.can('word', att)) sv.send(this.pendMsg());
       await this.report(); return new Response(null, { status: 101, webSocket: c });
     }
     if (p == '/adminws') { const [c, sv] = Object.values(new WebSocketPair()); this.s.acceptWebSocket(sv, ['admin']); sv.send(this.snap()); return new Response(null, { status: 101, webSocket: c }) }
@@ -1164,6 +1176,7 @@ export class Do {
     }
     if (T && T[0] == 'w') {
       if (!this.can('word', a)) return this.deny(ws);
+      if (T == 'wpend') return this.pendSet(n, m.p);
       const g = this.wg; let r = null, chk = null;
       if (T == 'wnew') {
         if (g && !g.over) return ws.send(JSON.stringify({ t: 'werr', e: 'Önce mevcut oyunu bitir (teslim ol)' }));
@@ -1192,7 +1205,7 @@ export class Do {
       }
       if (!r) return;
       if (r.e) return ws.send(JSON.stringify({ t: 'werr', e: r.e }));
-      await S.put('wg', this.wg); this.wsend();
+      await S.put('wg', this.wg); this.pendClear(); this.wsend();
       if (chk) this.s.waitUntil(this.wcheck(chk.words, chk.mv));
       return;
     }
@@ -1227,6 +1240,22 @@ export class Do {
     ns.rev = (st.rev || 0) + 1; this.st = ns; this.hold(now);
     await S.put('st', this.st); this.bcast(); if (T == 'set') await this.report();
   }
+  // Sırası olan oyuncunun henüz oynanmamış taslak harfleri: yalnız bellekte, puana/tahtaya etkisi yok
+  pendMsg(to) { const p = this.pend; return JSON.stringify({ t: 'wpend', by: p ? p.by : '', mv: p ? p.mv : 0, p: p ? p.p : [] }) }
+  pendSend(except) { const m = this.pendMsg(); for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (except && a.n === except) continue; if (!this.can('word', a)) continue; try { w.send(m) } catch (e) { } } }
+  pendClear() { if (!this.pend) return; this.pend = null; this.pendSend() }
+  pendSet(n, raw) {
+    const g = this.wg; if (!g || g.over || g.pl[g.tn] !== n) return;
+    if (!Array.isArray(raw) || raw.length > 7) return;
+    const seen = new Set(), p = [];
+    for (const q of raw) {
+      if (!q || typeof q != 'object') return;
+      const i = q.i, l = String(q.l || ''); if (!Number.isInteger(i) || i < 0 || i > 224 || g.bd[i] || seen.has(i) || !WLET[l] || l == '*') return;
+      seen.add(i); p.push({ i, l, j: q.j ? 1 : 0 });
+    }
+    this.pend = p.length ? { by: n, mv: g.mv, p } : null;
+    if (!this.pend) { this.pend = { by: n, mv: g.mv, p: [] }; this.pendSend(n); this.pend = null } else this.pendSend(n);
+  }
   async wcheck(words, mv) {
     const r = await Promise.all(words.map(async w => ({ w, ok: await tdk(w) })));
     const g = this.wg; if (!g || g.mv !== mv || !g.last || g.last.kind != 'move') return;
@@ -1235,6 +1264,7 @@ export class Do {
   }
   async gone(ws) {
     try { ws.close(1000) } catch (e) { } this.rl.delete(ws); if (this.s.getTags(ws).includes('admin')) return;
+    if (this.pend && !this.socks().some(w => (w.deserializeAttachment() || {}).n === this.pend.by)) this.pendClear();
     const now = Date.now(); if (this.hold(now)) await this.s.storage.put('st', this.st);
     this.bcast(); await this.report(); if (!this.socks().length) await this.s.storage.setAlarm(now + 6 * 36e5);
   }
