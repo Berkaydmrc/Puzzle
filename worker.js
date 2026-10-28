@@ -230,7 +230,10 @@ async function load(){const s=await api('dict');tdkc.checked=!!s.tdk;
 info.replaceChildren(h('small',{text:'Yerleşik çekirdek: '+s.seed+' kelime. '+(s.meta?'Kurulu sözlük: '+s.meta.n+' kök ('+s.v+' fiil kökü), '+new Date(s.meta.ts).toLocaleString('tr-TR')+' – '+s.meta.src+'.':'Tam sözlük kurulu DEĞİL: yalnız yerleşik çekirdek var, bilinmeyen kelimeler rakip onayına gider.')+(s.extra?' Elle eklenen: '+s.extra+'.':'')}));
 accBox.replaceChildren(...(s.acc.length?[h('small',{text:'Oyuncuların kabul ettiği ama sözlükte olmayan kelimeler:'}),...s.acc.map(x=>h('div',{class:'row'},h('b',{text:x.w}),h('small',{text:x.c+'×'}),h('button',{type:'button',class:'btn sec sm',onclick:()=>run(()=>api('dict','POST',{a:'add',w:[x.w]}),'Sözlüğe eklendi ✓')},'Sözlüğe ekle'),h('button',{type:'button',class:'btn sec sm',onclick:()=>run(()=>api('dict','POST',{a:'rm',w:[x.w]}))},'Yoksay')))]:[h('small',{text:'Kabul edilmiş yeni kelime yok.'})]))}
 tdkc.onchange=()=>run(()=>api('dict','POST',{a:'cfg',tdk:tdkc.checked?1:0}),'Kaydedildi ✓');
-fi.onchange=async()=>{const f=fi.files[0];fi.value='';if(!f)return;const b=await f.arrayBuffer();let t;try{t=new TextDecoder('utf-8',{fatal:true}).decode(b)}catch(e){t=new TextDecoder('windows-1254').decode(b)}
+fi.onchange=async()=>{const f=fi.files[0];fi.value='';if(!f)return;
+if(!/\.(dic|txt)$/i.test(f.name))return toast('Bu bir sözlük dosyası değil. .dic ya da .txt uzantılı sözlük dosyasını seç.',1);
+const b=await f.arrayBuffer();let t;try{t=new TextDecoder('utf-8',{fatal:true}).decode(b)}catch(e){t=new TextDecoder('windows-1254').decode(b)}
+const seen=new Set();for(const l of t.split(/\r?\n/)){const w=l.split('/')[0].split('\t')[0].trim();if(w&&!/\s/.test(w))seen.add(w)}t=[...seen].join('\n');
 toast('Yükleniyor…');const r=await run(()=>api('dict','POST',{a:'install',text:t}),'Sözlük kuruldu ✓');if(r)showTest(await api('dict','POST',{a:'test'}))};
 load().catch(x=>toast(x,1));
 return h('div',{class:'card'},h('h2',{text:'Kelimelik sözlüğü'}),info,
@@ -1123,22 +1126,27 @@ el eli ayak ayağı
 gelmek gitmek yapmak almak vermek bakmak görmek bilmek olmak demek yemek içmek okumak yazmak başlamak bitirmek bitmek durmak kalmak çıkmak girmek koşmak yürümek oturmak kalkmak uyumak uyanmak gülmek ağlamak sevmek istemek beklemek aramak bulmak kaybetmek kazanmak oynamak çalışmak anlamak söylemek konuşmak sormak anlatmak dinlemek düşünmek unutmak hatırlamak taşımak götürmek getirmek göndermek açmak kapatmak koymak tutmak atmak çekmek itmek kesmek kırmak yıkamak pişirmek ölmek doğmak büyümek yaşamak öğrenmek öğretmek kullanmak denemek seçmek ödemek satmak
 etmek ekmek`.split(/\s+/).filter(Boolean);
 const trLower = w => String(w).replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase();
-function lexParse(text) { // düz liste ya da Hunspell .dic -> sıralı, benzersiz küçük harfli kök listesi
-  const out = new Set();
-  for (let line of String(text).replace(/^\uFEFF/, '').split(/\r?\n/)) {
-    let w = line.split('/')[0].split('\t')[0].trim();
-    if (!w || /^\d+$/.test(w) || w[0] == '#' || /\s/.test(w)) continue;
-    if (w[0] !== w[0].toLowerCase()) continue; // büyük harfle başlayanlar özel isimdir, Kelimelik'te geçersiz
-    w = trLower(w.replace(/â/g, 'a').replace(/î/g, 'i').replace(/û/g, 'u'));
-    if (w.length < 2 || w.length > 15 || !/^[a-zçğıiöşü]+$/.test(w)) continue;
-    out.add(w);
-  }
-  return [...out].sort();
+// Tek satırı (düz liste ya da Hunspell .dic) temizleyip kümeye ekler. Büyük harfle başlayanlar özel isimdir, alınmaz.
+function lexAdd(set, line) {
+  let w = String(line).split('/')[0].split('\t')[0].trim();
+  if (!w || w[0] == '#' || /\s/.test(w) || /^\d+$/.test(w)) return;
+  if (w[0] !== w[0].toLowerCase()) return;
+  w = trLower(w.replace(/â/g, 'a').replace(/î/g, 'i').replace(/û/g, 'u'));
+  if (w.length < 2 || w.length > 15 || !/^[a-zçğıiöşü]+$/.test(w)) return;
+  set.add(w);
 }
-function decodeLex(buf) { try { return new TextDecoder('utf-8', { fatal: true }).decode(buf) } catch (e) { return new TextDecoder('windows-1254').decode(buf) } }
+function lexParse(text, lx) { for (const l of String(text).replace(/^\uFEFF/, '').split(/\r?\n/)) lexAdd(lx, l); return lx }
+const LEX_MAX = 2500000;
+// Bellek dostu sözlük: kelimeler 4096 kovaya dağıtılır, her kova "\nkelime\nkelime\n" biçiminde TEK bir metin.
+// 1,5 milyon kelime ~30 MB tutar (ayrı ayrı dizgi tutan Set'in üçte biri); arama birkaç mikrosaniye.
+const LB = 4096;
+function lexH(w) { let h = 2166136261; for (let i = 0; i < w.length; i++) { h ^= w.charCodeAt(i); h = Math.imul(h, 16777619) } return (h >>> 0) % LB }
 class Lex {
   // vAll: bazı Hunspell sözlükleri fiilleri mastar (gelmek) yerine çıplak kök (gel) olarak tutar; o zaman her kök fiil adayı sayılır
-  constructor(words, vAll) { this.n = new Set(words); this.v = new Set(); this.vAll = !!vAll; for (const w of words) if (w.length > 4 && /m[ae]k$/.test(w)) this.v.add(w.slice(0, -3)); this.has = (w, k) => k == 'n' ? this.n.has(w) : (this.v.has(w) || (this.vAll && this.n.has(w))) }
+  constructor(words, vAll) { this.b = new Array(LB).fill('\n'); this.cnt = 0; this.v = new Set(); this.vAll = !!vAll; for (const w of words || []) this.add(w); this.has = (w, k) => k == 'n' ? this.hasN(w) : (this.v.has(w) || (this.vAll && this.hasN(w))) }
+  hasN(w) { return this.b[lexH(w)].indexOf('\n' + w + '\n') >= 0 }
+  add(w) { const h = lexH(w), k = this.b[h]; if (k.indexOf('\n' + w + '\n') >= 0) return false; this.b[h] = k + w + '\n'; this.cnt++; if (w.length > 4 && /m[ae]k$/.test(w)) this.v.add(w.slice(0, -3)); return true }
+  setBucket(i, t) { this.b[i] = t; let c = 0; for (let j = 1; j < t.length; j++) if (t.charCodeAt(j) === 10) { c++; } this.cnt += c; if (/m[ae]k\n/.test(t)) for (const m of t.matchAll(/\n([a-zçğıiöşü]{2,})m[ae]k(?=\n)/g)) this.v.add(m[1]) }
   ok(w) { return trAnalyze(w, this.has) }
 }
 const dictf = (env, path, body) => env.DO.get(env.DO.idFromName('dict')).fetch('https://do' + path, { method: 'POST', body: JSON.stringify(body || {}) });
@@ -1411,14 +1419,15 @@ export class Do {
   // ---------- Sözlük DO'su ('dict') ----------
   async dictLoad() {
     if (this.lex) return this.lex; const S = this.s.storage;
-    const meta = (await S.get('dmeta')) || null, words = [];
-    if (meta && meta.parts) {
-      const keys = []; for (let i = 0; i < meta.parts; i++) keys.push('dw:' + String(i).padStart(3, '0'));
-      for (let i = 0; i < keys.length; i += 100) { const sl = keys.slice(i, i + 100), g = await S.get(sl); for (const k of sl) { const t = g.get(k); if (t) for (const w of t.split('\n')) words.push(w) } }
+    const meta = (await S.get('dmeta')) || null, extra = (await S.get('dextra')) || [];
+    const lex = new Lex([], meta && meta.vAll);
+    if (meta && meta.parts && meta.fmt == 2) {
+      const keys = []; for (let i = 0; i < meta.parts; i++) keys.push('dw:' + String(i).padStart(4, '0'));
+      for (let i = 0; i < keys.length; i += 32) { const sl = keys.slice(i, i + 32), g = await S.get(sl); for (const k of sl) { const t = g.get(k); if (t) t.b.forEach((x, j) => lex.setBucket(t.s + j, x)) } }
     }
-    const extra = (await S.get('dextra')) || [];
-    this.dmeta = meta; this.dcfg = (await S.get('dcfg')) || { tdk: 0 }; this.dver = (meta ? meta.ts : 0) + extra.length;
-    this.lex = new Lex([...SEED, ...words, ...extra], meta && meta.vAll); return this.lex;
+    for (const w of SEED) lex.add(w); for (const w of extra) lex.add(w);
+    this.dmeta = meta && meta.fmt == 2 ? meta : null; this.dcfg = (await S.get('dcfg')) || { tdk: 0 }; this.dver = (meta ? meta.ts : 0) + extra.length;
+    this.lex = lex; return lex;
   }
   async dictRoute(p, b) {
     const S = this.s.storage, err = (e, s = 400) => Response.json({ error: e }, { status: s }), lex = await this.dictLoad();
@@ -1428,7 +1437,7 @@ export class Do {
     }
     if (p == '/dictstatus') {
       const acc = (await S.get('dacc')) || {};
-      return Response.json({ n: lex.n.size, v: lex.v.size, seed: SEED.length, meta: this.dmeta, extra: ((await S.get('dextra')) || []).length, tdk: this.dcfg.tdk ? 1 : 0, acc: Object.entries(acc).map(([w, x]) => ({ w, c: x.c, ts: x.ts })).sort((a, c) => c.ts - a.ts).slice(0, 100) });
+      return Response.json({ n: lex.cnt, v: lex.v.size, seed: SEED.length, meta: this.dmeta, extra: ((await S.get('dextra')) || []).length, tdk: this.dcfg.tdk ? 1 : 0, acc: Object.entries(acc).map(([w, x]) => ({ w, c: x.c, ts: x.ts })).sort((a, c) => c.ts - a.ts).slice(0, 100) });
     }
     if (p == '/dictcfg') { this.dcfg = { tdk: b.tdk ? 1 : 0 }; await S.put('dcfg', this.dcfg); return Response.json({ ok: 1, tdk: this.dcfg.tdk }) }
     if (p == '/dictacc') {
@@ -1448,23 +1457,41 @@ export class Do {
       return Response.json({ full: !!this.dmeta, r: T.map(([w, e]) => { const g = wordShape(w) && lex.ok(w) ? 1 : 0; return { w, e, g } }) });
     }
     if (p == '/dictinstall') {
-      let text = '', src = '';
+      // Dosya akış hâlinde, parça parça okunur; kelimeler doğrudan sıkışık kovalara yazılır (onlarca MB'lık sözlük belleği taşırmaz).
+      let lx = new Lex([], false), src = '';
       if (b.url) {
         const u = String(b.url).trim(); if (!/^https:\/\//i.test(u)) return err('Adres https:// ile başlamalı');
-        try { const r = await fetch(u, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(25000) }); if (!r.ok) return err('İndirme başarısız: HTTP ' + r.status); const buf = await r.arrayBuffer(); if (buf.byteLength > 8e6) return err('Dosya çok büyük (en fazla 8 MB)'); text = decodeLex(buf); src = u } catch (e) { return err('İndirme başarısız: ' + e) }
-      } else if (typeof b.text == 'string') { if (b.text.length > 8e6) return err('Dosya çok büyük (en fazla 8 MB)'); text = b.text; src = 'yüklenen dosya' }
+        try {
+          const r = await fetch(u, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(90000) }); if (!r.ok || !r.body) return err('İndirme başarısız: HTTP ' + r.status);
+          const rd = r.body.getReader(), dec = new TextDecoder('utf-8'); let rest = '', bytes = 0, bad = 0;
+          for (;;) {
+            const { done, value } = await rd.read(); if (done) break;
+            bytes += value.byteLength; if (bytes > 80e6) { try { rd.cancel() } catch (e) { } return err('Dosya çok büyük (80 MB üstü)') }
+            const t = rest + dec.decode(value, { stream: true }), ls = t.split('\n'); rest = ls.pop();
+            for (const l of ls) { if (l.indexOf('�') >= 0) bad++; lexAdd(lx, l) }
+            if (lx.cnt > LEX_MAX) { try { rd.cancel() } catch (e) { } return err('Liste çok büyük (2,5 milyondan fazla kelime)') }
+          }
+          lexAdd(lx, rest + dec.decode());
+          if (bad > 50 && lx.cnt < 1000) return err('Dosya UTF-8 değil. Lütfen UTF-8 kodlu bir sözlük kullan.');
+          src = u;
+        } catch (e) { return err('İndirme başarısız: ' + e) }
+      } else if (typeof b.text == 'string') { if (b.text.length > 40e6) return err('Dosya çok büyük'); lexParse(b.text, lx); src = 'yüklenen dosya' }
       else return err('Adres ya da dosya gerekli');
-      const words = lexParse(text);
-      if (words.length > 900000) return err('Liste çok büyük (' + words.length + ' kelime). En fazla 900.000 kök desteklenir.');
-      if (words.length < 1000) return err('Listede yeterli kelime bulunamadı (' + words.length + '). Biçim: her satırda bir kelime ya da Hunspell .dic dosyası.');
-      const old = [...(await S.list({ prefix: 'dw:' })).keys()]; for (let i = 0; i < old.length; i += 100) await S.delete(old.slice(i, i + 100));
-      const parts = []; let cur = '';
-      for (const w of words) { if (cur.length + w.length + 1 > 50000) { parts.push(cur); cur = '' } cur += (cur ? '\n' : '') + w } if (cur) parts.push(cur);
-      for (let i = 0; i < parts.length; i += 50) { const o = {}; parts.slice(i, i + 50).forEach((t, j) => o['dw:' + String(i + j).padStart(3, '0')] = t); await S.put(o) }
-      const mek = words.filter(w => w.length > 4 && /m[ae]k$/.test(w)).length, vAll = mek < words.length * 0.01;
-      await S.put('dmeta', { n: words.length, parts: parts.length, ts: Date.now(), src, vAll });
-      this.lex = null; const nl = await this.dictLoad();
-      return Response.json({ ok: 1, n: words.length, v: nl.v.size });
+      const n = lx.cnt;
+      if (n > LEX_MAX) return err('Liste çok büyük (' + n + ' kelime).');
+      if (n < 1000) return err('Listede yeterli kelime bulunamadı (' + n + '). Doğru dosyayı seçtiğinden emin ol: Hunspell .dic ya da her satırda bir kelime olan .txt.');
+      this.lex = null;
+      const old = [...(await S.list({ prefix: 'dw:' })).keys()]; for (let i = 0; i < old.length; i += 128) await S.delete(old.slice(i, i + 128));
+      // Ardışık kovaları ~60 bin karakterlik parçalar hâlinde kaydet (her değer 128 KB sınırının altında)
+      let pi = 0, batch = {}, bn = 0, cur = { s: 0, b: [] }, len = 0;
+      const push = async () => { batch['dw:' + String(pi++).padStart(4, '0')] = cur; if (++bn >= 32) { await S.put(batch); batch = {}; bn = 0 } };
+      for (let i = 0; i < LB; i++) { const t = lx.b[i]; if (cur.b.length && len + t.length > 60000) { await push(); cur = { s: i, b: [] }; len = 0 } cur.b.push(t); len += t.length }
+      await push(); if (bn) await S.put(batch);
+      const vAll = lx.v.size < n * 0.01 * 0.5;
+      await S.put('dmeta', { n, parts: pi, ts: Date.now(), src, vAll, fmt: 2 });
+      lx.vAll = vAll; for (const w of SEED) lx.add(w); for (const w of ((await S.get('dextra')) || [])) lx.add(w);
+      this.lex = lx; this.dmeta = await S.get('dmeta'); this.dver = this.dmeta.ts;
+      return Response.json({ ok: 1, n, v: lx.v.size, vAll });
     }
     return err('yok', 404);
   }
