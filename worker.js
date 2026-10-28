@@ -1,4 +1,4 @@
-// BIZIM SINEMA v11 — Cloudflare Worker + Durable Object (tek dosya)
+// BIZIM SINEMA v12 — Cloudflare Worker + Durable Object (tek dosya)
 // Gerekli ayar (wrangler.toml): DO bağlaması (sınıf: Do). Başka bir şey gerekmez.
 // İsteğe bağlı Cloudflare değişkenleri (hepsini "Secret" olarak ekle):
 //   SECRET (oturum anahtarı), ADMIN_PASS (yönetici şifresi / kurtarma)
@@ -131,7 +131,7 @@ let TH=0;const toast=(m,bad)=>{const t=$('#tt');t.textContent=m;t.className='on'
 let T=localStorage.t||sessionStorage.t||'',ME=null,PT='',PTe=0,PEND=cleanCode(new URLSearchParams(location.search).get('oda'));
 try{ME=JSON.parse(localStorage.me||sessionStorage.me||'null')}catch(e){}
 let LK={film:0,puzzle:0,music:0,word:2},PM=0,MS=null,WG=null,CFG=null,WP=new Map(),WS=-1,WU={};
-let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null;
+let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0;
 const ov=h('div',{class:'ov',onclick:()=>{ov.classList.remove('on');if(st&&st.url)pl.play()}},ic('play',34),h('span',{text:'Dokun ve başlat'}));document.body.append(ov);
 const mount=(...n)=>{A.replaceChildren(...n);window.scrollTo(0,0)};
 async function api(p,m,b){let r;try{r=await fetch('/api/'+p,{method:m||'GET',headers:{authorization:'Bearer '+T,'content-type':'application/json'},body:b?JSON.stringify(b):undefined})}catch(e){throw 'Sunucuya ulaşılamadı. Bağlantını kontrol et.'}
@@ -167,7 +167,7 @@ mount(h('div',{class:'narrow stack',style:'margin-top:6vh'},f))}
 async function viewLobby(){leaveRoom();closeLive();try{LK=await api('locks')}catch(e){}
 const code=()=>Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
 const k=h('input',{class:'in code',placeholder:'KOD',maxlength:8,autocapitalize:'characters',autocomplete:'off',autocorrect:'off',spellcheck:'false','aria-label':'Oda kodu'});
-const join=()=>{const v=cleanCode(k.value);v?viewRoom(v,1):toast('Önce oda kodunu yaz',1)};k.onkeydown=e=>e.key=='Enter'&&join();
+const join=()=>{const v=cleanCode(k.value);v?viewRoom(v,1):toast('Önce oda kodunu yaz',1)};k.onkeydown=e=>{if(e.key=='Enter')join()};
 const feat=(i,t,d,b,fn,lkd)=>h('div',{class:'card feat'},h('div',{class:'row'},h('div',{class:'logo lg'},ic(i,22)),h('div',{},h('h2',{text:t}),h('small',{text:d}))),h('button',{class:'btn full',disabled:!!lkd,onclick:fn},lkd?'🔒 Kilitli':b));
 const last=localStorage.rm;
 mount(h('div',{class:'narrow stack'},brand(userChip()),
@@ -177,7 +177,8 @@ h('div',{class:'grid2'},feat('film','Film odası','Aynı videoyu tam senkron izl
 feat('word','Kelimelik','İki kişilik Türkçe kelime oyunu'+(LK.word==1?' (şimdilik yöneticilere açık)':''),'Kelimelik odası aç',()=>viewRoom(code(),3),!canUse('word')),
 h('div',{class:'card'},h('h2',{text:'Odaya katıl'}),h('small',{text:'Sevgilinin verdiği kodu yaz'}),k,h('button',{class:'btn sec full',onclick:join},'Katıl'),last?h('button',{class:'btn sec full',onclick:()=>viewRoom(last,1)},'Son oda: '+last+' · tekrar gir'):null),
 h('div',{class:'card'},ME.role=='admin'?h('button',{class:'btn sec full',onclick:()=>viewAdmin('live')},ic('shield'),'Yönetim paneli'):null,h('button',{class:'btn sec full',onclick:passModal},ic('key'),'Şifremi değiştir'),h('button',{class:'btn sec full',onclick:()=>logout()},ic('out'),'Çıkış yap'))));
-if(PEND)toast('Davet kodu: '+PEND)}
+if(PEND)toast('Davet kodu: '+PEND);
+LT=setInterval(async()=>{try{const n=await api('locks');if(JSON.stringify(n)!=JSON.stringify(LK)){LK=n;const v=k.value;await viewLobby();const k2=$('.in.code');if(k2)k2.value=v}}catch(e){}},4000)}
 function passModal(){const o=h('input',{class:'in',type:'password',placeholder:'Mevcut şifre',autocomplete:'current-password'}),a=h('input',{class:'in',type:'password',placeholder:'Yeni şifre (en az 6 karakter)',autocomplete:'new-password'}),b=h('input',{class:'in',type:'password',placeholder:'Yeni şifre (tekrar)',autocomplete:'new-password'}),er=h('div',{class:'err'});
 const m=modal('Şifreyi değiştir',h('div',{class:'stack'},o,a,b,er),[h('button',{class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),h('button',{class:'btn',onclick:async()=>{if(a.value!=b.value){er.textContent='Yeni şifreler aynı değil';return}try{const j=await api('me/pass','POST',{old:o.value,pass:a.value});T=j.token;ME.def=false;saveSess();m.remove();toast('Şifre değişti ✓');if(!RM)viewLobby()}catch(x){er.textContent=String(x)}}},'Kaydet')])}
 // ---------- yönetim ----------
@@ -214,7 +215,7 @@ function adminSec(body){body.append(h('div',{class:'card'},h('h2',{text:'Hesabı
 h('button',{class:'btn sec full',onclick:async()=>{if(!confirm('Tüm cihazlardaki oturumların kapatılsın mı?'))return;try{await api('me/revoke','POST');logout()}catch(x){toast(x,1)}}},'Tüm cihazlarda oturumu kapat')),
 h('div',{class:'card'},h('h3',{text:'Güvenlik notları'}),h('small',{text:'Oturum anahtarı sunucuda otomatik üretilip saklanır. İstersen Cloudflare > Settings > Variables bölümünden SECRET ve ADMIN_PASS değişkenlerini kendin de tanımlayabilirsin. ADMIN_PASS değiştirilirse yönetici şifresi bir kez o değere sıfırlanır (şifreni unutursan kurtarma yolu budur).'})))}
 // ---------- oda ----------
-function leaveRoom(){RM='';clearTimeout(wsTm);wsTm=0;wsq=[];wsTry=0;if(ws){const w=ws;ws=null;w.onclose=null;clearInterval(w.p);try{w.close()}catch(e){}}teardown();mstop();MS=null;WG=null;WP=new Map();WS=-1;st=null;PZ=null;IM=null;PC=[];PP=[];PU=0;clearInterval(tk);tk=0;hb=[];V=null;yw=null;ov.classList.remove('on')}
+function leaveRoom(){clearInterval(LT);LT=0;RM='';clearTimeout(wsTm);wsTm=0;wsq=[];wsTry=0;if(ws){const w=ws;ws=null;w.onclose=null;clearInterval(w.p);try{w.close()}catch(e){}}teardown();mstop();MS=null;WG=null;WP=new Map();WS=-1;st=null;PZ=null;IM=null;PC=[];PP=[];PU=0;clearInterval(tk);tk=0;hb=[];V=null;yw=null;ov.classList.remove('on')}
 let wsq=[],wsTry=0,wsTm=0,wsLast=0;
 const send=m=>{const s=JSON.stringify(m);if(ws&&ws.readyState==1){try{ws.send(s);return}catch(e){}}if(m.t!='ping'&&m.t!='pzm'&&wsq.length<30)wsq.push(s);if(RM&&(!ws||ws.readyState>1))reconnectNow()};
 function reconnectNow(){if(!RM)return;clearTimeout(wsTm);wsTm=0;if(ws&&ws.readyState==1&&Date.now()-wsLast<12000){try{ws.send(JSON.stringify({t:'ping',i:Date.now()}));return}catch(e){}}if(ws){const old=ws;ws=null;old.onclose=null;clearInterval(old.p);try{old.close()}catch(e){}}connect(RM)}
@@ -297,7 +298,7 @@ const seg=h('div',{class:'seg'},mk(1,'film','Film'),mk(2,'puzzle','Yapboz'),mk(3
 const head=h('div',{class:'card'},h('div',{class:'row'},h('button',{class:'btn sec sq','aria-label':'Çık',onclick:()=>viewLobby()},ic('back')),h('div',{class:'grow'},h('b',{text:'Oda '+k}),h('div',{class:'pill'},dot,pres)),h('button',{class:'btn sec sq','aria-label':'Davet et',onclick:invite},ic('link')),h('button',{class:'btn sec sq','aria-label':'Yardım',onclick:helpModal},ic('help'))),seg);
 const u=h('input',{class:'in',id:'vu',type:'url',placeholder:'YouTube, .mp4 veya .m3u8 linki',inputmode:'url',autocapitalize:'none',autocorrect:'off',spellcheck:'false',enterkeyhint:'go'});
 const rf=h('input',{class:'in',type:'url',placeholder:'https://kaynak-site.com/',inputmode:'url',autocapitalize:'none',autocorrect:'off'});
-const ld=()=>{const v=u.value.trim();if(!/^https?:\/\//i.test(v))return toast('Link http:// veya https:// ile başlamalı',1);send({t:'set',url:v,ref:rf.value.trim()});toast('Yükleniyor…')};u.onkeydown=e=>e.key=='Enter'&&ld();
+const ld=()=>{const v=u.value.trim();if(!/^https?:\/\//i.test(v))return toast('Link http:// veya https:// ile başlamalı',1);send({t:'set',url:v,ref:rf.value.trim()});toast('Yükleniyor…')};u.onkeydown=e=>{if(e.key=='Enter')ld()};
 const fp=h('div',{class:'card',id:'fp'},h('div',{class:'stage'},V,yw,EMPTY,syncEl,holdEl),h('div',{class:'row'},u,h('button',{class:'btn',onclick:ld},ic('play',16),'Yükle')),h('details',{},h('summary',{text:'Gelişmiş: Referer (link açılmazsa)'}),rf),h('small',{text:'Oynat, durdur ve ileri sarma ikinizde de anında uygulanır. Biri takılırsa diğeri bekler.'}));
 const cnt=h('div',{class:'chips'},[100,250,500,1000].map(n=>h('button',{class:n==PN?'on':'','data-n':n,onclick:e=>{PN=n;cnt.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x==e.currentTarget))}},n+' parça')));
 const pf=h('input',{type:'file',accept:'image/*',style:'display:none',onchange:e=>{if(e.target.files[0])pnew(e.target.files[0]);e.target.value=''}});
@@ -917,6 +918,17 @@ export class Do {
   }
   socks() { return this.s.getWebSockets().filter(w => w.readyState === 1) }
   can(area, a) { const v = (this.lk && this.lk[area]) | 0; return v == 0 || (v == 1 && !!(a && a.a)) }
+  async lkApply(nl) {
+    nl = normLk(nl); if (JSON.stringify(nl) === JSON.stringify(this.lk)) return false;
+    this.lk = nl; await this.s.storage.put('lk', nl); this.all(JSON.stringify({ t: 'locks', lk: nl }));
+    let pzs = null;
+    for (const w of this.socks()) {
+      if (this.s.getTags(w).includes('admin')) continue;
+      const a = w.deserializeAttachment() || {};
+      try { if (this.pzp && this.can('puzzle', a)) { if (pzs == null) pzs = JSON.stringify({ t: 'pz', pz: { ...this.pzp, img: await this.img() } }); w.send(pzs) } } catch (e) { }
+    }
+    this.wsend(); this.bcast(); return true;
+  }
   deny(ws) { try { ws.send(JSON.stringify({ t: 'locks', lk: this.lk })) } catch (e) { } }
   wsend() { for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; try { w.send(JSON.stringify({ t: 'wg', g: this.wg && this.can('word', a) ? wgView(this.wg, a.n) : null })) } catch (e) { } } }
   all(str) { this.socks().forEach(w => { try { w.send(str) } catch (e) { } }) }
@@ -931,11 +943,12 @@ export class Do {
   async fetch(req) {
     const u = new URL(req.url), p = u.pathname, S = this.s.storage;
     if (p == '/ws') {
-      if (this.socks().length >= 8) return new Response('oda dolu', { status: 429 });
+      let ss = this.socks();
+      if (ss.length >= 8) { ss.sort((x, y) => ((x.deserializeAttachment() || {}).ls || 0) - ((y.deserializeAttachment() || {}).ls || 0)); while (ss.length >= 8) { const o = ss.shift(); try { o.close(4001, 'eski') } catch (e) { } } }
       const code = clean(u.searchParams.get('room')); if (code && !this.code) { this.code = code; await S.put('code', code) }
       const [c, sv] = Object.values(new WebSocketPair()); let lkp = null; try { lkp = JSON.parse(u.searchParams.get('lk') || 'null') } catch (e) { }
-      if (lkp) { this.lk = normLk(lkp); await S.put('lk', this.lk) }
-      const att = { n: u.searchParams.get('n'), a: u.searchParams.get('a') == '1' ? 1 : 0 };
+      if (lkp) await this.lkApply(lkp);
+      const att = { n: u.searchParams.get('n'), a: u.searchParams.get('a') == '1' ? 1 : 0, ls: Date.now() };
       this.s.acceptWebSocket(sv); sv.serializeAttachment(att);
       await S.deleteAlarm(); this.bcast();
       sv.send(JSON.stringify({ t: 'hist', c: this.chat.slice(-40) }));
@@ -950,7 +963,7 @@ export class Do {
       await S.deleteAll(); this.st = fresh(); this.pzp = null; this.pzi = null; this.chat = []; this.code = ''; this.ms = null; this.wg = null; return Response.json({ ok: 1 });
     }
     const b = await req.json().catch(() => ({}));
-    if (p == '/locks') { this.lk = normLk(b.lk); await S.put('lk', this.lk); this.all(JSON.stringify({ t: 'locks', lk: this.lk })); return Response.json({ ok: 1 }) }
+    if (p == '/locks') { await this.lkApply(b.lk); return Response.json({ ok: 1 }) }
     if (p == '/getlocks') { const l = await S.get('locks'); return Response.json(normLk(l)) }
     if (p == '/setlocks') {
       if (LKEYS.indexOf(b.k) < 0 || ![0, 1, 2].includes(+b.v)) return Response.json({ error: 'Geçersiz kilit' }, { status: 400 });
@@ -1030,7 +1043,10 @@ export class Do {
     if (!m || typeof m != 'object') return;
     const now = Date.now(), a = ws.deserializeAttachment() || {}, n = a.n, S = this.s.storage, T = m.t;
     const rl = this.rl.get(ws) || { t: now, c: 0 }; if (now - rl.t > 1000) { rl.t = now; rl.c = 0 } rl.c++; this.rl.set(ws, rl); if (rl.c > 40) return;
-    if (T == 'ping') { if (this.hold(now)) { await S.put('st', this.st); this.bcast() } else ws.send(this.msg(+m.i || 0)); if (now - (this.lp || 0) > 30000) { this.lp = now; await this.report() } return }
+    if (T == 'ping') { if (this.hold(now)) { await S.put('st', this.st); this.bcast() } else ws.send(this.msg(+m.i || 0)); if (now - (this.lp || 0) > 30000) { this.lp = now; await this.report() }
+      a.ls = now; try { ws.serializeAttachment(a) } catch (e) { }
+      if (now - (this.lkAt || 0) > 4000) { this.lkAt = now; try { const r = await this.env.DO.get(this.env.DO.idFromName('db')).fetch('https://do/getlocks', { method: 'POST', body: '{}' }); await this.lkApply(await r.json()) } catch (e) { } }
+      return }
     if (T == 'buf') { a.b = m.b ? 1 : 0; a.bt = now; ws.serializeAttachment(a); if (this.hold(now)) await S.put('st', this.st); return this.bcast() }
     if (T == 'chat') {
       const x = String(m.x || '').trim().slice(0, 500); if (!x) return;
