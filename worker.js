@@ -106,6 +106,8 @@ details summary{color:var(--mu);font-size:.82rem;cursor:pointer;margin-bottom:8p
 .rk{display:flex;gap:6px;justify-content:center;min-height:50px}
 .rt{width:12vw;max-width:48px;aspect-ratio:1;border-radius:8px;border:0;background:#f0d9a8;color:#2a1c05;font:inherit;font-weight:800;font-size:1.25rem;box-shadow:inset 0 -3px 0 #b99a5a;position:relative;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .rt small{position:absolute;right:4px;bottom:2px;font-size:.5em;font-weight:700}.rt.sel{outline:3px solid var(--ac);transform:translateY(-4px)}
+.wprv{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;font-size:.85rem;min-height:26px}.wprv span{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:2px 8px;font-weight:700}.wprv .ok{border-color:var(--ok);color:var(--ok)}.wprv .unk{border-color:var(--wa);color:var(--wa)}.wprv .bad{border-color:var(--er);color:var(--er)}
+.un{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.un div{background:#f0d9a8;color:#2a1c05;border-radius:8px;padding:4px 0;text-align:center;font-weight:800}.un div small{display:block;font-size:.7rem;font-weight:700;opacity:.75}.un div.z{opacity:.3}
 .wlog{display:grid;gap:3px;max-height:120px;overflow:auto;font-size:.78rem;color:var(--mu)}
 .wc.po{background:#f0d9a855;color:#fff;outline:2px dashed var(--ac2);outline-offset:-2px;pointer-events:none}.wc.pd{touch-action:none;cursor:grab}.wc.dt{outline:3px solid var(--ac2);outline-offset:-3px;filter:brightness(1.25)}.wc:focus-visible,.rt:focus-visible{outline:3px solid var(--ac);outline-offset:1px}
 .dgh{position:fixed;z-index:9999;pointer-events:none;transform:translate(-50%,-70%) scale(1.15);box-shadow:0 8px 20px #0008;width:44px;display:grid;place-items:center}body.dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
@@ -133,7 +135,7 @@ let TH=0;const toast=(m,bad)=>{const t=$('#tt');t.textContent=m;t.className='on'
 let T=localStorage.t||sessionStorage.t||'',ME=null,PT='',PTe=0,PEND=cleanCode(new URLSearchParams(location.search).get('oda'));
 try{ME=JSON.parse(localStorage.me||sessionStorage.me||'null')}catch(e){}
 let LK={film:0,puzzle:0,music:0,word:2},PM=0,MS=null,WG=null,CFG=null,WP=new Map(),WS=-1,WU={};
-let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0,ROOM_MODE=1,ROOM_NEW=0,AUTO=0,WPO=null,PSL='',PST=0,WPQ={mv:0,s:0},WQ=null,WQT=0,PSEQ=0;
+let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0,ROOM_MODE=1,ROOM_NEW=0,AUTO=0,WPO=null,PSL='',PST=0,WPQ={mv:0,s:0},WQ=null,WQT=0,PSEQ=0,WPV=null,WBZ=0,WBT=0;
 const ov=h('div',{class:'ov',onclick:()=>{ov.classList.remove('on');if(st&&st.url)pl.play()}},ic('play',34),h('span',{text:'Dokun ve başlat'}));document.body.append(ov);
 const mount=(...n)=>{A.replaceChildren(...n);window.scrollTo(0,0)};
 async function api(p,m,b){let r;try{r=await fetch('/api/'+p,{method:m||'GET',headers:{authorization:'Bearer '+T,'content-type':'application/json'},body:b?JSON.stringify(b):undefined})}catch(e){throw 'Sunucuya ulaşılamadı. Bağlantını kontrol et.'}
@@ -299,7 +301,7 @@ if(m.t=='roomMode'){ROOM_NEW=0;const nm=[1,2,3].includes(+m.mode)?+m.mode:ROOM_M
 else if(m.t=='st'){if(m.i){const rtt=Date.now()-m.i;smp.push([rtt,m.now+rtt/2-Date.now()]);if(smp.length>8)smp.shift();off=smp.reduce((a,b)=>b[0]<a[0]?b:a)[1]}else if(!smp.length)off=m.now-Date.now();onState(m)}
 else if(m.t=='pz')pzSet(m.pz);else if(m.t=='pzm')pzMove(m);else if(m.t=='chat')chatAdd(m);else if(m.t=='hist')m.c.forEach(chatAdd);
 else if(m.t=='sys'){chatSys(m.x);toast(m.x)}else if(m.t=='react')fly(m.e,m.n);
-else if(m.t=='locks'){LK=m.lk;lockUI()}else if(m.t=='wpend'){if(wpSeq(m)){WPO=m.p&&m.p.length&&m.by!=ME.name?{mv:m.mv,p:new Map(m.p.map(x=>[x.i,x]))}:null;wgRender()}}else if(m.t=='wq')wqSet(m);else if(m.t=='wrej')wrej(m);else if(m.t=='wg')wgSet(m.g);else if(m.t=='werr')toast(m.e,1);else if(m.t=='wchk')wgChk(m)};
+else if(m.t=='locks'){LK=m.lk;lockUI()}else if(m.t=='wpend'){if(wpSeq(m)){WPO=m.p&&m.p.length&&m.by!=ME.name?{mv:m.mv,p:new Map(m.p.map(x=>[x.i,x]))}:null;wgRender()}}else if(m.t=='wq')wqSet(m);else if(m.t=='wrej')wrej(m);else if(m.t=='wg')wgSet(m.g);else if(m.t=='werr'){wbusy(0);toast(m.e,1)}else if(m.t=='wprev')wprevSet(m);else if(m.t=='wchk')wgChk(m)};
 w.onerror=()=>{if(ws===w){const p=$('#pres');if(p)p.textContent='WebSocket bağlantı hatası; yeniden deneniyor…'}};
 w.onclose=ev=>{clearInterval(w.p);if(ws!==w)return;const d=$('#dot');if(d)d.className='dot';
 if(ev.code==4000){toast('Oda yönetici tarafından kapatıldı',1);return viewLobby()}
@@ -567,15 +569,15 @@ function wordCard(){
 WU={};PSL='';WPO=null;const cells=[];
 const wb=h('div',{class:'wb'});
 for(let i=0;i<225;i++){const c=h('div',{class:'wc',role:'button',tabindex:i==112?'0':'-1','aria-label':'Satır '+((i/15|0)+1)+', sütun '+(i%15+1),onclick:()=>wcell(i),onkeydown:e=>wkey(e,i),onpointerdown:e=>{if(WP.has(i))dgStart(e,WP.get(i).ri,i)}});cells.push(c);wb.append(c)}
-const sc=h('div',{class:'wsc'}),stx=h('div',{class:'lbl',style:'margin:0;font-size:.85rem'}),rk=h('div',{class:'rk'}),last=h('div',{class:'stack',style:'gap:6px'}),log=h('div',{class:'wlog'});
+const sc=h('div',{class:'wsc'}),stx=h('div',{class:'lbl',style:'margin:0;font-size:.85rem'}),rk=h('div',{class:'rk'}),prv=h('div',{class:'wprv'}),bun=h('button',{type:'button',class:'btn sec sm',onclick:()=>wunseen()},'Kalan harfler'),last=h('div',{class:'stack',style:'gap:6px'}),log=h('div',{class:'wlog'});
 const bt=(t,fn,cls)=>h('button',{type:'button',class:'btn sm '+(cls||'sec'),onclick:fn},t);
-const bplay=bt('Oyna',()=>wplay(),''),brec=bt('Harfleri geri al',()=>{WP=new Map();WS=-1;wgRender()}),bshuf=bt('Karıştır',()=>{if(WG&&WG.rk){WG.rk=WG.rk.slice().sort(()=>Math.random()-.5);WP=new Map();WS=-1;wgRender()}});
+const bplay=bt('Oyna',()=>wplay(),''),brec=bt('Harfleri geri al',()=>{WP=new Map();WS=-1;wgRender()}),bshuf=bt('Karıştır',()=>{if(!WG||!WG.rk)return;const n=WG.rk.length,o=[...Array(n).keys()];for(let i=n-1;i>0;i--){const j=Math.random()*(i+1)|0;[o[i],o[j]]=[o[j],o[i]]}const inv={};o.forEach((x,k)=>inv[x]=k);WG.rk=o.map(x=>WG.rk[x]);for(const v of WP.values())v.ri=inv[v.ri];if(WS>=0)WS=inv[WS];wgRender()});
 const bpass=bt('Pas',()=>{if(confirm('Bu turu pas geçmek istiyor musun?'))send({t:'wpass'})}),bex=bt('Harf değiştir',()=>wex()),bres=bt('Teslim ol',()=>{if(confirm('Oyunu teslim etmek istiyor musun?'))send({t:'wres'})},'dng');
 const bnew=h('button',{type:'button',class:'btn full',onclick:()=>send({t:'wnew'})},'Yeni oyun başlat');
 const acts=h('div',{class:'stack',style:'gap:8px'},h('div',{class:'row wrap'},bplay,brec,bshuf),h('div',{class:'row wrap'},bpass,bex,bres));
-const root=h('div',{class:'card',id:'wp'},h('div',{class:'row'},ic('word',18),h('h3',{text:'Kelimelik'})),sc,stx,wb,rk,acts,bnew,last,log,
+const root=h('div',{class:'card',id:'wp'},h('div',{class:'row'},ic('word',18),h('h3',{text:'Kelimelik'})),sc,h('div',{class:'row',style:'justify-content:space-between;align-items:center;gap:8px'},stx,bun),wb,rk,prv,acts,bnew,last,log,
 h('small',{text:'Harfi parmağınla veya fareyle sürükleyip boş bir kareye bırak; ya da harfe dokun, sonra karaya dokun. Yerleştirdiğin harfe dokunursan ya da tahta dışına sürüklersen geri döner. Yıldızlı taş (joker) istediğin harf olabilir. Kelimeler önce yerleşik Türkçe sözlükte (çekimli biçimler dahil) denetlenir. Sözlükte bulunamayan bir kelime olursa rakibine “Kabul ediyor musun?” diye sorulur: kabul ederse hamle işlenir, etmezse hamle iptal olur ve harfler sende kalır.'}));
-WU={root,cells,sc,stx,rk,last,log,bplay,brec,bshuf,bpass,bex,bres,bnew,acts};wgRender();return root}
+WU={root,cells,sc,stx,rk,prv,bun,last,log,bplay,brec,bshuf,bpass,bex,bres,bnew,acts};wgRender();return root}
 let DG=null,DGT=0,WRQ=0;
 function wput(i,ri,from){const g=WG;if(!myTurn()||!g||g.bd[i])return;
 if(from!=null){const p=WP.get(from);if(!p)return;WP.delete(from);WP.set(i,p);WS=-1;wgRender();return}
@@ -606,26 +608,51 @@ function dgEnd(){const d=DG;DG=null;window.removeEventListener('pointermove',dgM
 if(d){if(d.gh)d.gh.remove();if(d.hi>=0&&WU.cells&&WU.cells[d.hi])WU.cells[d.hi].classList.remove('dt');document.body.classList.remove('dragging')}
 if(WRQ){WRQ=0;setTimeout(wgRender,0)}}
 function jokerPick(fn){const m=modal('Joker hangi harf olsun?',h('div',{class:'az'},[...WAL].map(c=>h('button',{type:'button',onclick:()=>{m.remove();fn(c)}},c))),[h('button',{class:'btn sec',onclick:()=>m.remove()},'Vazgeç')])}
-function wplay(){if(!myTurn())return toast('Sıra sende değil',1);if(!WP.size)return toast('Önce tahtaya harf koy',1);send({t:'wplay',p:[...WP.entries()].map(([i,x])=>({i,l:x.l,j:x.j}))})}
-function wex(){if(!myTurn())return toast('Sıra sende değil',1);const g=WG,pick=new Set();
-if(g.bagN<7)return toast('Torbada en az 7 harf olmalı',1);
-const box=h('div',{class:'rk'},g.rk.map((l,ri)=>h('button',{type:'button',class:'rt',onclick:e=>{const b=e.currentTarget;if(pick.has(ri)){pick.delete(ri);b.classList.remove('sel')}else{pick.add(ri);b.classList.add('sel')}}},l=='*'?'★':l)));
-const m=modal('Değiştirmek istediğin harfleri seç',box,[h('button',{class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),h('button',{class:'btn',onclick:()=>{if(!pick.size)return toast('En az bir harf seç',1);m.remove();send({t:'wex',ix:[...pick]})}},'Değiştir')])}
-function wgSet(g){const p=WG;WG=g;
-if(!p||p.mv!=g.mv||(p.rk||[]).join()!=(g.rk||[]).join()){if(DG)dgEnd();WP=new Map();WS=-1;PSL='';if(!p||p.mv!=g.mv)WPO=null}else{for(const i of [...WP.keys()])if(g&&g.bd[i])WP.delete(i)}wgRender()}
+function wplay(){if(WBZ)return;if(!myTurn())return toast('Sıra sende değil',1);if(!WP.size)return toast('Önce tahtaya harf koy',1);
+const v=WPV;if(v&&v.s===PSEQ&&v.mv===WG.mv&&v.e)return toast(v.e,1);
+wbusy(1,'Kontrol ediliyor…');send({t:'wplay',p:[...WP.entries()].map(([i,x])=>({i,l:x.l,j:x.j}))})}
+function wbusy(on,txt){WBZ=on?1:0;clearTimeout(WBT);const b=WU.bplay;if(b){b.disabled=!!on;if(on)b.textContent=txt||'Kontrol ediliyor…'}if(on)WBT=setTimeout(()=>{wbusy(0);wprevRender()},10000);else wprevRender()}
+function wprevSet(m){if(m.s&&m.s<PSEQ)return;WPV=m;wprevRender()}
+function wprevRender(){const U=WU;if(!U.prv)return;const show=myTurn()&&WP.size>0&&!WQ;U.prv.style.display=show?'':'none';let lbl='Oyna';
+if(show){const v=WPV;
+if(!v||v.s!==PSEQ||!WG||v.mv!==WG.mv)U.prv.replaceChildren(h('small',{class:'mu',text:'Hesaplanıyor…'}));
+else if(v.none)U.prv.replaceChildren();
+else if(v.e)U.prv.replaceChildren(h('small',{class:'err',text:v.e}));
+else{const kids=v.words.map(x=>h('span',{class:x.st=='ok'||x.st=='acc'?'ok':x.st=='unk'?'unk':'bad',text:x.w+' '+x.p+(x.st=='unk'?' ?':x.st=='bad'?' ✗':' ✓')}));
+kids.push(h('b',{text:'= '+v.pts+' puan'+(v.bingo?' (7 harf bonusu +50 dahil)':'')}));
+if(v.words.some(x=>x.st=='unk'))kids.push(h('small',{class:'mu',style:'width:100%;text-align:center',text:'? işaretli kelime sözlükte yok: oynarsan rakibinin onayı istenir.'}));
+if(v.words.some(x=>x.st=='bad'))kids.push(h('small',{class:'err',style:'width:100%;text-align:center',text:'✗ işaretli dizi geçerli bir kelime olamaz.'}));
+U.prv.replaceChildren(...kids);lbl='Oyna · +'+v.pts}}
+if(U.bplay&&!WBZ){U.bplay.textContent=lbl;U.bplay.disabled=false}}
+function wunseen(){const g=WG;if(!g)return;const u=g.un||{},tot=Object.values(u).reduce((a,b)=>a+b,0);
+modal('Kalan harfler ('+tot+')',h('div',{class:'stack',style:'gap:10px'},h('small',{class:'mu',text:g.rk?'Torbadaki ve rakibinin elindeki harfler (senin elindekiler hariç). Rakibinde '+(g.rkN[g.pl.find(x=>x!=ME.name)]||0)+' harf, torbada '+g.bagN+' harf var.':'Torbadaki ve oyuncuların elindeki harfler.'}),
+h('div',{class:'un'},[...WAL,'*'].map(l=>h('div',{class:u[l]?'':'z'},l=='*'?'★':l,h('small',{text:'×'+(u[l]||0)}))))),[h('button',{class:'btn sec',onclick:e=>e.target.closest('.mo').remove()},'Kapat')])}
+function wex(){if(WBZ)return;if(!myTurn())return toast('Sıra sende değil',1);const g=WG,pick=new Set();
+if(g.bagN<7)return toast('Torbada '+g.bagN+' harf kaldı. Harf değiştirmek için torbada en az 7 harf olmalı.',1);
+const info=h('small',{class:'mu'}),go=h('button',{type:'button',class:'btn'},'Değiştir'),tiles=[];
+const upd=()=>{tiles.forEach((b,ri)=>b.classList.toggle('sel',pick.has(ri)));go.disabled=!pick.size;info.textContent=pick.size?pick.size+' harf seçildi. Yerine torbadan yenileri gelir; bu tur pas sayılır ve puan alamazsın.':'Değiştirmek istediğin harflere dokun.'};
+g.rk.forEach((l,ri)=>tiles.push(h('button',{type:'button',class:'rt',onclick:()=>{pick.has(ri)?pick.delete(ri):pick.add(ri);upd()}},l=='*'?'★':l,l=='*'?null:h('small',{class:'v',text:WLV[l]}))));
+const box=h('div',{class:'stack',style:'gap:10px'},h('div',{class:'rk',style:'flex-wrap:wrap'},tiles),h('div',{class:'row wrap'},h('button',{type:'button',class:'btn sec sm',onclick:()=>{g.rk.forEach((_,ri)=>pick.add(ri));upd()}},'Hepsini seç'),h('button',{type:'button',class:'btn sec sm',onclick:()=>{pick.clear();upd()}},'Seçimi temizle')),info);
+const m=modal('Harf değiştir',box,[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),go]);
+go.onclick=()=>{if(!pick.size||WBZ)return;const ls=[...pick].map(ri=>g.rk[ri]);m.remove();if(DG)dgEnd();WP=new Map();WS=-1;wgRender();wbusy(1,'Değiştiriliyor…');send({t:'wex',ls})};upd()}
+function rkSame(a,b){return (a||[]).slice().sort().join()==(b||[]).slice().sort().join()}
+function wgSet(g){const p=WG;wbusy(0);
+if(p&&g&&p.rk&&g.rk){if(rkSame(p.rk,g.rk))g.rk=p.rk.slice();else{const pool=g.rk.slice(),o=[];for(const l of p.rk){const k=pool.indexOf(l);if(k>=0){o.push(l);pool.splice(k,1)}}g.rk=o.concat(pool)}}
+WG=g;
+if(!p||p.mv!=g.mv||!rkSame(p.rk,g.rk)){if(DG)dgEnd();WP=new Map();WS=-1;PSL='';if(!p||p.mv!=g.mv)WPO=null}else{for(const i of [...WP.keys()])if(g&&g.bd[i])WP.delete(i)}wgRender()}
 function wgChk(m){if(WG&&WG.mv==m.mv&&WG.last){for(const r of m.r){const w=WG.last.words.find(x=>x.w==r.w);if(w)w.ok=r.ok}wgRender()}}
 function wgRender(){const U=WU;if(!U.root||TAB!=3||!canUse('word'))return;if(DG&&DG.mv){WRQ=1;return}const g=WG;
 const used=new Set([...WP.values()].map(x=>x.ri)),po=(WPO&&g&&WPO.mv==g.mv&&!myTurn())?WPO.p:null;
 U.cells.forEach((c,i)=>{const t=g&&g.bd[i],pd=WP.get(i),pq=po&&po.get(i);let cls='wc',kids=[];
-if(t){cls+=' t'+(g.bj[i]?' j':'')+(g.last&&g.last.cells.indexOf(i)>=0?' n':'');kids=[t];if(!g.bj[i])kids.push(h('small',{class:'v',text:WLV[t]}))}
+if(t){cls+=' t'+(g.bj[i]?' j':'')+(g.last&&g.last.cells&&g.last.cells.indexOf(i)>=0?' n':'');kids=[t];if(!g.bj[i])kids.push(h('small',{class:'v',text:WLV[t]}))}
 else if(pd){cls+=' t pd'+(pd.j?' j':'');kids=[pd.l];if(!pd.j)kids.push(h('small',{class:'v',text:WLV[pd.l]}))}
 else if(pq){cls+=' po';kids=[pq.l]}
 else{const p=WPRE[i];if(p!='.')cls+=' p'+p;kids=i==112?['★']:p!='.'?[h('i',{text:WPL[p]})]:[]}
 c.className=cls;c.replaceChildren(...kids)});
-const has=!!g;U.bnew.style.display=(!g||g.over)?'':'none';U.acts.style.display=(g&&!g.over&&g.rk)?'':'none';U.rk.style.display=(g&&g.rk&&!g.over)?'':'none';
+const has=!!g;U.bnew.style.display=(!g||g.over)?'':'none';U.bun.style.display=g&&!g.over?'':'none';U.acts.style.display=(g&&!g.over&&g.rk)?'':'none';U.rk.style.display=(g&&g.rk&&!g.over)?'':'none';
 if(!g){U.sc.replaceChildren();U.stx.textContent='Henüz oyun yok. İkiniz de odadayken “Yeni oyun başlat”a bas.';U.last.replaceChildren();U.log.replaceChildren();return}
 U.sc.replaceChildren(...g.pl.map((n,i)=>h('div',{class:'wpl'+(!g.over&&g.tn==i?' on':'')},h('small',{text:n+(n==ME.name?' (sen)':'')}),h('b',{text:g.sc[n]}))));
-U.stx.textContent=g.over?(g.win=='='?'Oyun bitti: berabere':g.win?'Oyun bitti. Kazanan: '+g.win:'Oyun bitti'):(myTurn()?'Sıra sende':g.pl[g.tn]+' oynuyor')+' · torbada '+g.bagN+' harf'+(g.rk?'':' · izleyicisin');
+U.stx.textContent=g.over?(g.win=='='?'Oyun bitti: berabere':g.win?'Oyun bitti. Kazanan: '+g.win:'Oyun bitti'):(myTurn()?'Sıra sende':g.pl[g.tn]+' oynuyor')+' · torbada '+g.bagN+' harf'+(g.rk?'':' · izleyicisin')+(!g.over&&g.ps>=3?' · art arda '+g.ps+' puansız tur (6 olunca oyun biter)':'');
 U.rk.replaceChildren(...(g.rk||[]).map((l,ri)=>used.has(ri)?null:h('button',{type:'button',class:'rt'+(WS==ri?' sel':''),'aria-label':(l=='*'?'Joker':l+' harfi')+', seçmek için Enter',onclick:()=>{if(Date.now()-DGT<350)return;WS=WS==ri?-1:ri;wgRender()},onpointerdown:e=>dgStart(e,ri,null),oncontextmenu:e=>e.preventDefault()},l=='*'?'★':l,l=='*'?null:h('small',{class:'v',text:WLV[l]}))).filter(Boolean));
 const L=g.last,items=[];
 if(L){items.push(h('div',{class:'mu',text:L.by+(L.kind=='move'?' oynadı: ':' ')+(L.kind=='move'?L.words.map(w=>w.w+' ('+w.p+')').join(', ')+(L.bingo?' · +50 bonus':'')+' = '+L.pts+' puan':L.txt)}));
@@ -634,12 +661,12 @@ const row=[];if(g.canUndo&&!g.over)row.push(h('button',{type:'button',class:'btn
 if(L.by!=ME.name&&g.rk&&!g.over&&!g.ob)row.push(h('button',{type:'button',class:'btn dng sm',onclick:()=>send({t:'wobj'})},'İtiraz et'));
 if(g.ob)items.push(h('small',{class:'err',text:'İtiraz edildi. '+L.by+' isterse hamleyi geri alabilir.'}));
 if(row.length)items.push(h('div',{class:'row wrap'},row))}}
-U.last.replaceChildren(...items);U.log.replaceChildren(...g.log.slice().reverse().map(x=>h('div',{text:x})));pendSync()}
-function pendSync(){if(!myTurn()||WQ)return;const p=[...WP.entries()].map(([i,x])=>({i,l:x.l,j:x.j})),sj=JSON.stringify(p);if(sj==PSL)return;PSL=sj;PSEQ=Math.max(PSEQ+1,Date.now());send({t:'wpend',p,s:PSEQ})}
+U.last.replaceChildren(...items);U.log.replaceChildren(...g.log.slice().reverse().map(x=>h('div',{text:x})));wprevRender();pendSync()}
+function pendSync(){if(!myTurn()||WQ)return;const p=[...WP.entries()].map(([i,x])=>({i,l:x.l,j:x.j})),sj=JSON.stringify(p);if(sj==PSL)return;PSL=sj;PSEQ=Math.max(PSEQ+1,Date.now());send({t:'wpend',p,s:PSEQ});wprevRender()}
 function wpSeq(m){if(!m.s)return true;if(WPQ.mv===m.mv&&m.s<WPQ.s)return false;WPQ={mv:m.mv,s:m.s};return true}
 if(!window._pendBind){window._pendBind=1;document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'&&typeof myTurn=='function'&&myTurn()){PSL='';pendSync()}})}
 function wqGone(){const o=document.getElementById('wqm');if(o)o.remove();clearInterval(WQT);WQT=0}
-function wqSet(m){if(m.id===null||!WG||WG.over||WG.pl.indexOf(ME.name)<0){const was=WQ;WQ=null;wqGone();if(was&&WU.root)wgRender();return}
+function wqSet(m){wbusy(0);if(m.id===null||!WG||WG.over||WG.pl.indexOf(ME.name)<0){const was=WQ;WQ=null;wqGone();if(was&&WU.root)wgRender();return}
 const same=WQ&&WQ.mv===m.mv&&WQ.by===m.by&&WQ.words.join()===m.words.join();WQ={id:m.id||(same?WQ.id:''),by:m.by,mv:m.mv,words:m.words,end:Date.now()+m.left,done:same?WQ.done:0};
 if(WQ.by!==ME.name&&WQ.id&&!WQ.done){const o=document.getElementById('wqm');if(!o||o.dataset.id!==WQ.id){if(o)o.remove();
 const t=h('div',{class:'mu',id:'wqt'}),mo=modal(WQ.by+' bir kelime oynadı',h('div',{class:'stack',style:'gap:8px'},h('div',{text:'“'+WQ.words.join(', ')+'” kelimesi sözlükte bulunamadı. Kabul ediyor musun?'}),t),[h('button',{type:'button',class:'btn dng',onclick:()=>wqAns(false)},'Reddet'),h('button',{type:'button',class:'btn',onclick:()=>wqAns(true)},'Kabul et')]);mo.id='wqm';mo.dataset.id=WQ.id}}
@@ -649,7 +676,7 @@ function wqTick(){if(!WQ){clearInterval(WQT);WQT=0;return}const s=Math.max(0,Mat
 const t=document.getElementById('wqt');if(t)t.textContent='Kalan süre: '+s+' sn';
 if(WQ.by===ME.name&&WU.stx)WU.stx.textContent='Rakibin onayı bekleniyor: “'+WQ.words.join(', ')+'” sözlükte bulunamadı ('+s+' sn)'}
 function wqAns(ok){if(!WQ||!WQ.id)return;WQ.done=1;send({t:'wans',id:WQ.id,ok:!!ok});const o=document.getElementById('wqm');if(o)o.remove()}
-function wrej(m){WQ=null;wqGone();WP=new Map();WS=-1;PSL='';toast(m.e,1);wgRender()}
+function wrej(m){wbusy(0);WQ=null;wqGone();WP=new Map();WS=-1;PSL='';toast(m.e,1);wgRender()}
 
 // ---------- başlat ----------
 {const qs=new URLSearchParams(location.search),oc=qs.get('code'),os=qs.get('state')||'';
@@ -981,13 +1008,20 @@ function wgPass(g, name) {
   g.ps++; g.lm = ''; g.prev = ''; g.last = { kind: 'pass', by: name, txt: 'pas geçti', pts: 0 }; wgLog(g, name + ' pas geçti');
   if (g.ps >= 6) { g.mv++; wgFinish(g, null) } else wgNext(g, name); return { ok: 1 };
 }
-function wgEx(g, name, ix) {
+function wgEx(g, name, ix, ls) {
   if (!g || g.over) return { e: 'Oyun bitti' }; if (g.pl[g.tn] !== name) return { e: 'Sıra sende değil' };
-  if (g.bag.length < 7) return { e: 'Torbada en az 7 harf olmalı' };
-  if (!Array.isArray(ix) || !ix.length) return { e: 'Harf seç' };
-  const u = [...new Set(ix.map(x => x | 0))]; const r = g.rk[name]; if (u.some(i => i < 0 || i >= r.length)) return { e: 'Geçersiz harf' };
-  const old = u.map(i => r[i]); g.rk[name] = r.filter((_, i) => u.indexOf(i) < 0); wgDraw(g, name); g.bag.push(...old); shuf(g.bag);
-  g.ps++; g.lm = ''; g.prev = ''; g.last = { kind: 'ex', by: name, txt: u.length + ' harf değiştirdi', pts: 0 }; wgLog(g, name + ' ' + u.length + ' harf değiştirdi');
+  if (g.bag.length < 7) return { e: 'Torbada ' + g.bag.length + ' harf kaldı. Harf değiştirmek için torbada en az 7 harf olmalı.' };
+  const r = g.rk[name], rest = r.slice(), old = [];
+  if (Array.isArray(ls) && ls.length) {
+    if (ls.length > r.length) return { e: 'Geçersiz harf' };
+    for (const x of ls) { const k = rest.indexOf(String(x)); if (k < 0) return { e: 'Elinde olmayan bir harf seçtin. Sayfayı yenileyip tekrar dene.' }; old.push(rest.splice(k, 1)[0]) }
+  } else if (Array.isArray(ix) && ix.length) { // eski istemciler için
+    const u = [...new Set(ix.map(x => x | 0))]; if (u.some(i => i < 0 || i >= r.length)) return { e: 'Geçersiz harf' };
+    for (const i of u.sort((p, q) => q - p)) old.push(rest.splice(i, 1)[0]);
+  } else return { e: 'Harf seç' };
+  // Kural: önce torbadan yeni harfler çekilir, sonra eskiler torbaya karıştırılır (aynı harfi geri çekemezsin)
+  g.rk[name] = rest; wgDraw(g, name); g.bag.push(...old); shuf(g.bag);
+  g.ps++; g.lm = ''; g.prev = ''; g.last = { kind: 'ex', by: name, txt: old.length + ' harf değiştirdi', pts: 0 }; wgLog(g, name + ' ' + old.length + ' harf değiştirdi');
   if (g.ps >= 6) { g.mv++; wgFinish(g, null) } else wgNext(g, name); return { ok: 1 };
 }
 function wgRes(g, name) {
@@ -999,7 +1033,8 @@ function wgUndo(g, name) {
 }
 function wgView(g, n) {
   const rkN = {}; for (const k of g.pl) rkN[k] = g.rk[k].length;
-  return { pl: g.pl, bd: g.bd, bj: g.bj, sc: g.sc, tn: g.tn, mv: g.mv, bagN: g.bag.length, rk: g.pl.indexOf(n) >= 0 ? g.rk[n] : null, rkN, over: g.over, win: g.win, last: g.last, ob: g.ob, canUndo: !!(g.prev && g.lm == n), log: g.log.slice(-14) };
+  const un = {}; for (const l of g.bag) un[l] = (un[l] || 0) + 1; for (const k of g.pl) if (k !== n) for (const l of g.rk[k]) un[l] = (un[l] || 0) + 1;
+  return { pl: g.pl, bd: g.bd, bj: g.bj, sc: g.sc, tn: g.tn, mv: g.mv, ps: g.ps | 0, un, bagN: g.bag.length, rk: g.pl.indexOf(n) >= 0 ? g.rk[n] : null, rkN, over: g.over, win: g.win, last: g.last, ob: g.ob, canUndo: !!(g.prev && g.lm == n), log: g.log.slice(-14) };
 }
 // ---------- Yerel sözlük: kelime geçerliliğinin ASIL otoritesi ----------
 // Sıra: yerel sözlük (kök listesi + Türkçe ek çözümleyici) -> bulunamazsa "bilinmeyen" -> (isteğe bağlı) TDK -> yine yoksa RAKİP ONAYI.
@@ -1234,7 +1269,7 @@ export class Do {
       sv.send(JSON.stringify({ t: 'hist', c: this.chat.slice(-40) }));
       sv.send(JSON.stringify({ t: 'locks', lk: this.lk }));
       if (this.pzp && this.can('puzzle', att)) sv.send(JSON.stringify({ t: 'pz', pz: { ...this.pzp, img: await this.img() } }));
-      if (this.wg && this.can('word', att)) sv.send(JSON.stringify({ t: 'wg', g: wgView(this.wg, att.n) }));
+      if (this.wg && this.can('word', att)) { sv.send(JSON.stringify({ t: 'wg', g: wgView(this.wg, att.n) })); if (!this.wg.over) this.dwarm() }
       if (this.pend && this.pend.by !== att.n && this.can('word', att)) sv.send(this.pendMsg());
       if (this.wpm && this.can('word', att)) sv.send(this.wqMsg(att.n));
       await this.report(); return new Response(null, { status: 101, webSocket: c });
@@ -1361,7 +1396,7 @@ export class Do {
     }
     if (T && T[0] == 'w') {
       if (!this.can('word', a)) return this.deny(ws);
-      if (T == 'wpend') return this.pendSet(n, m.p, m.s);
+      if (T == 'wpend') { this.pendSet(n, m.p, m.s); return this.wprev(ws, n, m.s) }
       if (T == 'wans') return this.wpmAnswer(n, m);
       if (this.wpm && (T == 'wplay' || T == 'wpass' || T == 'wex' || T == 'wundo' || T == 'wobj' || T == 'wnew')) return ws.send(JSON.stringify({ t: 'werr', e: 'Rakibin onayı bekleniyor, birkaç saniye bekle.' }));
       const g = this.wg; let r = null, chk = null;
@@ -1369,12 +1404,12 @@ export class Do {
         if (g && !g.over) return ws.send(JSON.stringify({ t: 'werr', e: 'Önce mevcut oyunu bitir (teslim ol)' }));
         const names = [...new Set(this.socks().filter(w => !this.s.getTags(w).includes('admin') && this.can('word', w.deserializeAttachment() || {})).map(w => (w.deserializeAttachment() || {}).n))].filter(Boolean);
         if (names.length < 2 || names.indexOf(n) < 0) return ws.send(JSON.stringify({ t: 'werr', e: 'Oyun için iki kişi odada olmalı' }));
-        this.wg = wgNew([n, names.find(x => x !== n)]); this.all(JSON.stringify({ t: 'sys', x: '🔤 Kelimelik başladı' })); r = { ok: 1 };
+        this.wg = wgNew([n, names.find(x => x !== n)]); this.dwarm(); this.all(JSON.stringify({ t: 'sys', x: '🔤 Kelimelik başladı' })); r = { ok: 1 };
       } else if (g) {
         const snap = wgSnap(g);
         if (T == 'wplay') r = await this.wplay(g, n, m);
         else if (T == 'wpass') r = wgPass(g, n);
-        else if (T == 'wex') r = wgEx(g, n, m.ix);
+        else if (T == 'wex') r = wgEx(g, n, m.ix, m.ls);
         else if (T == 'wres') r = wgRes(g, n);
         else if (T == 'wundo') r = wgUndo(g, n);
         else if (T == 'wobj') { if (g.last && g.last.kind == 'move' && g.last.by !== n && g.pl.indexOf(n) >= 0 && !g.over) { g.ob = 1; wgLog(g, n + ' itiraz etti'); g.mv++; r = { ok: 1 } } else r = { e: 'İtiraz edilecek hamle yok' } }
@@ -1497,7 +1532,7 @@ export class Do {
   }
   // ---------- Kelimelik: doğrulama ve rakip onayı ----------
   // Döner: [{w, st}] st: 'ok' (sözlükte) | 'acc' (bu odada daha önce kabul edilmiş) | 'bad' (anlamsız dizi) | 'unk' (bilinmeyen -> rakip onayı)
-  async wvalid(words) {
+  async wvalid(words, noTdk) {
     const res = [], need = [];
     for (const w of words) {
       const q = trLower(w);
@@ -1508,8 +1543,8 @@ export class Do {
     if (need.length) {
       const uq = [...new Set(need)]; let r = {}, tdkOn = 0;
       try { const j = await (await dictf(this.env, '/dictcheck', { w: uq })).json(); r = j.r || {}; tdkOn = j.tdk } catch (e) { }
-      const tk = {}; if (tdkOn) await Promise.all(uq.filter(q => !r[q]).map(async q => { tk[q] = (await tdkOne(q, 1, 2500)) === true }));
-      for (const x of res) if (x.st == '?') { const ok = !!(r[x.q] || tk[x.q]); x.st = ok ? 'ok' : 'unk'; DICTC.set(x.q, { ok, ts: Date.now() }) }
+      const tk = {}; if (tdkOn && !noTdk) await Promise.all(uq.filter(q => !r[q]).map(async q => { tk[q] = (await tdkOne(q, 1, 2500)) === true }));
+      for (const x of res) if (x.st == '?') { const ok = !!(r[x.q] || tk[x.q]); x.st = ok ? 'ok' : 'unk'; if (ok || !tdkOn || !noTdk) DICTC.set(x.q, { ok, ts: Date.now() }) }
       if (DICTC.size > 3000) DICTC.clear();
     }
     return res;
@@ -1527,6 +1562,21 @@ export class Do {
     if (r.ok) { g.prev = snap; for (const x of r.words) { const y = res.find(z => z.w == x.w); x.ok = y && y.st == 'acc' ? 2 : true } }
     return r;
   }
+  async wprev(ws, n, s) {
+    const g = this.wg, sq = +s || 0, out = o => { try { ws.send(JSON.stringify({ t: 'wprev', s: sq, mv: g.mv, ...o })) } catch (e) { } };
+    if (!g || g.over || g.pl[g.tn] !== n || this.wpm) return;
+    if (sq && this.pq && this.pq.n === n && this.pq.mv === g.mv && sq < this.pq.s) return;
+    this.dwarm();
+    const p = this.pend && this.pend.by === n && this.pend.mv === g.mv ? this.pend.p : [];
+    if (!p.length) return out({ none: 1 });
+    const tr = wgPlay(JSON.parse(JSON.stringify(g)), n, p);
+    if (!tr.ok) return out({ e: tr.e });
+    const res = await this.wvalid(tr.words.map(x => x.w), true);
+    if (this.wg !== g) return;
+    out({ pts: tr.pts, bingo: p.length == 7 ? 1 : 0, words: tr.words.map((x, k) => ({ w: x.w, p: x.p, st: res[k].st })) });
+  }
+  // Sözlük nesnesini önceden uyandır: "Oyna"ya basıldığında sözlük zaten bellekte olsun
+  dwarm() { const t = Date.now(); if (t - (this.dw || 0) < 60000) return; this.dw = t; this.s.waitUntil(dictf(this.env, '/dictcheck', { w: ['ev'] }).then(r => r.text()).catch(() => { })) }
   oppOf(g, n) { return g.pl.find(x => x !== n) || '' }
   hasSock(nm) { return this.socks().some(w => !this.s.getTags(w).includes('admin') && (w.deserializeAttachment() || {}).n === nm) }
   wqMsg(forName) {
