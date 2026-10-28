@@ -92,7 +92,9 @@ details summary{color:var(--mu);font-size:.82rem;cursor:pointer;margin-bottom:8p
 .mu-r{display:flex;gap:10px;align-items:center;background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:6px;cursor:pointer;text-align:left;color:var(--tx);font:inherit;width:100%}
 .mu-r img{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none}
 .mu-r div{min-width:0}.mu-r b,.mu-r small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mu-yt{width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;display:none}.mu-yt iframe{width:100%;height:100%;border:0}
+.mu-yt{width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;display:none}.mu-yt.tap{outline:3px solid var(--wa);outline-offset:2px;animation:mupulse 1.4s ease-in-out infinite}@keyframes mupulse{50%{outline-color:transparent}}
+.mu-hint{background:#f0b4291f;border:1px solid var(--wa);border-radius:12px;padding:10px 12px;text-align:center;font-weight:650;font-size:.9rem}
+.mu-ls{display:flex;flex-wrap:wrap;gap:6px}.mu-ls span{background:var(--s2);border:1px solid var(--bd);border-radius:999px;padding:3px 10px;font-size:.78rem;color:var(--mu)}.mu-ls span.ok{border-color:var(--ok);color:var(--ok)}.mu-ls span.need{border-color:var(--wa);color:var(--wa)}.mu-yt iframe{width:100%;height:100%;border:0}
 .wsc{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .wpl{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:8px 10px;display:grid;gap:2px}
 .wpl.on{border-color:var(--ac);box-shadow:0 0 0 2px #6d7cff30}.wpl b{font-size:1.4rem;letter-spacing:-.02em}
@@ -135,7 +137,7 @@ let TH=0;const toast=(m,bad)=>{const t=$('#tt');t.textContent=m;t.className='on'
 let T=localStorage.t||sessionStorage.t||'',ME=null,PT='',PTe=0,PEND=cleanCode(new URLSearchParams(location.search).get('oda'));
 try{ME=JSON.parse(localStorage.me||sessionStorage.me||'null')}catch(e){}
 let LK={film:0,puzzle:0,music:0,word:2},PM=0,MS=null,WG=null,CFG=null,WP=new Map(),WS=-1,WU={};
-let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0,ROOM_MODE=1,ROOM_NEW=0,AUTO=0,WPO=null,PSL='',PST=0,WPQ={mv:0,s:0},WQ=null,WQT=0,PSEQ=0,WPV=null,WBZ=0,WBT=0;
+let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0,ROOM_MODE=1,ROOM_NEW=0,AUTO=0,WPO=null,PSL='',PST=0,MSH={},WPQ={mv:0,s:0},WQ=null,WQT=0,PSEQ=0,WPV=null,WBZ=0,WBT=0;
 const ov=h('div',{class:'ov',onclick:()=>{ov.classList.remove('on');if(st&&st.url)pl.play()}},ic('play',34),h('span',{text:'Dokun ve başlat'}));document.body.append(ov);
 const mount=(...n)=>{A.replaceChildren(...n);window.scrollTo(0,0)};
 async function api(p,m,b){let r;try{r=await fetch('/api/'+p,{method:m||'GET',headers:{authorization:'Bearer '+T,'content-type':'application/json'},body:b?JSON.stringify(b):undefined})}catch(e){throw 'Sunucuya ulaşılamadı. Bağlantını kontrol et.'}
@@ -290,7 +292,7 @@ if(Math.abs(d)>(Y?2.2:1.3))pl.seek(e+.25);else pl.rate(d>.3?.94:d<-.3?1.06:1);
 if(pl.paused())pl.play()}
 function holdUI(){if(!holdEl)return;const on=st&&st.held;holdEl.style.display=on?'flex':'none';if(on)holdEl.lastChild.textContent=(hb.length?hb.join(' & '):'Biri')+' yükleniyor, bekliyoruz…'}
 function setPres(who){const s=$('#pres');if(s)s.textContent=who.join(' & ')+(who.length>1?' · birlikte':' · diğer kişi bekleniyor')}
-function onState(m){st=m.st;hb=m.hb||[];const who=m.who||[];musicState(m.ms||null);
+function onState(m){st=m.st;hb=m.hb||[];const who=m.who||[];MSH=m.mh||{};musicState(m.ms||null);
 if(prevWho){for(const x of who)if(!prevWho.includes(x)&&x!=ME.name)toast(x+' odaya katıldı');for(const x of prevWho)if(!who.includes(x))toast(x+' ayrıldı')}prevWho=who;setPres(who);
 const key=st.url+'|'+st.ref;if(canUse('film')&&key!=loadedKey){loadedKey=key;load(st);const u=$('#vu');if(u&&document.activeElement!==u)u.value=st.url}
 holdUI();tick()}
@@ -452,11 +454,14 @@ catch(e){if(my!=MU.seq)return;if(e&&e.name=='NotAllowedError')MU.need=1;else if(
 mui()}
 // YouTube oynatıcıları kendi başına drift yapabildiğinden, ortak zamanla periyodik düzelt.
 if(!window.__bsMusicSyncTimer){window.__bsMusicSyncTimer=setInterval(()=>{try{
-if(!MS||!MS.tr||!MS.playing||MU.prov!=='yt'||!YM||!YMr||!YM.getCurrentTime)return;
-const target=expOf(MS),actual=YM.getCurrentTime();
-if(Number.isFinite(target)&&Number.isFinite(actual)&&Math.abs(actual-target)>2.5)YM.seekTo(target,true);
-if(YM.getPlayerState&&YM.getPlayerState()!==1&&MU.need===0){YM.playVideo()}
-}catch(_){ }},2500)}
+if(MS&&MS.tr&&MU.prov==='yt'&&YM&&YMr&&YM.getPlayerState&&canUse('music')){const ps=YM.getPlayerState();
+if(MS.playing){
+ if(ps===1){if(MU.need||MU.fail){MU.need=0;MU.fail=0;mui()}const target=expOf(MS),actual=YM.getCurrentTime();if(Number.isFinite(target)&&Number.isFinite(actual)&&Math.abs(actual-target)>1.5)YM.seekTo(target,true)}
+ else if(ps===3){/* yükleniyor, bekle */}
+ else{MU.fail=(MU.fail||0)+1;try{YM.seekTo(expOf(MS),true);YM.playVideo()}catch(e){}if(MU.fail>=2&&!MU.need){MU.need=1;mui()}}
+}else if(ps===1){try{YM.pauseVideo()}catch(e){}}}
+mrep()}catch(_){ }},1500)}
+if(!window._muBind){window._muBind=1;document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'&&MS&&MS.tr&&MS.playing)setTimeout(()=>{try{mapply()}catch(e){}},300)})}
 const AD={
 yt:{async sync(id,pl,pos){const box=MUI.yt;if(box)box.style.display='block';
 if(!YM){await new Promise((ok,no)=>{let dn=0;const t=setTimeout(()=>{if(!dn){dn=1;no(new Error('YouTube oynatıcı zaman aşımına uğradı'))}},9000);box.replaceChildren(h('div',{id:'ymp'}));withYT(()=>{if(dn)return;YM=new YT.Player('ymp',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,origin:location.origin},events:{onReady:()=>{if(dn)return;dn=1;clearTimeout(t);YMr=1;YMid=id;ok()},onStateChange:e=>{if(e.data==1&&MU.need){MU.need=0;mui()}if(e.data==0&&MS&&MS.playing&&MU.prov=='yt')send({t:'mpause',pos:0})},onError:()=>{if(!dn){dn=1;clearTimeout(t);no(new Error('YouTube: bu şarkı gömülemiyor'))}else if(MS&&MS.tr&&MS.tr.ids&&MS.tr.ids.au){AD.au.sync(MS.tr.ids.au,MS.playing,0,true).catch(()=>{})}}}})})});YM.seekTo(pos,true)}
@@ -525,20 +530,20 @@ const chips=h('div',{class:'chips'},['yt','au','sp','am'].map(p=>h('button',{typ
 st=h('small',{class:'mu'}),
 cb=h('button',{type:'button',class:'btn sec sm',style:'display:none',onclick:async()=>{try{if(MU.prov=='sp')await spConnect();else if(MU.prov=='am'){const m=await amInit();await m.authorize();mui();if(MS&&MS.tr)mapply()}}catch(e){toast(String((e&&e.message)||e),1)}}}),
 q=h('input',{class:'in',placeholder:'Şarkı / sanatçı adı yaz veya YouTube/MP3 linki yapıştır',autocapitalize:'none',autocorrect:'off',spellcheck:'false',enterkeyhint:'search'}),
-res=h('div',{class:'mu-res'}),art=h('div',{class:'mu-art',text:'🎵'}),tt=h('div',{class:'mu-t',text:'Henüz şarkı seçilmedi'}),ar=h('small',{class:'mu'}),tm=h('small',{class:'mu'}),
+res=h('div',{class:'mu-res'}),art=h('div',{class:'mu-art',text:'🎵'}),tt=h('div',{class:'mu-t',text:'Henüz şarkı seçilmedi'}),ar=h('small',{class:'mu',style:'display:block'}),tm=h('small',{class:'mu',style:'display:block'}),
 act=(i,fn,sec,l)=>h('button',{type:'button',class:'btn sq'+(sec?' sec':''),'aria-label':l,onclick:fn},ic(i,18)),
 bp=act('play',()=>{if(!MS||!MS.tr)return toast('Önce bir şarkı ara ve seç');const p=mexp(),pl=!MS.playing;MU.endSent=0;send({t:pl?'mplay':'mpause',pos:p});MU.optT=Date.now();MU.optP=pl;mapply({...MS,playing:pl,pos:p,at:Date.now()+off})},0,'Çal veya durdur'),
 b1=act('back10',()=>{if(MS&&MS.tr)send({t:'mseek',pos:Math.max(0,mexp()-10)})},1,'10 saniye geri'),
 b2=act('fwd10',()=>{if(MS&&MS.tr)send({t:'mseek',pos:mexp()+10})},1,'10 saniye ileri'),
 rg=h('input',{type:'range',min:0,max:100,value:0,style:'width:100%;display:none;accent-color:var(--ac)',onchange:e=>send({t:'mseek',pos:+e.target.value})}),
-msg=h('small',{class:'err'}),need=h('button',{type:'button',class:'btn full',style:'display:none',onclick:()=>{MU.need=0;if(YM&&YMr&&MU.prov=='yt'){try{YM.playVideo()}catch(e){}}if(MA&&MU.prov=='au'){try{MA.play()}catch(e){}}if(MS&&MS.tr)mapply();mui()}},'🔊 Ses için dokun ve başlat'),yt=h('div',{class:'mu-yt'});
+msg=h('small',{class:'err'}),need=h('button',{type:'button',class:'btn full',style:'display:none',onclick:()=>mjoin()},'▶ Dinlemeye katıl'),hint=h('div',{class:'mu-hint',style:'display:none'}),ls=h('div',{class:'mu-ls'}),yt=h('div',{class:'mu-yt'});
 q.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();msearch()}};
 const root=h('div',{class:'card',id:'mp'},h('div',{class:'row'},ic('music',18),h('h3',{text:'Birlikte müzik'})),
 h('small',{text:'Hesap bağlamadan doğrudan şarkı arayıp tam senkron dinleyebilirsiniz. İsterseniz Spotify veya Apple Music de seçebilirsiniz.'}),
 h('div',{class:'lbl',text:'Dinleme modu'}),chips,st,cb,
 h('div',{class:'row'},q,h('button',{type:'button',class:'btn sq','aria-label':'Ara',onclick:msearch},ic('eye',18))),res,
-h('div',{class:'mu-now'},art,h('div',{class:'grow'},tt,ar,tm)),rg,h('div',{class:'row'},b1,bp,b2),msg,need,yt);
-MUI={root,chips,st,cb,q,res,art,tt,ar,tm,bp,rg,msg,need,yt,lastArt:null,lastP:null};mui();return root}
+h('div',{class:'mu-now'},art,h('div',{class:'grow'},tt,ar,tm)),ls,rg,h('div',{class:'row'},b1,bp,b2),msg,need,hint,yt);
+MUI={root,chips,st,cb,q,res,art,tt,ar,tm,bp,rg,msg,need,hint,ls,yt,lastArt:null,lastP:null};mui();return root}
 function mui(){const U=MUI;if(!U.root)return;
 if(!MU.prov){MU.prov='yt';localStorage.mp='yt'}
 U.chips.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.p==MU.prov));
@@ -551,8 +556,20 @@ U.st.textContent=sx;U.cb.style.display=cbt?'':'none';U.cb.textContent=cbt;
 const tr=MS&&MS.tr;U.tt.textContent=tr?tr.title:'Henüz şarkı seçilmedi';U.ar.textContent=tr?((tr.artist||'')+(MS.by?(tr.artist?' · ':'')+MS.by+' seçti':'')):'Birlikte dinlemek için yukarıdan şarkı ara';
 const ua=tr&&tr.art||'';if(U.lastArt!==ua){U.lastArt=ua;U.art.replaceChildren(ua?h('img',{src:ua,alt:'',style:'width:100%;height:100%;object-fit:cover;border-radius:12px'}):'🎵')}
 const pl=!!(MS&&MS.playing);if(U.lastP!==pl){U.lastP=pl;U.bp.replaceChildren(ic(pl?'pause':'play',18))}
-U.msg.textContent=MU.msg||'';U.need.style.display=MU.need?'':'none';
+U.msg.textContent=MU.msg||'';const nd=!!(MU.need&&MS&&MS.tr&&MS.playing),ytn=nd&&MU.prov=='yt'&&YM;
+U.need.style.display=nd&&!ytn?'':'none';
+U.hint.style.display=ytn?'':'none';U.hint.textContent='👇 Telefonun sesi otomatik başlatmana izin vermiyor. Aşağıdaki videonun ortasındaki ▶ düğmesine bir kez dokun; sonraki şarkılar kendiliğinden çalar.';
+if(U.yt){U.yt.classList.toggle('tap',!!ytn);if(ytn)U.yt.style.display='block'}
+mlsRender();
 if(U.yt&&!(MU.prov=='yt'&&YM))U.yt.style.display='none'}
+const MLS={ok:['🔊 duyuyor','ok'],buf:['⏳ yükleniyor',''],need:['👆 dokunması gerekiyor','need'],pause:['⏸ durdu',''],off:['— kapalı','']};
+function mlsRender(){const U=MUI;if(!U.ls)return;const on=MS&&MS.tr,who=(prevWho||[ME.name]);if(!on){U.ls.replaceChildren();return}
+U.ls.replaceChildren(...who.map(n=>{const s=MSH[n]||'off',d=MLS[s]||MLS.off;return h('span',{class:d[1],text:(n==ME.name?'sen':n)+' '+d[0]})}))}
+// Sesli dinlemeye katıl: kullanıcı dokunuşu içinde doğrudan çal (YouTube dışı sağlayıcılar için yeterli)
+function mjoin(){MU.need=0;MU.fail=0;try{if(MA&&MU.prov=='au')MA.play()}catch(e){}try{if(YM&&YMr&&MU.prov=='yt'){YM.unMute();YM.playVideo()}}catch(e){}if(MS&&MS.tr)mapply();mui();if(MUI.yt)MUI.yt.scrollIntoView({block:'center',behavior:'smooth'})}
+// Oynatıcının gerçek durumu -> sunucuya bildir (yalnız değişince)
+function mrep(){let s='off';try{if(MS&&MS.tr&&canUse('music')){if(!MS.playing)s='pause';else if(MU.prov=='yt'&&YM&&YMr&&YM.getPlayerState){const p=YM.getPlayerState();s=p==1?'ok':MU.need?'need':'buf'}else if(MU.prov=='au'&&MA)s=!MA.paused?'ok':MU.need?'need':'buf';else s=MU.on?'ok':MU.need?'need':'buf'}}catch(e){}
+if(s!==MU.rs){MU.rs=s;send({t:'mst',s})}}
 function mtick(){if(!MUI.root||!MS||!MS.tr)return;const p=mexp(),d=MS.tr.dur||0;MUI.tm.textContent=fmt(p)+(d?' / '+fmt(d):'');
 if(d){MUI.rg.style.display='';if(document.activeElement!==MUI.rg){MUI.rg.max=d;MUI.rg.value=Math.min(p,d)}if(MS.playing&&p>d+1&&!MU.endSent){MU.endSent=1;send({t:'mpause',pos:d})}}
 if(!MS.playing||!canUse('music'))return;
@@ -1353,7 +1370,9 @@ export class Do {
     if (held !== this.st.held) { this.st = { ...this.st, pos: this.exp(now), at: now, held, rev: (this.st.rev || 0) + 1 }; return true }
     return false;
   }
-  msg(i) { return JSON.stringify({ t: 'st', st: this.st, now: Date.now(), who: [...new Set(this.socks().map(w => (w.deserializeAttachment() || {}).n))], hb: this.hb, ms: this.ms, i }) }
+  msg(i) { return JSON.stringify({ t: 'st', st: this.st, now: Date.now(), who: [...new Set(this.socks().map(w => (w.deserializeAttachment() || {}).n))], hb: this.hb, ms: this.ms, mh: this.mhear(), i }) }
+  // Müzik dinleme durumu (yalnız bellekte/soket ekinde, kalıcı yazılmaz): ok=duyuyor, buf=yükleniyor, need=dokunması gerekiyor, pause=durdu
+  mhear() { const r = {}, rank = { ok: 4, buf: 3, pause: 2, need: 1 }; for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (!a.n || !a.mu) continue; if (!r[a.n] || (rank[a.mu] || 0) > (rank[r[a.n]] || 0)) r[a.n] = a.mu } return r }
   bcast() { this.all(this.msg()) }
   async webSocketMessage(ws, raw) {
     if (typeof raw != 'string' || raw.length > 980000) return;
@@ -1370,6 +1389,7 @@ export class Do {
       a.ls = now; try { ws.serializeAttachment(a) } catch (e) { }
       if (now - (this.lkAt || 0) > 4000) { this.lkAt = now; try { const r = await this.env.DO.get(this.env.DO.idFromName('db')).fetch('https://do/getlocks', { method: 'POST', body: '{}' }); await this.lkApply(await r.json()) } catch (e) { } }
       return }
+    if (T == 'mst') { const v = ['ok', 'buf', 'need', 'pause', 'off'].includes(m.s) ? m.s : 'off'; if (a.mu === v) return; a.mu = v; ws.serializeAttachment(a); return this.bcast() }
     if (T == 'buf') { a.b = m.b ? 1 : 0; a.bt = now; ws.serializeAttachment(a); if (this.hold(now)) await S.put('st', this.st); return this.bcast() }
     if (T == 'chat') {
       const x = String(m.x || '').trim().slice(0, 500); if (!x) return;
