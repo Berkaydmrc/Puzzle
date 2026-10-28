@@ -1,4 +1,4 @@
-// BIZIM SINEMA v10 — Cloudflare Worker + Durable Object (tek dosya)
+// BIZIM SINEMA v11 — Cloudflare Worker + Durable Object (tek dosya)
 // Gerekli ayar (wrangler.toml): DO bağlaması (sınıf: Do). Başka bir şey gerekmez.
 // İsteğe bağlı Cloudflare değişkenleri (hepsini "Secret" olarak ekle):
 //   SECRET (oturum anahtarı), ADMIN_PASS (yönetici şifresi / kurtarma)
@@ -214,8 +214,11 @@ function adminSec(body){body.append(h('div',{class:'card'},h('h2',{text:'Hesabı
 h('button',{class:'btn sec full',onclick:async()=>{if(!confirm('Tüm cihazlardaki oturumların kapatılsın mı?'))return;try{await api('me/revoke','POST');logout()}catch(x){toast(x,1)}}},'Tüm cihazlarda oturumu kapat')),
 h('div',{class:'card'},h('h3',{text:'Güvenlik notları'}),h('small',{text:'Oturum anahtarı sunucuda otomatik üretilip saklanır. İstersen Cloudflare > Settings > Variables bölümünden SECRET ve ADMIN_PASS değişkenlerini kendin de tanımlayabilirsin. ADMIN_PASS değiştirilirse yönetici şifresi bir kez o değere sıfırlanır (şifreni unutursan kurtarma yolu budur).'})))}
 // ---------- oda ----------
-function leaveRoom(){RM='';if(ws){const w=ws;ws=null;w.onclose=null;clearInterval(w.p);try{w.close()}catch(e){}}teardown();mstop();MS=null;WG=null;WP=new Map();WS=-1;st=null;PZ=null;IM=null;PC=[];PP=[];PU=0;clearInterval(tk);tk=0;hb=[];V=null;yw=null;ov.classList.remove('on')}
-const send=m=>{if(ws&&ws.readyState==1)ws.send(JSON.stringify(m))};
+function leaveRoom(){RM='';clearTimeout(wsTm);wsTm=0;wsq=[];wsTry=0;if(ws){const w=ws;ws=null;w.onclose=null;clearInterval(w.p);try{w.close()}catch(e){}}teardown();mstop();MS=null;WG=null;WP=new Map();WS=-1;st=null;PZ=null;IM=null;PC=[];PP=[];PU=0;clearInterval(tk);tk=0;hb=[];V=null;yw=null;ov.classList.remove('on')}
+let wsq=[],wsTry=0,wsTm=0,wsLast=0;
+const send=m=>{const s=JSON.stringify(m);if(ws&&ws.readyState==1){try{ws.send(s);return}catch(e){}}if(m.t!='ping'&&m.t!='pzm'&&wsq.length<30)wsq.push(s);if(RM&&(!ws||ws.readyState>1))reconnectNow()};
+function reconnectNow(){if(!RM)return;clearTimeout(wsTm);wsTm=0;if(ws&&ws.readyState==1&&Date.now()-wsLast<12000){try{ws.send(JSON.stringify({t:'ping',i:Date.now()}));return}catch(e){}}if(ws){const old=ws;ws=null;old.onclose=null;clearInterval(old.p);try{old.close()}catch(e){}}connect(RM)}
+if(!window._netBind){window._netBind=1;document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'&&RM)reconnectNow()});window.addEventListener('pageshow',()=>{if(RM)reconnectNow()});window.addEventListener('online',()=>{if(RM){wsTry=0;reconnectNow()}})}
 const lk=()=>{lock=Date.now()+900};
 const exp=()=>st.pos+((st.playing&&!st.held)?(Date.now()+off-st.at)/1e3:0);
 const ytId=u=>{const m=String(u).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/)|youtube-nocookie\.com\/embed\/)([\w-]{11})/i);return m?m[1]:''};
@@ -256,16 +259,17 @@ function onState(m){st=m.st;hb=m.hb||[];const who=m.who||[];musicState(m.ms||nul
 if(prevWho){for(const x of who)if(!prevWho.includes(x)&&x!=ME.name)toast(x+' odaya katıldı');for(const x of prevWho)if(!who.includes(x))toast(x+' ayrıldı')}prevWho=who;setPres(who);
 const key=st.url+'|'+st.ref;if(canUse('film')&&key!=loadedKey){loadedKey=key;load(st);const u=$('#vu');if(u&&document.activeElement!==u)u.value=st.url}
 holdUI();tick()}
-function connect(k){const w=new WebSocket((location.protocol=='https:'?'wss://':'ws://')+location.host+'/ws?room='+encodeURIComponent(k)+'&t='+encodeURIComponent(T));ws=w;prevWho=null;const smp=[];
-w.onopen=()=>{const d=$('#dot');if(d)d.className='dot on';const p=()=>{if(w.readyState==1)w.send(JSON.stringify({t:'ping',i:Date.now()}))};p();setTimeout(p,700);setTimeout(p,1600);w.p=setInterval(p,6000)};
-w.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(x){return}
+function connect(k){clearTimeout(wsTm);wsTm=0;const w=new WebSocket((location.protocol=='https:'?'wss://':'ws://')+location.host+'/ws?room='+encodeURIComponent(k)+'&t='+encodeURIComponent(T));ws=w;wsLast=Date.now();const smp=[];
+w.onopen=()=>{wsTry=0;wsLast=Date.now();const d=$('#dot');if(d)d.className='dot on';const p=()=>{if(w.readyState!=1)return;if(Date.now()-wsLast>15000){reconnectNow();return}try{w.send(JSON.stringify({t:'ping',i:Date.now()}))}catch(e){}};p();setTimeout(p,600);setTimeout(p,1500);w.p=setInterval(p,5000);while(wsq.length&&w.readyState==1){try{w.send(wsq.shift())}catch(e){break}}};
+w.onmessage=e=>{wsLast=Date.now();let m;try{m=JSON.parse(e.data)}catch(x){return}
 if(m.t=='st'){if(m.i){const rtt=Date.now()-m.i;smp.push([rtt,m.now+rtt/2-Date.now()]);if(smp.length>8)smp.shift();off=smp.reduce((a,b)=>b[0]<a[0]?b:a)[1]}else if(!smp.length)off=m.now-Date.now();onState(m)}
 else if(m.t=='pz')pzSet(m.pz);else if(m.t=='pzm')pzMove(m);else if(m.t=='chat')chatAdd(m);else if(m.t=='hist')m.c.forEach(chatAdd);
 else if(m.t=='sys'){chatSys(m.x);toast(m.x)}else if(m.t=='react')fly(m.e,m.n);
 else if(m.t=='locks'){LK=m.lk;lockUI()}else if(m.t=='wg')wgSet(m.g);else if(m.t=='werr')toast(m.e,1);else if(m.t=='wchk')wgChk(m)};
+w.onerror=()=>{};
 w.onclose=ev=>{clearInterval(w.p);if(ws!==w)return;const d=$('#dot');if(d)d.className='dot';
 if(ev.code==4000){toast('Oda yönetici tarafından kapatıldı',1);return viewLobby()}
-const s=$('#pres');if(s)s.textContent='Bağlantı koptu, yeniden bağlanılıyor…';api('me').catch(()=>{});setTimeout(()=>{if(ws===w&&RM)connect(RM)},1500)}}
+const s=$('#pres');if(s)s.textContent='Bağlantı koptu, yeniden bağlanılıyor…';api('me').catch(()=>{});const dl=Math.min(6000,800+wsTry*700);wsTry++;wsTm=setTimeout(()=>{if(ws===w&&RM)connect(RM)},dl)}}
 // ---------- sohbet ----------
 function chatAdd(m){const b=$('#cb');if(!b||(m.id&&seen.has(m.id)))return;if(m.id)seen.add(m.id);const me=m.n==ME.name;
 b.append(h('div',{class:'msg'+(me?' me':'')},me?null:h('b',{text:m.n}),h('span',{text:m.x}),h('time',{text:hm(m.ts)})));b.scrollTop=b.scrollHeight}
@@ -376,34 +380,44 @@ cv.onpointerup=cv.onpointercancel=up;
 cv.addEventListener('wheel',e=>{e.preventDefault();const [sx,sy]=xy(e);zoomAt(sx,sy,e.deltaY<0?1.12:1/1.12)},{passive:false})}
 function pzMove(m){if(!PZ||!PZ.p[m.i]||(drag&&drag.i==m.i))return;PZ.p[m.i]=[m.x,m.y,m.l];Z[m.i]=++zc;pdraw()}
 // ---------- müzik ----------
-const MU={prov:localStorage.mp||'',rev:-1,lp:'',loaded:'',seq:0,msg:'',need:0,dev:'',on:0,optT:0,optP:null,endSent:0,amid:''},RES={},PNM={yt:'YouTube',sp:'Spotify',am:'Apple Music'};
-let AM=null,YM=null,YMr=0,YMid='',MUI={},SPC='';
+const MU={prov:localStorage.mp||'yt',rev:-1,lp:'',loaded:'',seq:0,msg:'',need:0,dev:'',on:0,optT:0,optP:null,endSent:0,amid:''},RES={},PNM={yt:'YouTube (Ücretsiz)',au:'Önizleme (30sn)',sp:'Spotify',am:'Apple Music'};
+let AM=null,YM=null,YMr=0,YMid='',MA=null,MUI={},SPC='';
 const loadCfg=async()=>{if(!CFG){try{CFG=await api('music/cfg')}catch(e){CFG={sp:'',am:false}}}return CFG};
 const expOf=ms=>ms&&ms.tr?Math.max(0,ms.pos+(ms.playing?(Date.now()+off-ms.at)/1e3:0)):0;
 const mexp=()=>expOf(MS);
 const fmt=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+pad(s%60)};
 const b64u=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-function mpauseAll(){try{if(YM&&YMr)YM.pauseVideo()}catch(e){}try{if(AM&&AM.isPlaying)AM.pause()}catch(e){}if(MU.on&&MU.prov=='sp')spApi('me/player/pause','PUT');MU.on=0}
+function getMA(){if(!MA){MA=new Audio();MA.playsInline=true;MA.preload='auto';MA.onended=()=>{if(MS&&MS.playing&&(MU.prov=='au'||(MS.tr&&MS.tr.ids&&MS.tr.ids.au==MS.tr.ids[MU.prov])))send({t:'mpause',pos:0})}}return MA}
+function mpauseAll(){try{if(YM&&YMr)YM.pauseVideo()}catch(e){}try{if(MA&&!MA.paused)MA.pause()}catch(e){}try{if(AM&&AM.isPlaying)AM.pause()}catch(e){}if(MU.on&&MU.prov=='sp')spApi('me/player/pause','PUT');MU.on=0}
 function mstop(){MU.seq++;MU.loaded='';MU.rev=-1;MU.lp='';mpauseAll();if(MUI.yt)MUI.yt.style.display='none';mui()}
 function musicState(ms){MS=ms;if(!ms||!ms.tr){if(MU.loaded)mstop();mui();return}
 if(!canUse('music')){mui();return}
 if(MU.optP!==null&&MU.optP===ms.playing&&Date.now()-MU.optT<4000&&MU.loaded){MU.optP=null;MU.rev=ms.rev;MU.lp=MU.prov;mui();return}
 if(MU.rev!=ms.rev||MU.lp!=MU.prov){MU.endSent=0;mapply()}mui()}
-async function resolveId(tr,pv){const ids=tr.ids||{};if(ids[pv])return ids[pv];if(pv=='yt')return '';
+async function ytSearch(q,n){const j=await api('music/search?q='+encodeURIComponent(q)+'&n='+(n||8));return j.items||[]}
+async function resolveId(tr,pv){const ids=tr.ids||{};if(ids[pv])return ids[pv];if(pv=='au'&&ids.au)return ids.au;
 const key=pv+':'+tr.title+'|'+(tr.artist||'');if(RES[key]!=null)return RES[key];
-const q=(tr.title+' '+(tr.artist||'')).trim();const r=pv=='sp'?await spSearch(q,1):await amSearch(q,1);RES[key]=r.length?r[0].ids[pv]:'';return RES[key]}
-async function mapply(o){const ms=o||MS;if(!ms||!ms.tr||!MU.prov||!canUse('music'))return;
-const my=++MU.seq,pv=MU.prov;MU.rev=ms.rev;MU.lp=pv;MU.msg='';
-try{const id=await resolveId(ms.tr,pv);if(my!=MU.seq)return;
-if(!id){MU.msg=pv=='yt'?'Bu şarkı YouTube için seçilmemiş. Bir YouTube linki yapıştır ya da Spotify / Apple Music bağla.':'Bu şarkı '+PNM[pv]+' içinde bulunamadı.';mui();return}
-const pos=expOf(ms),key=pv+':'+id;await AD[pv].sync(id,ms.playing,pos,MU.loaded!=key);if(my!=MU.seq)return;MU.loaded=key;MU.on=ms.playing?1:0;MU.need=0}
-catch(e){if(my!=MU.seq)return;if(e&&e.name=='NotAllowedError')MU.need=1;else MU.msg=String((e&&e.message)||e).slice(0,160)}
+const q=(tr.title+' '+(tr.artist||'')).trim();if(!q)return '';
+let r=[];try{r=(pv=='yt'||pv=='au')?await ytSearch(q,1):pv=='sp'?await spSearch(q,1):await amSearch(q,1)}catch(e){}
+if(r.length&&r[0].ids){for(const k of ['yt','au','sp','am'])if(r[0].ids[k]&&!ids[k])ids[k]=r[0].ids[k];if(!tr.dur&&r[0].dur)tr.dur=r[0].dur;if(!tr.art&&r[0].art)tr.art=r[0].art}
+RES[key]=ids[pv]||(pv=='yt'&&ids.au?ids.au:'')||'';return RES[key]}
+async function mapply(o){const ms=o||MS;if(!ms||!ms.tr||!canUse('music'))return;
+if(!MU.prov){MU.prov='yt';localStorage.mp='yt'}
+const my=++MU.seq,pv=(ms.tr.ids&&ms.tr.ids.au&&!ms.tr.ids.yt&&MU.prov=='yt')?'au':MU.prov;MU.rev=ms.rev;MU.lp=MU.prov;MU.msg='';
+try{let id=await resolveId(ms.tr,pv);if(my!=MU.seq)return;
+let usePv=pv;if(!id&&pv=='yt'&&ms.tr.ids&&ms.tr.ids.au){id=ms.tr.ids.au;usePv='au'}
+if(!id){MU.msg='Bu şarkı '+PNM[MU.prov]+' içinde bulunamadı. Başka bir arama yap veya link yapıştır.';mui();return}
+if(usePv!='yt'&&YM&&YMr){try{YM.pauseVideo()}catch(e){}if(MUI.yt)MUI.yt.style.display='none'}
+if(usePv!='au'&&MA&&!MA.paused){try{MA.pause()}catch(e){}}
+const pos=expOf(ms),key=usePv+':'+id;await AD[usePv].sync(id,ms.playing,pos,MU.loaded!=key);if(my!=MU.seq)return;MU.loaded=key;MU.on=ms.playing?1:0;MU.need=0}
+catch(e){if(my!=MU.seq)return;if(e&&e.name=='NotAllowedError')MU.need=1;else if(pv=='yt'&&ms.tr&&ms.tr.ids&&ms.tr.ids.au){try{const pos=expOf(ms);await AD.au.sync(ms.tr.ids.au,ms.playing,Math.min(pos,28),true);MU.loaded='au:'+ms.tr.ids.au;MU.on=ms.playing?1:0;MU.msg='YouTube gömülemedi, 30sn ses önizlemesi çalınıyor.'}catch(e2){MU.need=1}}else MU.msg=String((e&&e.message)||e).slice(0,160)}
 mui()}
 const AD={
 yt:{async sync(id,pl,pos){const box=MUI.yt;if(box)box.style.display='block';
-if(!YM){await new Promise((ok,no)=>{box.replaceChildren(h('div',{id:'ymp'}));withYT(()=>{YM=new YT.Player('ymp',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,origin:location.origin},events:{onReady:()=>{YMr=1;YMid=id;ok()},onStateChange:e=>{if(e.data==0&&MS&&MS.playing&&MU.prov=='yt')send({t:'mpause',pos:0})},onError:()=>no(new Error('YouTube: bu video gömülemiyor'))}})})});YM.seekTo(pos,true)}
-if(YMid!=id){YMid=id;YM.loadVideoById({videoId:id,startSeconds:pos})}else if(Math.abs(YM.getCurrentTime()-pos)>1.5)YM.seekTo(pos,true);
-if(pl){YM.playVideo();setTimeout(()=>{if(MS&&MS.playing&&YM&&MU.prov=='yt'&&[1,3].indexOf(YM.getPlayerState())<0){MU.need=1;mui()}},2500)}else YM.pauseVideo()}},
+if(!YM){await new Promise((ok,no)=>{let dn=0;const t=setTimeout(()=>{if(!dn){dn=1;no(new Error('YouTube oynatıcı zaman aşımına uğradı'))}},9000);box.replaceChildren(h('div',{id:'ymp'}));withYT(()=>{if(dn)return;YM=new YT.Player('ymp',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,origin:location.origin},events:{onReady:()=>{if(dn)return;dn=1;clearTimeout(t);YMr=1;YMid=id;ok()},onStateChange:e=>{if(e.data==1&&MU.need){MU.need=0;mui()}if(e.data==0&&MS&&MS.playing&&MU.prov=='yt')send({t:'mpause',pos:0})},onError:()=>{if(!dn){dn=1;clearTimeout(t);no(new Error('YouTube: bu şarkı gömülemiyor'))}else if(MS&&MS.tr&&MS.tr.ids&&MS.tr.ids.au){AD.au.sync(MS.tr.ids.au,MS.playing,0,true).catch(()=>{})}}}})})});YM.seekTo(pos,true)}
+if(YMid!=id){YMid=id;YM.loadVideoById({videoId:id,startSeconds:pos})}else if(Math.abs((YM.getCurrentTime&&YM.getCurrentTime()||0)-pos)>1.8)YM.seekTo(pos,true);
+if(pl){YM.playVideo();setTimeout(()=>{if(MS&&MS.playing&&YM&&MU.prov=='yt'&&[1,3].indexOf(YM.getPlayerState&&YM.getPlayerState())<0){MU.need=1;mui()}},1800)}else YM.pauseVideo()}},
+au:{async sync(url,pl,pos,ch){const a=getMA();if(ch||a.src!=url){a.src=url;a.load()}const target=pos>29?0:pos;if(Math.abs((a.currentTime||0)-target)>1.5){try{a.currentTime=target}catch(e){}}if(pl){const p=a.play();if(p&&p.catch)await p}else a.pause()}},
 sp:{async sync(id,pl,pos,ch){if(pl)await spPlay(id,pos+.5);else if(MU.on||!ch)await spApi('me/player/pause','PUT')}},
 am:{async sync(id,pl,pos,ch){const m=await amInit();if(!m.isAuthorized)throw new Error('Önce Apple Music hesabını bağla.');
 if(ch||MU.amid!=id){await m.setQueue({song:id});MU.amid=id}
@@ -426,7 +440,7 @@ MU.dev=dv.id;r=await spApi('me/player/play?device_id='+encodeURIComponent(dv.id)
 if(r.status==403)throw new Error('Spotify Premium gerekli.');if(r.status==401)throw new Error('Spotify bağlantısı bitti, tekrar bağla.');if(!r.ok)throw new Error('Spotify hatası ('+r.status+')')}
 const spTr=t=>({title:t.name,artist:(t.artists||[]).map(a=>a.name).join(', '),art:((t.album&&t.album.images||[])[1]||(t.album&&t.album.images||[])[0]||{}).url||'',dur:Math.round((t.duration_ms||0)/1000),ids:{sp:t.id}});
 async function spSearch(q,n){const r=await spApi('search?type=track&limit='+(n||8)+'&q='+encodeURIComponent(q));if(!r.ok)throw new Error(r.status==401?'Önce Spotify hesabını bağla.':'Spotify arama hatası ('+r.status+')');return(((r.j||{}).tracks||{}).items||[]).map(spTr)}
-async function spConnect(){const c=await loadCfg();if(!c.sp){toast('Sunucuda SPOTIFY_CLIENT_ID tanımlı değil. Kurulum notlarına bak.',1);return}
+async function spConnect(){const c=await loadCfg();if(!c.sp){toast('Sunucuda SPOTIFY_CLIENT_ID tanımlı değil. YouTube (Ücretsiz) modunu kullanabilirsin.',1);return}
 const v=Array.from(crypto.getRandomValues(new Uint8Array(48)),b=>'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[b%62]).join('');localStorage.spv=v;
 const ch=b64u(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)));
 location.href='https://accounts.spotify.com/authorize?'+new URLSearchParams({client_id:c.sp,response_type:'code',redirect_uri:location.origin+'/',code_challenge_method:'S256',code_challenge:ch,scope:'user-read-playback-state user-modify-playback-state',state:'m'+(RM||'')})}
@@ -440,49 +454,56 @@ const amTr=a=>{const x=a.attributes||{};return{title:x.name||'Şarkı',artist:x.
 async function amSearch(q,n){const m=await amInit(),r=await m.api.music('v1/catalog/'+(m.storefrontCountryCode||m.storefrontId||'tr')+'/search',{term:q,types:'songs',limit:n||8}),j=r.data||r;return((((j.results||{}).songs||{}).data)||[]).map(amTr)}
 // bağlantı yapıştırma
 function parseLink(v){let m;const y=ytId(v);if(y)return{ids:{yt:y}};
+if(/^https?:\/\/[^\s]+\.(mp3|m4a|aac|ogg|wav|flac)(\?[^\s]*)?$/i.test(v))return{ids:{au:v}};
 if(m=v.match(/open\.spotify\.com\/(?:intl-[a-z]+\/)?track\/([A-Za-z0-9]{22})/))return{ids:{sp:m[1]}};
 if(m=v.match(/music\.apple\.com\/[^\s]*[?&]i=(\d+)/)||v.match(/music\.apple\.com\/[^\s]*\/song\/[^\/\s]*\/(\d+)/))return{ids:{am:m[1]}};return null}
 async function fillMeta(tr){const i=tr.ids;try{
 if(i.yt){const r=await fetch('https://www.youtube.com/oembed?format=json&url='+encodeURIComponent('https://www.youtube.com/watch?v='+i.yt));if(r.ok){const j=await r.json();tr.title=j.title||tr.title;tr.artist=j.author_name||'';tr.art=j.thumbnail_url||''}}
 else if(i.sp&&localStorage.sp){const r=await spApi('tracks/'+i.sp);if(r.ok)Object.assign(tr,spTr(r.j))}
-else if(i.am&&AM&&AM.isAuthorized){const r=await AM.api.music('v1/catalog/'+(AM.storefrontCountryCode||AM.storefrontId||'tr')+'/songs/'+i.am),j=r.data||r;if(j.data&&j.data[0])Object.assign(tr,amTr(j.data[0]))}}catch(e){}
+else if(i.am&&AM&&AM.isAuthorized){const r=await AM.api.music('v1/catalog/'+(AM.storefrontCountryCode||AM.storefrontId||'tr')+'/songs/'+i.am),j=r.data||r;if(j.data&&j.data[0])Object.assign(tr,amTr(j.data[0]))}
+else if(i.au){const u=new URL(i.au);tr.title=decodeURIComponent(u.pathname.split('/').pop()||'Ses Dosyası').replace(/\.[a-z0-9]+$/i,'')}}catch(e){}
 if(!tr.title)tr.title='Şarkı';return tr}
-function pickTrack(tr){if(!canUse('music'))return;MU.endSent=0;send({t:'mset',tr});const ms={tr,playing:true,pos:0,at:Date.now()+off,by:ME.name,rev:-1};MU.optT=Date.now();MU.optP=true;if(MU.prov)mapply(ms);MUI.res.replaceChildren();MUI.q.value=''}
+async function pickTrack(tr){if(!canUse('music'))return;MU.endSent=0;
+if(!MU.prov){MU.prov='yt';localStorage.mp='yt'}
+if(tr.ids&&!tr.ids.yt&&(MU.prov=='yt'||!tr.ids[MU.prov])){try{toast('Şarkı hazırlanıyor…');const r=await ytSearch((tr.title+' '+(tr.artist||'')).trim(),1);if(r.length&&r[0].ids){if(r[0].ids.yt)tr.ids.yt=r[0].ids.yt;if(r[0].ids.au&&!tr.ids.au)tr.ids.au=r[0].ids.au;if(!tr.dur&&r[0].dur)tr.dur=r[0].dur;if(!tr.art&&r[0].art)tr.art=r[0].art}}catch(e){}}
+send({t:'mset',tr});const ms={tr,playing:true,pos:0,at:Date.now()+off,by:ME.name,rev:-1};MU.optT=Date.now();MU.optP=true;mapply(ms);MUI.res.replaceChildren();MUI.q.value=''}
 async function msearch(){const v=MUI.q.value.trim();if(!v)return;
+if(!MU.prov){MU.prov='yt';localStorage.mp='yt';mui()}
 const lk=parseLink(v);if(lk){const tr=await fillMeta({title:'',artist:'',art:'',dur:0,ids:lk.ids});return pickTrack(tr)}
-if(MU.prov!='sp'&&MU.prov!='am')return toast('Arama için Spotify veya Apple Music bağla. YouTube için link yapıştır.',1);
-try{MUI.res.replaceChildren(h('small',{class:'mu',text:'Aranıyor…'}));const L=MU.prov=='sp'?await spSearch(v,8):await amSearch(v,8);
-MUI.res.replaceChildren(...(L.length?L.map(t=>h('button',{type:'button',class:'mu-r',onclick:()=>pickTrack(t)},t.art?h('img',{src:t.art,alt:''}):h('span',{class:'mu-art',text:'🎵',style:'width:40px;height:40px;font-size:1.1rem'}),h('div',{},h('b',{text:t.title}),h('small',{text:t.artist})))):[h('small',{class:'mu',text:'Sonuç yok'})]))}catch(e){MUI.res.replaceChildren();toast(String((e&&e.message)||e),1)}}
-function setProv(p){if(MU.prov==p)return;mpauseAll();if(MUI.yt)MUI.yt.style.display='none';MU.prov=p;localStorage.mp=p;MU.loaded='';MU.rev=-1;MU.msg='';MU.need=0;
+try{MUI.res.replaceChildren(h('small',{class:'mu',text:'Aranıyor…'}));
+let L=[];if(MU.prov=='sp'&&localStorage.sp)L=await spSearch(v,8);else if(MU.prov=='am'&&AM&&AM.isAuthorized)L=await amSearch(v,8);else L=await ytSearch(v,8);
+MUI.res.replaceChildren(...(L.length?L.map(t=>h('button',{type:'button',class:'mu-r',onclick:()=>pickTrack(t)},t.art?h('img',{src:t.art,alt:''}):h('span',{class:'mu-art',text:'🎵',style:'width:40px;height:40px;font-size:1.1rem'}),h('div',{},h('b',{text:t.title}),h('small',{text:t.artist+(t.dur?' · '+fmt(t.dur):'')})))):[h('small',{class:'mu',text:'Sonuç bulunamadı'})]))}catch(e){MUI.res.replaceChildren();toast(String((e&&e.message)||e),1)}}
+function setProv(p){if(MU.prov==p)return;mpauseAll();if(MUI.yt&&p!='yt')MUI.yt.style.display='none';MU.prov=p;localStorage.mp=p;MU.loaded='';MU.rev=-1;MU.msg='';MU.need=0;
 loadCfg().then(()=>p=='am'?amInit().catch(e=>{MU.msg=String((e&&e.message)||e)}):0).then(()=>{mui();if(MS&&MS.tr)mapply()});mui()}
 function musicCard(){
-const chips=h('div',{class:'chips'},['yt','sp','am'].map(p=>h('button',{type:'button','data-p':p,onclick:()=>setProv(p)},PNM[p]))),
+const chips=h('div',{class:'chips'},['yt','au','sp','am'].map(p=>h('button',{type:'button','data-p':p,onclick:()=>setProv(p)},PNM[p]))),
 st=h('small',{class:'mu'}),
 cb=h('button',{type:'button',class:'btn sec sm',style:'display:none',onclick:async()=>{try{if(MU.prov=='sp')await spConnect();else if(MU.prov=='am'){const m=await amInit();await m.authorize();mui();if(MS&&MS.tr)mapply()}}catch(e){toast(String((e&&e.message)||e),1)}}}),
-q=h('input',{class:'in',placeholder:'Şarkı ara ya da link yapıştır',autocapitalize:'none',autocorrect:'off',spellcheck:'false',enterkeyhint:'search'}),
+q=h('input',{class:'in',placeholder:'Şarkı / sanatçı adı yaz veya YouTube/MP3 linki yapıştır',autocapitalize:'none',autocorrect:'off',spellcheck:'false',enterkeyhint:'search'}),
 res=h('div',{class:'mu-res'}),art=h('div',{class:'mu-art',text:'🎵'}),tt=h('div',{class:'mu-t',text:'Henüz şarkı seçilmedi'}),ar=h('small',{class:'mu'}),tm=h('small',{class:'mu'}),
 act=(i,fn,sec,l)=>h('button',{type:'button',class:'btn sq'+(sec?' sec':''),'aria-label':l,onclick:fn},ic(i,18)),
-bp=act('play',()=>{if(!MS||!MS.tr)return toast('Önce bir şarkı seç');const p=mexp(),pl=!MS.playing;MU.endSent=0;send({t:pl?'mplay':'mpause',pos:p});MU.optT=Date.now();MU.optP=pl;if(MU.prov)mapply({...MS,playing:pl,pos:p,at:Date.now()+off})},0,'Çal veya durdur'),
+bp=act('play',()=>{if(!MS||!MS.tr)return toast('Önce bir şarkı ara ve seç');const p=mexp(),pl=!MS.playing;MU.endSent=0;send({t:pl?'mplay':'mpause',pos:p});MU.optT=Date.now();MU.optP=pl;mapply({...MS,playing:pl,pos:p,at:Date.now()+off})},0,'Çal veya durdur'),
 b1=act('back10',()=>{if(MS&&MS.tr)send({t:'mseek',pos:Math.max(0,mexp()-10)})},1,'10 saniye geri'),
 b2=act('fwd10',()=>{if(MS&&MS.tr)send({t:'mseek',pos:mexp()+10})},1,'10 saniye ileri'),
 rg=h('input',{type:'range',min:0,max:100,value:0,style:'width:100%;display:none;accent-color:var(--ac)',onchange:e=>send({t:'mseek',pos:+e.target.value})}),
-msg=h('small',{class:'err'}),need=h('button',{type:'button',class:'btn full',style:'display:none',onclick:()=>{MU.need=0;if(MS&&MS.tr)mapply();mui()}},'Dokun ve çal'),yt=h('div',{class:'mu-yt'});
+msg=h('small',{class:'err'}),need=h('button',{type:'button',class:'btn full',style:'display:none',onclick:()=>{MU.need=0;if(YM&&YMr&&MU.prov=='yt'){try{YM.playVideo()}catch(e){}}if(MA&&MU.prov=='au'){try{MA.play()}catch(e){}}if(MS&&MS.tr)mapply();mui()}},'🔊 Ses için dokun ve başlat'),yt=h('div',{class:'mu-yt'});
 q.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();msearch()}};
 const root=h('div',{class:'card',id:'mp'},h('div',{class:'row'},ic('music',18),h('h3',{text:'Birlikte müzik'})),
-h('small',{text:'İkiniz de kendi hesabınızla dinlersiniz, site yalnızca şarkıyı ve süreyi eşitler. Biriniz Spotify, diğeriniz Apple Music kullanabilir.'}),
-h('div',{class:'lbl',text:'Ben şununla dinliyorum'}),chips,st,cb,
+h('small',{text:'Hesap bağlamadan doğrudan şarkı arayıp tam senkron dinleyebilirsiniz. İsterseniz Spotify veya Apple Music de seçebilirsiniz.'}),
+h('div',{class:'lbl',text:'Dinleme modu'}),chips,st,cb,
 h('div',{class:'row'},q,h('button',{type:'button',class:'btn sq','aria-label':'Ara',onclick:msearch},ic('eye',18))),res,
 h('div',{class:'mu-now'},art,h('div',{class:'grow'},tt,ar,tm)),rg,h('div',{class:'row'},b1,bp,b2),msg,need,yt);
 MUI={root,chips,st,cb,q,res,art,tt,ar,tm,bp,rg,msg,need,yt,lastArt:null,lastP:null};mui();return root}
 function mui(){const U=MUI;if(!U.root)return;
+if(!MU.prov){MU.prov='yt';localStorage.mp='yt'}
 U.chips.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.p==MU.prov));
 let sx='',cbt='';
-if(!MU.prov)sx='Önce kullandığın servisi seç.';
-else if(MU.prov=='yt')sx='YouTube: hesap gerekmez. Şarkı seçmek için YouTube linki yapıştır.';
-else if(MU.prov=='sp'){const on=!!localStorage.sp;sx=on?'Spotify bağlı ✓ (Premium gerekir, Spotify uygulaması telefonda açık olmalı)':'Spotify bağlı değil.';cbt=on?'':'Spotify’ı bağla'}
-else{const on=AM&&AM.isAuthorized;sx=on?'Apple Music bağlı ✓':(AM?'Apple Music bağlı değil.':'Apple Music hazırlanıyor…');cbt=(!on&&AM)?'Apple Music’i bağla':''}
+if(MU.prov=='yt')sx='YouTube (Ücretsiz): Hesap gerekmez. Şarkı adını yazıp arayabilir veya YouTube linki yapıştırabilirsin.';
+else if(MU.prov=='au')sx='Önizleme Modu: Hesap gerekmez, iPhone arka planda bile sorunsuz 30sn yüksek kaliteli kesit veya doğrudan .mp3 linki çalar.';
+else if(MU.prov=='sp'){const on=!!localStorage.sp;sx=on?'Spotify bağlı ✓ (Premium gerekir, Spotify uygulaması açık olmalı)':'Spotify bağlı değil (Ücretsiz dinlemek için YouTube modunu seçebilirsin).';cbt=on?'':'Spotify’ı bağla'}
+else{const on=AM&&AM.isAuthorized;sx=on?'Apple Music bağlı ✓':(AM?'Apple Music bağlı değil.':'Apple Music (Ücretsiz dinlemek için YouTube modunu seçebilirsin).');cbt=(!on&&AM)?'Apple Music’i bağla':''}
 U.st.textContent=sx;U.cb.style.display=cbt?'':'none';U.cb.textContent=cbt;
-const tr=MS&&MS.tr;U.tt.textContent=tr?tr.title:'Henüz şarkı seçilmedi';U.ar.textContent=tr?((tr.artist||'')+(MS.by?(tr.artist?' · ':'')+MS.by+' seçti':'')):'Birlikte dinlemek için bir şarkı seç';
+const tr=MS&&MS.tr;U.tt.textContent=tr?tr.title:'Henüz şarkı seçilmedi';U.ar.textContent=tr?((tr.artist||'')+(MS.by?(tr.artist?' · ':'')+MS.by+' seçti':'')):'Birlikte dinlemek için yukarıdan şarkı ara';
 const ua=tr&&tr.art||'';if(U.lastArt!==ua){U.lastArt=ua;U.art.replaceChildren(ua?h('img',{src:ua,alt:'',style:'width:100%;height:100%;object-fit:cover;border-radius:12px'}):'🎵')}
 const pl=!!(MS&&MS.playing);if(U.lastP!==pl){U.lastP=pl;U.bp.replaceChildren(ic(pl?'pause':'play',18))}
 U.msg.textContent=MU.msg||'';U.need.style.display=MU.need?'':'none';
@@ -490,7 +511,7 @@ if(U.yt&&!(MU.prov=='yt'&&YM))U.yt.style.display='none'}
 function mtick(){if(!MUI.root||!MS||!MS.tr)return;const p=mexp(),d=MS.tr.dur||0;MUI.tm.textContent=fmt(p)+(d?' / '+fmt(d):'');
 if(d){MUI.rg.style.display='';if(document.activeElement!==MUI.rg){MUI.rg.max=d;MUI.rg.value=Math.min(p,d)}if(MS.playing&&p>d+1&&!MU.endSent){MU.endSent=1;send({t:'mpause',pos:d})}}
 if(!MS.playing||!canUse('music'))return;
-try{if(MU.prov=='yt'&&YM&&YMr&&YM.getPlayerState()==1&&Math.abs(YM.getCurrentTime()-p)>2.5)YM.seekTo(p,true);else if(MU.prov=='am'&&AM&&AM.isPlaying&&Math.abs((AM.currentPlaybackTime||0)-p)>2.5)AM.seekToTime(p)}catch(e){}}
+try{if(MU.prov=='yt'&&YM&&YMr&&YM.getPlayerState&&YM.getPlayerState()==1&&Math.abs(YM.getCurrentTime()-p)>2.5)YM.seekTo(p,true);else if(MU.prov=='au'&&MA&&!MA.paused&&p<29&&Math.abs(MA.currentTime-p)>2)MA.currentTime=p;else if(MU.prov=='am'&&AM&&AM.isPlaying&&Math.abs((AM.currentPlaybackTime||0)-p)>2.5)AM.seekToTime(p)}catch(e){}}
 
 // ---------- kelimelik ----------
 const WAL='ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ';
@@ -552,7 +573,7 @@ if(PEND)history.replaceState(null,'',location.pathname);
 if(T&&ME)enter();else viewLogin();
 `;
 const HTML = '<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0a0b10"><meta name="color-scheme" content="dark"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Bizim Sinema"><title>Bizim Sinema</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Ctext y=\'.9em\' font-size=\'90\'%3E%F0%9F%8E%AC%3C/text%3E%3C/svg%3E"><style>' + CSS + '</style></head><body><div id="app"></div><div id="tt"></div><script>' + JS + '</script></body></html>';
-const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.youtube.com https://s.ytimg.com https://js-cdn.music.apple.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://i.ytimg.com https://i.scdn.co https://*.mzstatic.com https://*.scdn.co; media-src * data: blob:; connect-src * wss: ws: data: blob:; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://*.apple.com; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
+const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.youtube.com https://s.ytimg.com https://js-cdn.music.apple.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; media-src * data: blob:; connect-src * wss: ws: data: blob:; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://*.apple.com; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
 // ---------- kripto ----------
@@ -609,6 +630,7 @@ export default {
       if (p == '/api/me') return J({ name: me.n, role: me.r });
       if (p == '/api/locks' && req.method == 'GET') return J(await getLocks(env));
       if (p == '/api/music/cfg') return J({ sp: env.SPOTIFY_CLIENT_ID || '', am: !!(env.APPLE_TEAM_ID && env.APPLE_KEY_ID && env.APPLE_PRIVATE_KEY) });
+      if (p == '/api/music/search') return J({ items: await musicSearch(u.searchParams.get('q') || '', +u.searchParams.get('n') || 8) });
       if (p == '/api/music/atoken') { try { return J({ t: await appleToken(env) }) } catch (e) { return J({ error: 'Apple Music anahtarı geçersiz veya eksik (APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY)' }, 400) } }
       if (p == '/api/ptoken') return J({ t: await sign(env, { n: me.n, v: me.v, k: 'p', e: Date.now() + 12 * 36e5 }) });
       if (p == '/api/me/pass' && req.method == 'POST') {
@@ -703,14 +725,92 @@ async function appleToken(env) {
 const LKEYS = ['film', 'puzzle', 'music', 'word'];
 const normLk = x => { x = x || {}; const nv = (v, d) => { v = +v; return v === 0 || v === 1 || v === 2 ? v : d }; return { film: nv(x.film, 0), puzzle: nv(x.puzzle, 0), music: nv(x.music, 0), word: nv(x.word, 2) } };
 
-// ---------- Müzik ----------
+// ---------- Müzik (Ücretsiz Arama + Çoklu Kaynak) ----------
 function cleanTr(t) {
   if (!t || typeof t != 'object') return null;
   const s = (v, n) => String(v || '').replace(/[\u0000-\u001f]/g, '').slice(0, n), I = t.ids || {};
-  const ids = { yt: /^[A-Za-z0-9_-]{11}$/.test(String(I.yt || '')) ? String(I.yt) : '', sp: /^[A-Za-z0-9]{22}$/.test(String(I.sp || '')) ? String(I.sp) : '', am: /^\d{4,20}$/.test(String(I.am || '')) ? String(I.am) : '' };
-  if (!ids.yt && !ids.sp && !ids.am && !s(t.title, 3)) return null;
-  let art = s(t.art, 300); if (!/^https:\/\/[\w.\-\/?=&%:~+@,;]+$/.test(art)) art = '';
+  const au = String(I.au || '').slice(0, 500);
+  const ids = {
+    yt: /^[A-Za-z0-9_-]{11}$/.test(String(I.yt || '')) ? String(I.yt) : '',
+    sp: /^[A-Za-z0-9]{22}$/.test(String(I.sp || '')) ? String(I.sp) : '',
+    am: /^\d{4,20}$/.test(String(I.am || '')) ? String(I.am) : '',
+    au: /^https?:\/\/[\w.\-\/?=&%:~+@,;]+$/i.test(au) ? au : ''
+  };
+  if (!ids.yt && !ids.sp && !ids.am && !ids.au && !s(t.title, 2)) return null;
+  let art = s(t.art, 300); if (!/^https?:\/\/[\w.\-\/?=&%:~+@,;]+$/i.test(art)) art = '';
   return { title: s(t.title, 120) || 'Şarkı', artist: s(t.artist, 120), art, dur: Math.max(0, Math.min(36000, Math.round(+t.dur || 0))), ids };
+}
+async function ytSearchRaw(q, lim) {
+  const instances = [
+    'https://pipedapi.kavin.rocks/search?filter=music_songs&q=',
+    'https://pipedapi.tokhmi.xyz/search?filter=music_songs&q=',
+    'https://pipedapi.moomoo.me/search?filter=music_songs&q='
+  ];
+  for (const base of instances) {
+    try {
+      const r = await fetch(base + encodeURIComponent(q), { headers: { 'user-agent': UA, accept: 'application/json' }, signal: AbortSignal.timeout(2800) });
+      if (r.ok) {
+        const j = await r.json(), items = (j && j.items) || [];
+        const out = [];
+        for (const x of items) {
+          const m = String(x.url || '').match(/v=([A-Za-z0-9_-]{11})/);
+          if (m) out.push({ title: x.title || 'Şarkı', artist: x.uploaderName || '', art: x.thumbnail || ('https://i.ytimg.com/vi/' + m[1] + '/hqdefault.jpg'), dur: Math.max(0, +x.duration || 0), ids: { yt: m[1] } });
+          if (out.length >= lim) break;
+        }
+        if (out.length) return out;
+      }
+    } catch (e) {}
+  }
+  try {
+    const r = await fetch('https://www.youtube.com/results?hl=tr&gl=TR&search_query=' + encodeURIComponent(q), { headers: { 'user-agent': UA, 'accept-language': 'tr-TR,tr;q=0.9,en;q=0.8' }, signal: AbortSignal.timeout(3800) });
+    if (r.ok) {
+      const html = await r.text();
+      const out = [], seen = new Set();
+      const re = /"videoRenderer":\{"videoId":"([A-Za-z0-9_-]{11})"[\s\S]{1,1800}?"title":\{"runs":\[\{"text":"([^"\\]*(?:\\.[^"\\]*)*)"\}/g;
+      let m;
+      while ((m = re.exec(html)) && out.length < lim) {
+        const id = m[1]; if (seen.has(id)) continue; seen.add(id);
+        let title = m[2]; try { title = JSON.parse('"' + m[2] + '"') } catch (e) {}
+        const sub = html.slice(m.index, m.index + 2800);
+        const am = sub.match(/"ownerText":\{"runs":\[\{"text":"([^"\\]*(?:\\.[^"\\]*)*)"/);
+        let artist = am ? am[1] : ''; if (artist) try { artist = JSON.parse('"' + artist + '"') } catch (e) {}
+        const dm = sub.match(/"lengthText":\{[^}]*"simpleText":"(\d+):(\d{2})"/);
+        const dur = dm ? (+dm[1] * 60 + +dm[2]) : 0;
+        out.push({ title, artist, art: 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg', dur, ids: { yt: id } });
+      }
+      if (out.length) return out;
+      const ids = [...new Set((html.match(/"videoId":"([A-Za-z0-9_-]{11})"/g) || []).map(x => x.slice(11, 22)))].slice(0, lim);
+      return ids.map(id => ({ title: q, artist: 'YouTube', art: 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg', dur: 0, ids: { yt: id } }));
+    }
+  } catch (e) {}
+  return [];
+}
+async function itunesSearch(q, lim) {
+  try {
+    const r = await fetch('https://itunes.apple.com/search?media=music&entity=song&country=TR&limit=' + lim + '&term=' + encodeURIComponent(q), { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(3000) });
+    if (!r.ok) return [];
+    const j = await r.json();
+    return (j.results || []).map(x => ({
+      title: x.trackName || 'Şarkı',
+      artist: x.artistName || '',
+      art: String(x.artworkUrl100 || '').replace('100x100bb', '300x300bb'),
+      dur: Math.round((x.trackTimeMillis || 0) / 1000),
+      ids: { am: x.trackId ? String(x.trackId) : '', au: x.previewUrl || '' }
+    }));
+  } catch (e) { return [] }
+}
+async function musicSearch(q, lim) {
+  q = String(q || '').trim().slice(0, 120); if (!q) return [];
+  lim = Math.max(1, Math.min(12, lim || 8));
+  const [yt, it] = await Promise.all([ytSearchRaw(q, lim), itunesSearch(q, lim)]);
+  if (yt.length) {
+    yt.forEach((y, i) => {
+      const m = it[i] || it[0];
+      if (m && m.ids) { if (m.ids.au && !y.ids.au) y.ids.au = m.ids.au; if (m.ids.am && !y.ids.am) y.ids.am = m.ids.am; if (!y.art && m.art) y.art = m.art; if (!y.dur && m.dur) y.dur = m.dur }
+    });
+    return yt;
+  }
+  return it;
 }
 
 // ---------- Kelimelik (Türkçe Scrabble) ----------
@@ -950,8 +1050,8 @@ export class Do {
         await S.put('ms', this.ms); this.all(JSON.stringify({ t: 'sys', x: '🎵 ' + n + ': ' + tr.title + (tr.artist ? ' – ' + tr.artist : '') })); return this.bcast();
       }
       if (!ms) return;
-      if (T == 'mplay') { if (ms.playing) return; this.ms = { ...ms, playing: true, pos: p, at: now, by: n } }
-      else if (T == 'mpause') { if (!ms.playing) return; this.ms = { ...ms, playing: false, pos: p, at: now, by: n } }
+      if (T == 'mplay') { this.ms = { ...ms, playing: true, pos: p, at: now, by: n } }
+      else if (T == 'mpause') { this.ms = { ...ms, playing: false, pos: p, at: now, by: n } }
       else this.ms = { ...ms, pos: p, at: now, by: n };
       this.ms.rev = ms.rev + 1; await S.put('ms', this.ms); return this.bcast();
     }
@@ -1002,8 +1102,8 @@ export class Do {
       this.socks().forEach(w => { const q = w.deserializeAttachment() || {}; q.b = 0; w.serializeAttachment(q) });
       this.all(JSON.stringify({ t: 'sys', x: n + ' yeni bir video yükledi' }));
     }
-    else if (T == 'play') { if (st.playing) return; ns = { ...st, playing: true, pos, at: now, by: n } }
-    else if (T == 'pause') { if (!st.playing) return; ns = { ...st, playing: false, held: false, pos, at: now, by: n } }
+    else if (T == 'play') { ns = { ...st, playing: true, pos, at: now, by: n } }
+    else if (T == 'pause') { ns = { ...st, playing: false, held: false, pos, at: now, by: n } }
     else if (T == 'seek') ns = { ...st, pos, at: now, by: n };
     else return;
     ns.rev = (st.rev || 0) + 1; this.st = ns; this.hold(now);
