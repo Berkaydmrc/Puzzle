@@ -421,14 +421,14 @@ cv.addEventListener('wheel',e=>{e.preventDefault();const [sx,sy]=xy(e);zoomAt(sx
 function pzMove(m){if(!PZ||!PZ.p[m.i]||(drag&&drag.i==m.i))return;PZ.p[m.i]=[m.x,m.y,m.l];Z[m.i]=++zc;pdraw()}
 // ---------- müzik ----------
 const MU={prov:localStorage.mp||'yt',rev:-1,lp:'',loaded:'',seq:0,msg:'',need:0,dev:'',on:0,optT:0,optP:null,endSent:0,amid:''},RES={},PNM={yt:'YouTube (Ücretsiz)',au:'Önizleme (30sn)',sp:'Spotify',am:'Apple Music'};
-let AM=null,YM=null,YMr=0,YMid='',MA=null,MUI={},SPC='';
+let AM=null,YM=null,YMr=0,YMid='',YMP=null,MA=null,MUI={},SPC='';
 const loadCfg=async()=>{if(!CFG){try{CFG=await api('music/cfg')}catch(e){CFG={sp:'',am:false}}}return CFG};
 const expOf=ms=>ms&&ms.tr?Math.max(0,ms.pos+(ms.playing?(Date.now()+off-ms.at)/1e3:0)):0;
 const mexp=()=>expOf(MS);
 const fmt=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+pad(s%60)};
 const b64u=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 function getMA(){if(!MA){MA=new Audio();MA.playsInline=true;MA.preload='auto';MA.onended=()=>{if(MS&&MS.playing&&(MU.prov=='au'||(MS.tr&&MS.tr.ids&&MS.tr.ids.au==MS.tr.ids[MU.prov])))send({t:'mpause',pos:0})}}return MA}
-function mpauseAll(){try{if(YM&&YMr)YM.pauseVideo()}catch(e){}try{if(MA&&!MA.paused)MA.pause()}catch(e){}try{if(AM&&AM.isPlaying)AM.pause()}catch(e){}if(MU.on&&MU.prov=='sp')spApi('me/player/pause','PUT');MU.on=0}
+function mpauseAll(){if(YM&&YMr)ymc(()=>YM.pauseVideo());try{if(MA&&!MA.paused)MA.pause()}catch(e){}try{if(AM&&AM.isPlaying)AM.pause()}catch(e){}if(MU.on&&MU.prov=='sp')spApi('me/player/pause','PUT');MU.on=0}
 function mstop(){MU.seq++;MU.loaded='';MU.rev=-1;MU.lp='';mpauseAll();if(MUI.yt)MUI.yt.style.display='none';mui()}
 function musicState(ms){MS=ms;if(!ms||!ms.tr){if(MU.loaded)mstop();mui();return}
 if(!canUse('music')){mui();return}
@@ -454,19 +454,37 @@ catch(e){if(my!=MU.seq)return;if(e&&e.name=='NotAllowedError')MU.need=1;else if(
 mui()}
 // YouTube oynatıcıları kendi başına drift yapabildiğinden, ortak zamanla periyodik düzelt.
 if(!window.__bsMusicSyncTimer){window.__bsMusicSyncTimer=setInterval(()=>{try{
-if(MS&&MS.tr&&MU.prov==='yt'&&YM&&YMr&&YM.getPlayerState&&canUse('music')){const ps=YM.getPlayerState();
+if(MS&&MS.tr&&MU.prov==='yt'&&YM&&YMr&&typeof YM.getPlayerState=='function'&&canUse('music')){const ps=YM.getPlayerState(),now=Date.now();
 if(MS.playing){
- if(ps===1){if(MU.need||MU.fail){MU.need=0;MU.fail=0;mui()}const target=expOf(MS),actual=YM.getCurrentTime();if(Number.isFinite(target)&&Number.isFinite(actual)&&Math.abs(actual-target)>1.5)YM.seekTo(target,true)}
- else if(ps===3){/* yükleniyor, bekle */}
- else{MU.fail=(MU.fail||0)+1;try{YM.seekTo(expOf(MS),true);YM.playVideo()}catch(e){}if(MU.fail>=2&&!MU.need){MU.need=1;mui()}}
-}else if(ps===1){try{YM.pauseVideo()}catch(e){}}}
-mrep()}catch(_){ }},1500)}
+ if(ps===1){if(MU.need||MU.fail){MU.need=0;MU.fail=0;mui()}
+  const target=expOf(MS),actual=YM.getCurrentTime(),d=actual-target,L=MU.lead==null?.6:MU.lead;
+  if(MU.sk&&!MU.sk.m&&now-MU.sk.t>1200){MU.sk.m=1;MU.lead=Math.max(0,Math.min(4,L-d))}
+  if(Number.isFinite(d)&&Math.abs(d)>.8&&(!MU.sk||now-MU.sk.t>4000)){MU.sk={t:now,m:0};ymc(()=>YM.seekTo(target+(MU.lead==null?.6:MU.lead),true))}
+ }else if(ps===3){}
+ else{MU.fail=(MU.fail||0)+1;ymc(()=>{YM.seekTo(expOf(MS),true);YM.playVideo()});if(MU.fail>=2&&!MU.need){MU.need=1;mui()}}
+}else if(ps===1)ymc(()=>YM.pauseVideo())}
+mrep()}catch(_){ }},1000)}
 if(!window._muBind){window._muBind=1;document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'&&MS&&MS.tr&&MS.playing)setTimeout(()=>{try{mapply()}catch(e){}},300)})}
+// Kod kaynaklı oynatıcı komutları işaretlenir; böylece kullanıcının videonun kendi düğmesine basması ayırt edilir
+function ymc(fn){MU.selfT=Date.now();try{fn()}catch(e){}}
+function ytReady(id,box){if(YM&&YMr)return Promise.resolve();if(YMP)return YMP;
+YMP=new Promise(ok=>{const slow=setTimeout(()=>{MU.msg='YouTube oynatıcısı yavaş yükleniyor, bekleniyor…';mui()},9000);
+box.replaceChildren(h('div',{id:'ymp'}));withYT(()=>{YM=new YT.Player('ymp',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,origin:location.origin},
+events:{onReady:()=>{clearTimeout(slow);YMr=1;YMid=id;if(String(MU.msg).indexOf('yavaş')>=0)MU.msg='';mui();ok()},onStateChange:ytState,onError:ytErr}})})});return YMP}
+function ytErr(){if(MS&&MS.tr&&MS.tr.ids&&MS.tr.ids.au){AD.au.sync(MS.tr.ids.au,MS.playing,0,true).catch(()=>{});MU.msg='YouTube bu videoyu gömmeye izin vermiyor; 30 sn önizleme çalınıyor.'}else MU.msg='YouTube bu videoyu gömmeye izin vermiyor. Başka bir sürümünü seç.';mui()}
+// Videonun kendi ▶/❚❚ düğmesi: herkese iletilir
+function ytState(e){const d=e.data,prev=MU.lastPS;MU.lastPS=d;
+if(d==1&&MU.need){MU.need=0;mui()}
+if(d==0&&MS&&MS.playing&&MU.prov=='yt'){send({t:'mpause',pos:0});return}
+const mine=Date.now()-(MU.selfT||0)<2500||document.visibilityState!='visible';
+if(mine||!MS||!MS.tr||MU.prov!='yt'||!canUse('music')||!YM||!YMr)return;
+let p=0;try{p=YM.getCurrentTime()||0}catch(x){}
+if(d==2&&prev==1&&MS.playing){MU.optT=Date.now();MU.optP=false;send({t:'mpause',pos:p});toast('Müzik herkes için durduruldu')}
+else if(d==1&&!MS.playing){MU.optT=Date.now();MU.optP=true;send({t:'mplay',pos:p});toast('Müzik herkes için başlatıldı')}}
 const AD={
-yt:{async sync(id,pl,pos){const box=MUI.yt;if(box)box.style.display='block';
-if(!YM){await new Promise((ok,no)=>{let dn=0;const t=setTimeout(()=>{if(!dn){dn=1;no(new Error('YouTube oynatıcı zaman aşımına uğradı'))}},9000);box.replaceChildren(h('div',{id:'ymp'}));withYT(()=>{if(dn)return;YM=new YT.Player('ymp',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,origin:location.origin},events:{onReady:()=>{if(dn)return;dn=1;clearTimeout(t);YMr=1;YMid=id;ok()},onStateChange:e=>{if(e.data==1&&MU.need){MU.need=0;mui()}if(e.data==0&&MS&&MS.playing&&MU.prov=='yt')send({t:'mpause',pos:0})},onError:()=>{if(!dn){dn=1;clearTimeout(t);no(new Error('YouTube: bu şarkı gömülemiyor'))}else if(MS&&MS.tr&&MS.tr.ids&&MS.tr.ids.au){AD.au.sync(MS.tr.ids.au,MS.playing,0,true).catch(()=>{})}}}})})});YM.seekTo(pos,true)}
-if(YMid!=id){YMid=id;YM.loadVideoById({videoId:id,startSeconds:pos})}else if(Math.abs((YM.getCurrentTime&&YM.getCurrentTime()||0)-pos)>1.8)YM.seekTo(pos,true);
-if(pl){YM.playVideo();setTimeout(()=>{if(MS&&MS.playing&&YM&&MU.prov=='yt'&&[1,3].indexOf(YM.getPlayerState&&YM.getPlayerState())<0){MU.need=1;mui()}},1800)}else YM.pauseVideo()}},
+yt:{async sync(id,pl,pos){const box=MUI.yt;if(box)box.style.display='block';await ytReady(id,box);if(!YM||!YMr)return;
+if(YMid!=id){YMid=id;ymc(()=>YM.loadVideoById({videoId:id,startSeconds:pos}))}else if(Math.abs((YM.getCurrentTime()||0)-pos)>1.8)ymc(()=>YM.seekTo(pos,true));
+if(pl)ymc(()=>YM.playVideo());else ymc(()=>YM.pauseVideo())}},
 au:{async sync(url,pl,pos,ch){const a=getMA();if(ch||a.src!=url){a.src=url;a.load()}const target=pos>29?0:pos;if(Math.abs((a.currentTime||0)-target)>1.5){try{a.currentTime=target}catch(e){}}if(pl){const p=a.play();if(p&&p.catch)await p}else a.pause()}},
 sp:{async sync(id,pl,pos,ch){if(pl)await spPlay(id,pos+.5);else if(MU.on||!ch)await spApi('me/player/pause','PUT')}},
 am:{async sync(id,pl,pos,ch){const m=await amInit();if(!m.isAuthorized)throw new Error('Önce Apple Music hesabını bağla.');
@@ -526,6 +544,7 @@ MUI.res.replaceChildren(...(L.length?L.map(t=>h('button',{type:'button',class:'m
 function setProv(p){if(MU.prov==p)return;mpauseAll();if(MUI.yt&&p!='yt')MUI.yt.style.display='none';MU.prov=p;localStorage.mp=p;MU.loaded='';MU.rev=-1;MU.msg='';MU.need=0;
 loadCfg().then(()=>p=='am'?amInit().catch(e=>{MU.msg=String((e&&e.message)||e)}):0).then(()=>{mui();if(MS&&MS.tr)mapply()});mui()}
 function musicCard(){
+try{if(YM&&YM.destroy)YM.destroy()}catch(e){}YM=null;YMr=0;YMid='';YMP=null;MU.loaded='';MU.rev=-1;MU.sk=null;
 const chips=h('div',{class:'chips'},['yt','au','sp','am'].map(p=>h('button',{type:'button','data-p':p,onclick:()=>setProv(p)},PNM[p]))),
 st=h('small',{class:'mu'}),
 cb=h('button',{type:'button',class:'btn sec sm',style:'display:none',onclick:async()=>{try{if(MU.prov=='sp')await spConnect();else if(MU.prov=='am'){const m=await amInit();await m.authorize();mui();if(MS&&MS.tr)mapply()}}catch(e){toast(String((e&&e.message)||e),1)}}}),
@@ -566,14 +585,14 @@ const MLS={ok:['🔊 duyuyor','ok'],buf:['⏳ yükleniyor',''],need:['👆 dokun
 function mlsRender(){const U=MUI;if(!U.ls)return;const on=MS&&MS.tr,who=(prevWho||[ME.name]);if(!on){U.ls.replaceChildren();return}
 U.ls.replaceChildren(...who.map(n=>{const s=MSH[n]||'off',d=MLS[s]||MLS.off;return h('span',{class:d[1],text:(n==ME.name?'sen':n)+' '+d[0]})}))}
 // Sesli dinlemeye katıl: kullanıcı dokunuşu içinde doğrudan çal (YouTube dışı sağlayıcılar için yeterli)
-function mjoin(){MU.need=0;MU.fail=0;try{if(MA&&MU.prov=='au')MA.play()}catch(e){}try{if(YM&&YMr&&MU.prov=='yt'){YM.unMute();YM.playVideo()}}catch(e){}if(MS&&MS.tr)mapply();mui();if(MUI.yt)MUI.yt.scrollIntoView({block:'center',behavior:'smooth'})}
+function mjoin(){MU.need=0;MU.fail=0;try{if(MA&&MU.prov=='au')MA.play()}catch(e){}if(YM&&YMr&&MU.prov=='yt')ymc(()=>{YM.unMute();YM.playVideo()});if(MS&&MS.tr)mapply();mui();if(MUI.yt)MUI.yt.scrollIntoView({block:'center',behavior:'smooth'})}
 // Oynatıcının gerçek durumu -> sunucuya bildir (yalnız değişince)
 function mrep(){let s='off';try{if(MS&&MS.tr&&canUse('music')){if(!MS.playing)s='pause';else if(MU.prov=='yt'&&YM&&YMr&&YM.getPlayerState){const p=YM.getPlayerState();s=p==1?'ok':MU.need?'need':'buf'}else if(MU.prov=='au'&&MA)s=!MA.paused?'ok':MU.need?'need':'buf';else s=MU.on?'ok':MU.need?'need':'buf'}}catch(e){}
 if(s!==MU.rs){MU.rs=s;send({t:'mst',s})}}
 function mtick(){if(!MUI.root||!MS||!MS.tr)return;const p=mexp(),d=MS.tr.dur||0;MUI.tm.textContent=fmt(p)+(d?' / '+fmt(d):'');
 if(d){MUI.rg.style.display='';if(document.activeElement!==MUI.rg){MUI.rg.max=d;MUI.rg.value=Math.min(p,d)}if(MS.playing&&p>d+1&&!MU.endSent){MU.endSent=1;send({t:'mpause',pos:d})}}
 if(!MS.playing||!canUse('music'))return;
-try{if(MU.prov=='yt'&&YM&&YMr&&YM.getPlayerState&&YM.getPlayerState()==1&&Math.abs(YM.getCurrentTime()-p)>2.5)YM.seekTo(p,true);else if(MU.prov=='au'&&MA&&!MA.paused&&p<29&&Math.abs(MA.currentTime-p)>2)MA.currentTime=p;else if(MU.prov=='am'&&AM&&AM.isPlaying&&Math.abs((AM.currentPlaybackTime||0)-p)>2.5)AM.seekToTime(p)}catch(e){}}
+try{if(MU.prov=='au'&&MA&&!MA.paused&&p<29&&Math.abs(MA.currentTime-p)>2)MA.currentTime=p;else if(MU.prov=='am'&&AM&&AM.isPlaying&&Math.abs((AM.currentPlaybackTime||0)-p)>2.5)AM.seekToTime(p)}catch(e){}}
 
 // ---------- kelimelik ----------
 const WAL='ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ';
