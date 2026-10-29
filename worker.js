@@ -60,6 +60,7 @@ input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:d
 .chips button.on{background:var(--ac);border-color:var(--ac);color:#fff}
 details summary{color:var(--mu);font-size:.82rem;cursor:pointer;margin-bottom:8px}
 .chat{display:flex;flex-direction:column;height:430px;padding:12px;gap:10px}
+.frr{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd)}.frr:last-child{border-bottom:0}.frr .grow{min-width:0}.frr b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.frr small{display:block}.frq{border-color:var(--ac)}
 .vc{display:grid;gap:8px;background:var(--s2);border:1px solid var(--bd);border-radius:14px;padding:10px}.vc .row{gap:6px}.vcl{display:flex;flex-wrap:wrap;gap:6px}.vcl span{border:1px solid var(--bd);border-radius:999px;padding:3px 10px;font-size:.8rem;background:var(--s1);transition:box-shadow .12s,border-color .12s}.vcl span.spk{border-color:var(--ok);box-shadow:0 0 0 3px #31c48d40}.vcl span.mu{color:var(--mu)}.vcl span.bad{border-color:var(--er);color:var(--er)}
 .msgs{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch}
 .msg{max-width:84%;padding:7px 12px;border-radius:14px;background:var(--s3);align-self:flex-start;word-break:break-word}
@@ -147,7 +148,7 @@ if(r.status==401&&p!='login'){logout(true);throw 'Oturum sona erdi, tekrar giri�
 if(!r.ok)throw j.error||'Bir hata oluştu';return j}
 const getPT=async()=>{if(!PT||PTe<Date.now()){const j=await api('ptoken');PT=j.t;PTe=Date.now()+11*36e5}return PT};
 const saveSess=()=>{const S=localStorage.t?localStorage:sessionStorage;S.t=T;S.me=JSON.stringify(ME)};
-function logout(soft){if(T&&localStorage.pse){try{api('push/unsub','POST',{endpoint:localStorage.pse}).catch(()=>{})}catch(e){}localStorage.removeItem('psu')}PEND='';PM=0;AUTO=0;leaveRoom();closeLive();for(const k of ['t','me']){localStorage.removeItem(k);sessionStorage.removeItem(k)}T='';ME=null;PT='';viewLogin(soft===true?'Oturum sona erdi, tekrar giriş yap':'')}
+function logout(soft){FR=null;if(T&&localStorage.pse){try{api('push/unsub','POST',{endpoint:localStorage.pse}).catch(()=>{})}catch(e){}localStorage.removeItem('psu')}PEND='';PM=0;AUTO=0;leaveRoom();closeLive();for(const k of ['t','me']){localStorage.removeItem(k);sessionStorage.removeItem(k)}T='';ME=null;PT='';viewLogin(soft===true?'Oturum sona erdi, tekrar giriş yap':'')}
 const enter=()=>{if(SPC){const c=SPC;SPC='';spExchange(c)}if(PEND&&AUTO){const k=PEND;PEND='';PM=0;AUTO=0;viewLobby().then(()=>joinByCode(k))}else viewLobby()};
 const canUse=a=>{const v=LK[a]|0;return v==0||(v==1&&ME&&ME.role=='admin')};
 const LVN=['Açık','Yöneticiler','Kilitli'];
@@ -187,11 +188,11 @@ const feat=(i,t,d,b,fn,lkd)=>h('div',{class:'card feat'},h('div',{class:'row'},h
 const last=localStorage.rm;
 mount(h('div',{class:'narrow stack'},brand(userChip()),
 h('div',{},h('h1',{text:'Merhaba, '+ME.name}),h('small',{text:'Ne yapmak istersin?'})),
-PEND?h('div',{class:'card'},h('h2',{text:'Davet var: '+PEND}),h('small',{text:'Biri seni bu odaya çağırdı. Oda türü sunucudan otomatik alınır.'}),h('div',{class:'row wrap'},h('button',{class:'btn',onclick:()=>{const c=PEND;PEND='';joinByCode(c)}},'Odaya katıl'),h('button',{class:'btn sec',onclick:()=>{PEND='';viewLobby()}},'Şimdilik değil'))):null,
+...frCards().slice(0,1),PEND?h('div',{class:'card'},h('h2',{text:'Davet var: '+PEND}),h('small',{text:'Biri seni bu odaya çağırdı. Oda türü sunucudan otomatik alınır.'}),h('div',{class:'row wrap'},h('button',{class:'btn',onclick:()=>{const c=PEND;PEND='';joinByCode(c)}},'Odaya katıl'),h('button',{class:'btn sec',onclick:()=>{PEND='';viewLobby()}},'Şimdilik değil'))):null,
 ME.def?h('div',{class:'card warn'},h('div',{class:'row'},ic('lock'),h('b',{text:'Varsayılan şifre kullanılıyor'})),h('small',{text:'Güvenlik için şifreni hemen değiştir.'}),h('button',{class:'btn sm',onclick:passModal},'Şifreyi değiştir')):null,
 h('div',{class:'grid2'},feat('film','Film odası','Aynı videoyu tam senkron izleyin','Film odası aç',()=>createRoom(1),!canUse('film')),feat('puzzle','Yapboz ve müzik','Birlikte yapboz çözün, birlikte müzik dinleyin','Yapboz odası aç',()=>createRoom(2),!canUse('puzzle')&&!canUse('music'))),
 feat('word','Kelimelik','İki kişilik Türkçe kelime oyunu'+(LK.word==1?' (şimdilik yöneticilere açık)':''),'Kelimelik odası aç',()=>createRoom(3),!canUse('word')),
-h('div',{class:'card'},h('h2',{text:'Odaya katıl'}),h('small',{text:'Oda kodunu yaz. Odanın türü (Film, Yapboz, Kelimelik) otomatik bulunur.'}),k,h('button',{class:'btn sec full',onclick:join},'Katıl'),last?h('button',{class:'btn sec full',onclick:()=>joinByCode(last)},'Son oda: '+last+' · tekrar gir'):null),
+frCards_c(),h('div',{class:'card'},h('h2',{text:'Odaya katıl'}),h('small',{text:'Oda kodunu yaz. Odanın türü (Film, Yapboz, Kelimelik) otomatik bulunur.'}),k,h('button',{class:'btn sec full',onclick:join},'Katıl'),last?h('button',{class:'btn sec full',onclick:()=>joinByCode(last)},'Son oda: '+last+' · tekrar gir'):null),
 pwaCard(),h('div',{class:'card'},ME.role=='admin'?h('button',{class:'btn sec full',onclick:()=>viewAdmin('live')},ic('shield'),'Yönetim paneli'):null,h('button',{class:'btn sec full',onclick:passModal},ic('key'),'Şifremi değiştir'),h('button',{class:'btn sec full',onclick:()=>logout()},ic('out'),'Çıkış yap'))));
 LT=setInterval(async()=>{try{const n=await api('locks');if(JSON.stringify(n)!=JSON.stringify(LK)){LK=n;const v=k.value;await viewLobby();const k2=$('.in.code');if(k2)k2.value=v}}catch(e){}},4000)}
 function passModal(){const o=h('input',{class:'in',type:'password',placeholder:'Mevcut şifre',autocomplete:'current-password'}),a=h('input',{class:'in',type:'password',placeholder:'Yeni şifre (en az 6 karakter)',autocomplete:'new-password'}),b=h('input',{class:'in',type:'password',placeholder:'Yeni şifre (tekrar)',autocomplete:'new-password'}),er=h('div',{class:'err'});
@@ -346,9 +347,35 @@ async function inviteModal(){const pick=new Set(),list=h('div',{class:'stack',st
 const m=modal('Odaya davet et',h('div',{class:'stack',style:'gap:10px'},h('button',{type:'button',class:'btn sec full',onclick:()=>{m.remove();invite()}},ic('link',16),'Davet linkini paylaş'),h('b',{text:'veya bildirim gönder:'}),list),[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Kapat'),go]);
 go.onclick=async()=>{if(!pick.size)return;go.disabled=true;try{const r=await api('push/invite','POST',{room:RM,to:[...pick]}),E=Object.entries(r.r||{}),ok=E.filter(x=>x[1]=='ok').map(x=>x[0]),no=E.filter(x=>x[1]!='ok').map(x=>x[0]);
 toast(ok.length?ok.join(', ')+' çağrıldı ✓'+(no.length?' · ulaşılamadı: '+no.join(', '):''):'Bildirim ulaştırılamadı: '+no.join(', '),!ok.length);if(ok.length)m.remove()}catch(x){toast(x,1)}go.disabled=!pick.size};
-let L=[];try{L=await api('people')}catch(x){list.replaceChildren(h('small',{class:'err',text:String(x)}));return}
+let L=[];try{L=(await api('friends')).f}catch(x){list.replaceChildren(h('small',{class:'err',text:String(x)}));return}
 const here=new Set(prevWho||[]);
-list.replaceChildren(...(L.length?L.map(x=>{const inR=here.has(x.n),dis=!x.push||inR;return h('label',{class:'chk',style:dis?'opacity:.55':''},h('input',{type:'checkbox',disabled:dis,onchange:e=>{e.target.checked?pick.add(x.n):pick.delete(x.n);go.disabled=!pick.size}}),h('span',{text:x.n+(inR?' · odada':x.push?'':' · bildirimleri kapalı')}))}):[h('small',{class:'mu',text:'Başka kullanıcı yok.'})]))}
+list.replaceChildren(...(L.length?L.map(x=>{const inR=here.has(x.n),dis=!x.push||inR;return h('label',{class:'chk',style:dis?'opacity:.55':''},h('input',{type:'checkbox',disabled:dis,onchange:e=>{e.target.checked?pick.add(x.n):pick.delete(x.n);go.disabled=!pick.size}}),h('span',{text:x.n+(inR?' · odada':x.push?'':' · bildirimleri kapalı')}))}):[h('small',{class:'mu',text:'Henüz arkadaşın yok. Lobideki “Arkadaşlar” kartından kullanıcı adıyla ekleyebilirsin.'})]))}
+
+// ---------- arkadaşlar ----------
+let FR=null,FRT=0,FRBUSY=0,FRC=null;
+function frCards(){const inp=h('input',{class:'in',placeholder:'Kullanıcı adı',maxlength:17,autocapitalize:'none',autocorrect:'off',autocomplete:'off',spellcheck:'false',enterkeyhint:'send','aria-label':'Eklenecek kullanıcı adı'});
+const add=async()=>{const v=inp.value.trim().replace(/^@/,'');if(!v)return inp.focus();const r=await frAct('req',v);if(r)inp.value=''};inp.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();add()}};
+const q=h('div',{id:'frq'}),c=h('div',{class:'card',id:'frc'},h('div',{class:'row',style:'justify-content:space-between'},h('h2',{text:'👥 Arkadaşlar'}),h('small',{class:'mu',id:'frn'})),
+h('div',{class:'row'},inp,h('button',{type:'button',class:'btn',onclick:add},'Ekle')),h('small',{class:'mu',text:'Senin kullanıcı adın: '+ME.name+' — arkadaşın seni bu adla ekleyebilir.'}),
+h('div',{id:'frl'}),h('div',{id:'fro'}),h('div',{id:'frb'}));
+clearInterval(FRT);FRT=setInterval(()=>{if(!$('#frc')){clearInterval(FRT);FRT=0;return}if(document.visibilityState=='visible')frLoad()},8000);
+setTimeout(()=>{if(FR)frRender();frLoad()},0);FRC=c;return [q,c]}
+function frCards_c(){return FRC}
+async function frLoad(){try{FR=await api('friends')}catch(e){return}frRender()}
+async function frAct(a,n){if(FRBUSY)return;FRBUSY=1;try{const r=await api('friends','POST',{a,n});if(r.msg)toast(r.msg);await frLoad();return r}catch(x){toast(x,1)}finally{FRBUSY=0}}
+function frAgo(t){if(!t)return 'henüz giriş yapmadı';const s=(Date.now()-t)/1000;return 'son görülme: '+(s<3600?Math.max(1,Math.round(s/60))+' dk önce':s<86400?Math.round(s/3600)+' saat önce':Math.round(s/86400)+' gün önce')}
+function frMenu(n){const m=modal(n,h('small',{class:'mu',text:'Engellediğin kişi sana arkadaşlık isteği ve davet gönderemez; arkadaşlığınız da sona erer.'}),[
+h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),
+h('button',{type:'button',class:'btn sec',onclick:()=>{if(confirm(n+' arkadaşlarından çıkarılsın mı?')){m.remove();frAct('rm',n)}}},'Arkadaşlıktan çıkar'),
+h('button',{type:'button',class:'btn dng',onclick:()=>{if(confirm(n+' engellensin mi?')){m.remove();frAct('block',n)}}},'Engelle')])}
+function frRender(){const q=$('#frq'),l=$('#frl');if(!l||!FR)return;const bt=(t,fn,c)=>h('button',{type:'button',class:'btn sm '+(c||'sec'),onclick:fn},t);
+q.replaceChildren(FR.in.length?h('div',{class:'card frq'},h('h2',{text:'🔔 Arkadaşlık isteği'+(FR.in.length>1?' ('+FR.in.length+')':'')}),
+...FR.in.map(n=>h('div',{class:'frr'},h('div',{class:'grow'},h('b',{text:n}),h('small',{class:'mu',text:'seni arkadaş olarak eklemek istiyor'})),bt('Kabul et',()=>frAct('acc',n),' '),bt('Reddet',()=>frAct('dec',n)),bt('⋯',()=>{const m=modal(n,h('small',{class:'mu',text:'Bu kişiden istek almak istemiyorsan engelleyebilirsin.'}),[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),h('button',{type:'button',class:'btn dng',onclick:()=>{m.remove();frAct('block',n)}},'Engelle')])})))):'');
+const on=FR.f.filter(x=>x.on).length;$('#frn').textContent=FR.f.length?on+' / '+FR.f.length+' çevrimiçi':'';
+l.replaceChildren(...(FR.f.length?FR.f.map(x=>h('div',{class:'frr'},h('i',{class:'dot'+(x.on?' on':'')}),h('div',{class:'grow'},h('b',{text:x.n}),h('small',{class:'mu',text:x.room?'🎬 '+x.room+' odasında'+(x.room==RM?' (seninle)':''):x.on?'çevrimiçi':frAgo(x.last)})),
+x.room&&x.room!=RM?bt('Katıl',()=>joinByCode(x.room),' '):null,bt('⋯',()=>frMenu(x.n)))):[h('small',{class:'mu',text:'Henüz arkadaşın yok. Arkadaşının kullanıcı adını yazıp “Ekle”ye bas.'})]));
+$('#fro').replaceChildren(...(FR.out.length?[h('small',{class:'lbl',text:'Yanıt bekleyen istekler'}),...FR.out.map(n=>h('div',{class:'frr'},h('div',{class:'grow'},h('b',{text:n}),h('small',{class:'mu',text:'istek gönderildi'})),bt('İptal',()=>frAct('cancel',n))))]:[]));
+$('#frb').replaceChildren(...(FR.bl.length?[h('details',{},h('summary',{text:'Engellenenler ('+FR.bl.length+')'}),...FR.bl.map(n=>h('div',{class:'frr'},h('div',{class:'grow'},h('b',{text:n})),bt('Engeli kaldır',()=>frAct('unblock',n)))))]:[]))}
 
 function leaveRoom(){vLeave(1);clearInterval(LT);LT=0;RM='';clearTimeout(wsTm);wsTm=0;wsq=[];wsTry=0;if(ws){const w=ws;ws=null;w.onclose=null;clearInterval(w.p);try{w.close()}catch(e){}}teardown();mstop();MS=null;WG=null;WP=new Map();WS=-1;st=null;PZ=null;IM=null;PC=[];PP=[];PU=0;clearInterval(tk);tk=0;hb=[];V=null;yw=null;ov.classList.remove('on')}
 let wsq=[],wsTry=0,wsTm=0,wsLast=0;
@@ -937,8 +964,9 @@ async function iceServers(env) {
 
 // ---------- Worker ----------
 export default {
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
     const u = new URL(req.url), p = u.pathname;
+    const later = pr => { if (ctx && ctx.waitUntil) ctx.waitUntil(pr.catch(() => { })); else return pr.catch(() => { }) };
     const J = (o, s = 200) => Response.json(o, { status: s, headers: { 'cache-control': 'no-store' } });
     const pa = pwaAsset(p); if (pa) return pa;
     if (!/^\/(api|ws|proxy)(\/|$)/.test(p)) return new Response(HTML, { headers: { 'content-type': 'text/html;charset=utf-8', 'cache-control': 'no-store', 'content-security-policy': CSP, 'x-content-type-options': 'nosniff', 'x-frame-options': 'DENY', 'referrer-policy': 'strict-origin-when-cross-origin' } });
@@ -970,7 +998,13 @@ export default {
       if (p == '/api/turn') return J(await iceServers(env));
       // ---- bildirimler ----
       if (p == '/api/push/key') return J({ k: (await vapid(env)).pub });
-      if (p == '/api/people') return J((await (await dbf(env, '/people')).json()).filter(x => x.n !== me.n));
+      // ---- arkadaşlar ----
+      if (p == '/api/friends') {
+        if (req.method == 'GET') return J(await (await dbf(env, '/fr', { name: me.n })).json());
+        const b = await req.json().catch(() => ({})), r = await dbf(env, '/fract', { name: me.n, a: String(b.a || ''), n: String(b.n || '') }), j = await r.json();
+        if (j.notify) await later(pushTo(env, [j.notify.to], { title: j.notify.title, body: j.notify.body, url: '/', tag: 'arkadas-' + me.n }, u.origin)); delete j.notify;
+        return J(j, r.status);
+      }
       if (p.startsWith('/api/push/') && req.method == 'POST') {
         const b = await req.json().catch(() => ({}));
         if (p == '/api/push/sub') { if (!b.sub || !pushSubOk(b.sub)) return J({ error: 'Bu cihazın bildirim adresi desteklenmiyor' }, 400); return J(await (await dbf(env, '/psub', { name: me.n, sub: b.sub })).json()) }
@@ -980,6 +1014,7 @@ export default {
           const code = clean(b.room); if (!code) return J({ error: 'Oda kodu yok' }, 400);
           const to = [...new Set((Array.isArray(b.to) ? b.to : []).map(x => String(x).slice(0, 40)))].filter(x => x && x !== me.n).slice(0, 8);
           if (!to.length) return J({ error: 'Kimseyi seçmedin' }, 400);
+          const frs = new Set(await (await dbf(env, '/frof', { name: me.n })).json()); if (to.some(n => !frs.has(n))) return J({ error: 'Yalnız arkadaşlarını çağırabilirsin' }, 403);
           const now = Date.now(), rl = (PRL.get(me.n) || []).filter(t => now - t < 60000);
           if (rl.length >= 6) return J({ error: 'Çok sık davet gönderdin, biraz bekle.' }, 429);
           const fresh = to.filter(n => now - (PRL.get(me.n + '>' + n) || 0) > 20000);
@@ -1563,7 +1598,7 @@ export class Do {
       if (b.role && nm != 'admin') { x.role = b.role == 'admin' ? 'admin' : 'user'; x.v = (x.v || 1) + 1 }
       await S.put('u:' + nm, x); return Response.json({ ok: 1 });
     }
-    if (p == '/del') { if (nm == 'admin' || nm == String(b.by || '').toLowerCase()) return bad('Bu hesap silinemez'); await S.delete('u:' + nm); await S.delete('ps:' + nm); return Response.json({ ok: 1 }) }
+    if (p == '/del') { if (nm == 'admin' || nm == String(b.by || '').toLowerCase()) return bad('Bu hesap silinemez'); await S.delete('u:' + nm); await S.delete('ps:' + nm); await S.delete('fr:' + nm); return Response.json({ ok: 1 }) }
     if (p == '/setpass') {
       const x = await S.get('u:' + nm); if (!x || !same(x.h, await hash(String(b.old || '').slice(0, 200), x.salt))) return bad('Mevcut şifre yanlış');
       if (!pwOk(b.pass)) return bad('Yeni şifre en az 6 karakter olmalı'); if (b.pass == b.old) return bad('Yeni şifre eskisiyle aynı olamaz');
@@ -1579,6 +1614,55 @@ export class Do {
     if (p == '/punsub') { const L = (await S.get('ps:' + nm)) || [], f = L.filter(x => x.endpoint !== b.endpoint); if (f.length) await S.put('ps:' + nm, f); else await S.delete('ps:' + nm); return Response.json({ ok: 1 }) }
     if (p == '/pget') { const o = {}; for (const n of (Array.isArray(b.names) ? b.names : []).slice(0, 20)) o[n] = (await S.get('ps:' + String(n).toLowerCase())) || []; return Response.json(o) }
     if (p == '/people') { const ps = new Set([...(await S.list({ prefix: 'ps:' })).keys()].map(k => k.slice(3))); return Response.json([...(await S.list({ prefix: 'u:' })).values()].map(x => ({ n: x.name, push: ps.has(String(x.name).toLowerCase()) }))) }
+    // ---- arkadaşlık: fr:<ad> = { f: arkadaşlar, in: gelen istekler, out: gönderilen istekler, bl: engellenenler } ----
+    if (p == '/fr' || p == '/fract' || p == '/frof') {
+      const F = async n => ({ f: [], in: [], out: [], bl: [], ...((await S.get('fr:' + n)) || {}) }), put = (n, x) => S.put('fr:' + n, x), del = (a, v) => a.filter(z => z !== v);
+      const seen = this.seen || (this.seen = new Map()), now = Date.now();
+      if (!nm || !(await S.get('u:' + nm))) return bad('Kullanıcı yok', 404);
+      if (p == '/frof') return Response.json((await F(nm)).f);
+      if (p == '/fract') {
+        const a = String(b.a || ''), t = String(b.n || '').toLowerCase().trim().replace(/^@/, '');
+        if (!['req', 'acc', 'dec', 'cancel', 'rm', 'block', 'unblock'].includes(a)) return bad('Geçersiz işlem');
+        if (!/^[a-z0-9_]{3,16}$/.test(t)) return bad('Geçerli bir kullanıcı adı yaz (3-16 karakter: a-z, 0-9, _)');
+        if (t === nm) return bad('Kendini ekleyemezsin');
+        const me = await F(nm);
+        if (a == 'unblock') { me.bl = del(me.bl, t); await put(nm, me); return Response.json({ ok: 1, msg: 'Engel kaldırıldı' }) }
+        const exists = !!(await S.get('u:' + t)); if (!exists && (a == 'req' || a == 'acc')) return bad('Bu kullanıcı adı bulunamadı', 404);
+        const o = await F(t); let notify = null, msg = '';
+        const link = () => { me.in = del(me.in, t); me.out = del(me.out, t); o.in = del(o.in, nm); o.out = del(o.out, nm); if (!me.f.includes(t)) me.f.push(t); if (!o.f.includes(nm)) o.f.push(nm) };
+        if (a == 'req') {
+          if (me.bl.includes(t)) return bad('Bu kişiyi engellemişsin. Önce engeli kaldır.');
+          if (me.f.includes(t)) return bad('Zaten arkadaşsınız');
+          if (me.f.length >= 300) return bad('Arkadaş sınırına (300) ulaştın');
+          if (me.in.includes(t) && !o.bl.includes(nm)) { link(); msg = t + ' ile artık arkadaşsınız ✓'; notify = { to: t, title: nm + ' arkadaşlık isteğini kabul etti', body: 'Artık birbirinizi odaya çağırabilirsiniz' } }
+          else {
+            if (me.out.includes(t)) return bad('İstek zaten gönderildi, yanıt bekleniyor');
+            if (me.out.length >= 50) return bad('Çok fazla bekleyen isteğin var. Bazılarını iptal et.');
+            const rl = this.frl || (this.frl = new Map()), L = (rl.get(nm) || []).filter(x => now - x < 60000); if (L.length >= 10) return bad('Çok hızlı istek gönderiyorsun, biraz bekle.', 429); L.push(now); rl.set(nm, L); if (rl.size > 500) rl.clear();
+            me.out.push(t); msg = 'İstek gönderildi';
+            // Engellendiysen karşı tarafa hiçbir şey ulaşmaz (ve bunu sana belli etmeyiz)
+            if (!o.bl.includes(nm) && o.in.length < 200 && !o.in.includes(nm)) { o.in.push(nm); notify = { to: t, title: nm + ' seni arkadaş olarak eklemek istiyor', body: 'Kabul etmek için uygulamayı aç' } }
+          }
+        } else if (a == 'acc') { if (!me.in.includes(t)) return bad('Bu kişiden bekleyen istek yok'); link(); msg = t + ' ile artık arkadaşsınız ✓'; if (!o.bl.includes(nm)) notify = { to: t, title: nm + ' arkadaşlık isteğini kabul etti', body: 'Artık birbirinizi odaya çağırabilirsiniz' } }
+        else if (a == 'dec') { me.in = del(me.in, t); o.out = del(o.out, nm); msg = 'İstek reddedildi' }
+        else if (a == 'cancel') { me.out = del(me.out, t); o.in = del(o.in, nm); msg = 'İstek iptal edildi' }
+        else if (a == 'rm') { me.f = del(me.f, t); o.f = del(o.f, nm); msg = t + ' arkadaşlarından çıkarıldı' }
+        else if (a == 'block') { for (const k of ['f', 'in', 'out']) { me[k] = del(me[k], t); o[k] = del(o[k], nm) } if (!me.bl.includes(t)) me.bl.push(t); if (me.bl.length > 500) me.bl = me.bl.slice(-500); msg = t + ' engellendi' }
+        await put(nm, me); if (exists) await put(t, o);
+        return Response.json({ ok: 1, msg, notify });
+      }
+      // Liste + çevrimiçi durumu (silinmiş hesaplar ayıklanır)
+      const me = await F(nm); seen.set(nm, now);
+      const inRoom = {}; for (const r of this.fresh()) for (const w of r.who) if (!inRoom[w]) inRoom[w] = r.room;
+      const names = [...new Set([...me.f, ...me.in, ...me.out])], U = new Map();
+      for (let i = 0; i < names.length; i += 100) { const g = await S.get(names.slice(i, i + 100).map(n => 'u:' + n)); for (const [k, v] of g) U.set(k.slice(2), v) }
+      const live = n => U.has(n), before = JSON.stringify([me.f, me.in, me.out]);
+      me.f = me.f.filter(live); me.in = me.in.filter(live); me.out = me.out.filter(live); if (JSON.stringify([me.f, me.in, me.out]) !== before) await put(nm, me);
+      const subs = new Set(); const pg = await S.get(me.f.map(n => 'ps:' + n)); for (const [k, v] of pg) if (v && v.length) subs.add(k.slice(3));
+      const f = me.f.map(n => ({ n, room: inRoom[n] || '', on: !!inRoom[n] || now - (seen.get(n) || 0) < 45000, last: Math.max(U.get(n).last || 0, seen.get(n) || 0), push: subs.has(n) }))
+        .sort((x, y) => (y.room ? 2 : y.on ? 1 : 0) - (x.room ? 2 : x.on ? 1 : 0) || y.last - x.last || (x.n < y.n ? -1 : 1));
+      return Response.json({ f, in: me.in, out: me.out, bl: me.bl });
+    }
     if (p == '/bump') { const x = await S.get('u:' + nm); if (x) { x.v = (x.v || 1) + 1; await S.put('u:' + nm, x) } return Response.json({ ok: 1 }) }
     return new Response('?', { status: 404 });
   }
@@ -1587,6 +1671,7 @@ export class Do {
   snap() { return JSON.stringify({ t: 'live', rooms: this.fresh(), now: Date.now() }) }
   async presence(b) {
     const n = Date.now(), room = clean(b.room); if (!room) return Response.json({ ok: 0 });
+    const sn = this.seen || (this.seen = new Map()); for (const w of (b.who || []).slice(0, 8)) sn.set(String(w), n);
     if (!b.who || !b.who.length) delete this.rooms[room]; else this.rooms[room] = { room, who: b.who.slice(0, 8), site: String(b.site || '').slice(0, 60), playing: !!b.playing, ts: n };
     for (const k in this.rooms) if (this.rooms[k].ts < n - 150000) delete this.rooms[k];
     await this.s.storage.put('rooms', this.rooms); const m = this.snap(); this.s.getWebSockets('admin').forEach(w => { try { w.send(m) } catch (e) { } });
