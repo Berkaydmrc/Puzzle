@@ -136,7 +136,7 @@ const ago=t=>{if(!t)return 'hiç';const s=(Date.now()-t)/1e3;return s<60?'az ön
 const cleanCode=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);
 let TH=0;const toast=(m,bad)=>{const t=$('#tt');t.textContent=m;t.className='on'+(bad?' bad':'');clearTimeout(TH);TH=setTimeout(()=>t.className='',3400)};
 // ---------- durum ----------
-let T=localStorage.t||sessionStorage.t||'',ME=null,PT='',PTe=0,PEND=cleanCode(new URLSearchParams(location.search).get('oda'));
+let T=localStorage.t||sessionStorage.t||'',ME=null,PT='',PTe=0,PEND=cleanCode(new URLSearchParams(location.search).get('oda')),PADD=(new URLSearchParams(location.search).get('ekle')||'').slice(0,30);
 try{ME=JSON.parse(localStorage.me||sessionStorage.me||'null')}catch(e){}
 let LK={film:0,puzzle:0,music:0,word:2},PM=0,MS=null,WG=null,CFG=null,WP=new Map(),WS=-1,WU={};
 let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0,ROOM_MODE=1,ROOM_NEW=0,AUTO=0,WPO=null,PSL='',PST=0,MSH={},WPQ={mv:0,s:0},WQ=null,WQT=0,PSEQ=0,WPV=null,WBZ=0,WBT=0;
@@ -353,16 +353,21 @@ list.replaceChildren(...(L.length?L.map(x=>{const inR=here.has(x.n),dis=!x.push|
 
 // ---------- arkadaşlar ----------
 let FR=null,FRT=0,FRBUSY=0,FRC=null;
-function frCards(){const inp=h('input',{class:'in',placeholder:'Kullanıcı adı',maxlength:17,autocapitalize:'none',autocorrect:'off',autocomplete:'off',spellcheck:'false',enterkeyhint:'send','aria-label':'Eklenecek kullanıcı adı'});
+function frCards(){const inp=h('input',{class:'in',placeholder:'kod, örn. ad#1234',maxlength:24,autocapitalize:'none',autocorrect:'off',autocomplete:'off',spellcheck:'false',enterkeyhint:'send','aria-label':'Eklenecek kullanıcı adı'});
 const add=async()=>{const v=inp.value.trim().replace(/^@/,'');if(!v)return inp.focus();const r=await frAct('req',v);if(r)inp.value=''};inp.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();add()}};
 const q=h('div',{id:'frq'}),c=h('div',{class:'card',id:'frc'},h('div',{class:'row',style:'justify-content:space-between'},h('h2',{text:'👥 Arkadaşlar'}),h('small',{class:'mu',id:'frn'})),
-h('div',{class:'row'},inp,h('button',{type:'button',class:'btn',onclick:add},'Ekle')),h('small',{class:'mu',text:'Senin kullanıcı adın: '+ME.name+' — arkadaşın seni bu adla ekleyebilir.'}),
+h('div',{class:'row'},inp,h('button',{type:'button',class:'btn',onclick:add},'Ekle')),h('div',{class:'row',style:'justify-content:space-between;gap:8px'},h('small',{class:'mu',id:'frme',text:'Senin kodun: …'}),h('button',{type:'button',class:'btn sec sm',onclick:()=>frShare()},'Kodumu paylaş')),
 h('div',{id:'frl'}),h('div',{id:'fro'}),h('div',{id:'frb'}));
 clearInterval(FRT);FRT=setInterval(()=>{if(!$('#frc')){clearInterval(FRT);FRT=0;return}if(document.visibilityState=='visible')frLoad()},8000);
 setTimeout(()=>{if(FR)frRender();frLoad()},0);FRC=c;return [q,c]}
 function frCards_c(){return FRC}
 async function frLoad(){try{FR=await api('friends')}catch(e){return}frRender()}
 async function frAct(a,n){if(FRBUSY)return;FRBUSY=1;try{const r=await api('friends','POST',{a,n});if(r.msg)toast(r.msg);await frLoad();return r}catch(x){toast(x,1)}finally{FRBUSY=0}}
+const frCode=()=>FR&&FR.me?FR.me.n+'#'+FR.me.tag:'';
+async function frShare(){const c=frCode();if(!c)return;const url=location.origin+'/?ekle='+encodeURIComponent(c),txt='Bizim Sinema’da beni arkadaş olarak ekle: '+c;
+try{if(navigator.share){await navigator.share({title:'Bizim Sinema',text:txt,url});return}}catch(e){if(e&&e.name=='AbortError')return}
+try{await navigator.clipboard.writeText(txt+'\n'+url);toast('Kodun ve linkin kopyalandı: '+c)}catch(e){toast('Kodun: '+c)}}
+const frTagEl=t=>t?h('span',{class:'mu',style:'font-weight:500',text:'#'+t}):null;
 function frAgo(t){if(!t)return 'henüz giriş yapmadı';const s=(Date.now()-t)/1000;return 'son görülme: '+(s<3600?Math.max(1,Math.round(s/60))+' dk önce':s<86400?Math.round(s/3600)+' saat önce':Math.round(s/86400)+' gün önce')}
 function frMenu(n){const m=modal(n,h('small',{class:'mu',text:'Engellediğin kişi sana arkadaşlık isteği ve davet gönderemez; arkadaşlığınız da sona erer.'}),[
 h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),
@@ -370,11 +375,13 @@ h('button',{type:'button',class:'btn sec',onclick:()=>{if(confirm(n+' arkadaşla
 h('button',{type:'button',class:'btn dng',onclick:()=>{if(confirm(n+' engellensin mi?')){m.remove();frAct('block',n)}}},'Engelle')])}
 function frRender(){const q=$('#frq'),l=$('#frl');if(!l||!FR)return;const bt=(t,fn,c)=>h('button',{type:'button',class:'btn sm '+(c||'sec'),onclick:fn},t);
 q.replaceChildren(FR.in.length?h('div',{class:'card frq'},h('h2',{text:'🔔 Arkadaşlık isteği'+(FR.in.length>1?' ('+FR.in.length+')':'')}),
-...FR.in.map(n=>h('div',{class:'frr'},h('div',{class:'grow'},h('b',{text:n}),h('small',{class:'mu',text:'seni arkadaş olarak eklemek istiyor'})),bt('Kabul et',()=>frAct('acc',n),' '),bt('Reddet',()=>frAct('dec',n)),bt('⋯',()=>{const m=modal(n,h('small',{class:'mu',text:'Bu kişiden istek almak istemiyorsan engelleyebilirsin.'}),[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),h('button',{type:'button',class:'btn dng',onclick:()=>{m.remove();frAct('block',n)}},'Engelle')])})))):'');
+...FR.in.map(n=>h('div',{class:'frr'},h('div',{class:'grow'},h('b',{},n,frTagEl(FR.tags&&FR.tags[n])),h('small',{class:'mu',text:'seni arkadaş olarak eklemek istiyor'})),bt('Kabul et',()=>frAct('acc',n),' '),bt('Reddet',()=>frAct('dec',n)),bt('⋯',()=>{const m=modal(n,h('small',{class:'mu',text:'Bu kişiden istek almak istemiyorsan engelleyebilirsin.'}),[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),h('button',{type:'button',class:'btn dng',onclick:()=>{m.remove();frAct('block',n)}},'Engelle')])})))):'');
+const me=$('#frme');if(me&&FR.me)me.textContent='Senin kodun: '+frCode();
+if(PADD&&FR.me){const c=PADD;PADD='';if(c.toLowerCase()!=frCode()){const m=modal('Arkadaş ekle',h('small',{text:c+' kişisine arkadaşlık isteği gönderilsin mi?'}),[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),h('button',{type:'button',class:'btn',onclick:()=>{m.remove();frAct('req',c)}},'İstek gönder')])}}
 const on=FR.f.filter(x=>x.on).length;$('#frn').textContent=FR.f.length?on+' / '+FR.f.length+' çevrimiçi':'';
-l.replaceChildren(...(FR.f.length?FR.f.map(x=>h('div',{class:'frr'},h('i',{class:'dot'+(x.on?' on':'')}),h('div',{class:'grow'},h('b',{text:x.n}),h('small',{class:'mu',text:x.room?'🎬 '+x.room+' odasında'+(x.room==RM?' (seninle)':''):x.on?'çevrimiçi':frAgo(x.last)})),
-x.room&&x.room!=RM?bt('Katıl',()=>joinByCode(x.room),' '):null,bt('⋯',()=>frMenu(x.n)))):[h('small',{class:'mu',text:'Henüz arkadaşın yok. Arkadaşının kullanıcı adını yazıp “Ekle”ye bas.'})]));
-$('#fro').replaceChildren(...(FR.out.length?[h('small',{class:'lbl',text:'Yanıt bekleyen istekler'}),...FR.out.map(n=>h('div',{class:'frr'},h('div',{class:'grow'},h('b',{text:n}),h('small',{class:'mu',text:'istek gönderildi'})),bt('İptal',()=>frAct('cancel',n))))]:[]));
+l.replaceChildren(...(FR.f.length?FR.f.map(x=>h('div',{class:'frr'},h('i',{class:'dot'+(x.on?' on':'')}),h('div',{class:'grow'},h('b',{},x.n,frTagEl(x.tag)),h('small',{class:'mu',text:x.room?'🎬 '+x.room+' odasında'+(x.room==RM?' (seninle)':''):x.on?'çevrimiçi':frAgo(x.last)})),
+x.room&&x.room!=RM?bt('Katıl',()=>joinByCode(x.room),' '):null,bt('⋯',()=>frMenu(x.n)))):[h('small',{class:'mu',text:'Henüz arkadaşın yok. Arkadaşından kodunu iste (örn. fatma#4821), yukarıya yazıp “Ekle”ye bas.'})]));
+$('#fro').replaceChildren(...(FR.out.length?[h('small',{class:'lbl',text:'Yanıt bekleyen istekler'}),...FR.out.map(n=>h('div',{class:'frr'},h('div',{class:'grow'},h('b',{},n,frTagEl(FR.tags&&FR.tags[n])),h('small',{class:'mu',text:'istek gönderildi'})),bt('İptal',()=>frAct('cancel',n))))]:[]));
 $('#frb').replaceChildren(...(FR.bl.length?[h('details',{},h('summary',{text:'Engellenenler ('+FR.bl.length+')'}),...FR.bl.map(n=>h('div',{class:'frr'},h('div',{class:'grow'},h('b',{text:n})),bt('Engeli kaldır',()=>frAct('unblock',n)))))]:[]))}
 
 function leaveRoom(){vLeave(1);clearInterval(LT);LT=0;RM='';clearTimeout(wsTm);wsTm=0;wsq=[];wsTry=0;if(ws){const w=ws;ws=null;w.onclose=null;clearInterval(w.p);try{w.close()}catch(e){}}teardown();mstop();MS=null;WG=null;WP=new Map();WS=-1;st=null;PZ=null;IM=null;PC=[];PP=[];PU=0;clearInterval(tk);tk=0;hb=[];V=null;yw=null;ov.classList.remove('on')}
@@ -842,7 +849,7 @@ function wrej(m){wbusy(0);WQ=null;wqGone();WP=new Map();WS=-1;PSL='';toast(m.e,1
 
 // ---------- başlat ----------
 {const qs=new URLSearchParams(location.search),oc=qs.get('code'),os=qs.get('state')||'';
-if(qs.get('oda')){PEND=cleanCode(qs.get('oda'));PM=0}if(/^m/.test(os)&&(oc||qs.get('error'))){history.replaceState(null,'',location.pathname);const rr=cleanCode(os.slice(1));if(rr){PEND=rr;PM=0;AUTO=1}if(oc)SPC=oc;else setTimeout(()=>toast('Spotify bağlantısı iptal edildi',1),500)}}
+if(qs.get('oda')){PEND=cleanCode(qs.get('oda'));PM=0}if(qs.get('ekle'))history.replaceState(null,'',location.pathname);if(/^m/.test(os)&&(oc||qs.get('error'))){history.replaceState(null,'',location.pathname);const rr=cleanCode(os.slice(1));if(rr){PEND=rr;PM=0;AUTO=1}if(oc)SPC=oc;else setTimeout(()=>toast('Spotify bağlantısı iptal edildi',1),500)}}
 if(PEND)history.replaceState(null,'',location.pathname);
 if(T&&ME)enter();else viewLogin();
 `;
@@ -1135,6 +1142,7 @@ async function appleToken(env) {
 
 // ---------- Kilitler (0 = açık, 1 = yalnız yöneticiler, 2 = kilitli) ----------
 const LKEYS = ['film', 'puzzle', 'music', 'word'];
+const newTag = () => String(1000 + crypto.getRandomValues(new Uint32Array(1))[0] % 9000);
 const normLk = x => { x = x || {}; const nv = (v, d) => { v = +v; return v === 0 || v === 1 || v === 2 ? v : d }; return { film: nv(x.film, 0), puzzle: nv(x.puzzle, 0), music: nv(x.music, 0), word: nv(x.word, 2) } };
 
 // ---------- Müzik (Ücretsiz Arama + Çoklu Kaynak) ----------
@@ -1580,7 +1588,7 @@ export class Do {
       const now = Date.now(), kn = 'f:' + nm, ki = 'f:ip:' + String(b.ip || '?'), fn = await S.get(kn), fi = await S.get(ki);
       const lu = Math.max((fn && fn.u) || 0, (fi && fi.u) || 0); if (lu > now) return Response.json({ ok: 0, lock: Math.ceil((lu - now) / 1000) });
       const x = await S.get('u:' + nm), hh = await hash(String(b.pass || '').slice(0, 200), x ? x.salt : 'x');
-      if (x && same(x.h, hh)) { await S.delete([kn]); x.last = now; await S.put('u:' + nm, x); return Response.json({ ok: 1, name: x.name, role: x.role, v: x.v || 1, def: !!x.def }) }
+      if (x && same(x.h, hh)) { await S.delete([kn]); x.last = now; if (!x.tag) x.tag = newTag(); await S.put('u:' + nm, x); return Response.json({ ok: 1, name: x.name, role: x.role, v: x.v || 1, def: !!x.def }) }
       const bump = (r, lim, sec) => { r = r && r.t > now - 9e5 ? r : { n: 0 }; r.n++; r.t = now; if (r.n >= lim) { r.u = now + sec * 1000; r.n = 0 } return r };
       await S.put(kn, bump(fn, 15, 120)); await S.put(ki, bump(fi, 8, 300)); return Response.json({ ok: 0 });
     }
@@ -1590,7 +1598,7 @@ export class Do {
       if (!/^[a-z0-9_]{3,16}$/.test(nm)) return bad('Kullanıcı adı 3-16 karakter: a-z, 0-9, _');
       if (!pwOk(b.pass)) return bad('Şifre en az 6 karakter olmalı');
       if (await S.get('u:' + nm)) return bad('Bu kullanıcı zaten var', 409);
-      const salt = crypto.randomUUID(); await S.put('u:' + nm, { name: nm, role: b.role == 'admin' ? 'admin' : 'user', salt, h: await hash(b.pass, salt), v: 1, ts: Date.now() }); return Response.json({ ok: 1 });
+      const salt = crypto.randomUUID(); await S.put('u:' + nm, { tag: newTag(), name: nm, role: b.role == 'admin' ? 'admin' : 'user', salt, h: await hash(b.pass, salt), v: 1, ts: Date.now() }); return Response.json({ ok: 1 });
     }
     if (p == '/edit') {
       const x = await S.get('u:' + nm); if (!x) return bad('Kullanıcı yok', 404);
@@ -1621,13 +1629,21 @@ export class Do {
       if (!nm || !(await S.get('u:' + nm))) return bad('Kullanıcı yok', 404);
       if (p == '/frof') return Response.json((await F(nm)).f);
       if (p == '/fract') {
-        const a = String(b.a || ''), t = String(b.n || '').toLowerCase().trim().replace(/^@/, '');
+        const a = String(b.a || ''), raw = String(b.n || '').toLowerCase().replace(/\s+/g, '').replace(/^@/, '');
         if (!['req', 'acc', 'dec', 'cancel', 'rm', 'block', 'unblock'].includes(a)) return bad('Geçersiz işlem');
-        if (!/^[a-z0-9_]{3,16}$/.test(t)) return bad('Geçerli bir kullanıcı adı yaz (3-16 karakter: a-z, 0-9, _)');
-        if (t === nm) return bad('Kendini ekleyemezsin');
+        let t = raw, code = '';
+        if (a == 'req') { const mm = raw.match(/^([a-z0-9_]{3,16})#(\d{4})$/); if (!mm) return bad('Arkadaşının kodunu tam yaz, örnek: fatma#4821'); t = mm[1]; code = mm[2] }
+        else if (!/^[a-z0-9_]{3,16}$/.test(t)) return bad('Geçersiz kullanıcı');
         const me = await F(nm);
         if (a == 'unblock') { me.bl = del(me.bl, t); await put(nm, me); return Response.json({ ok: 1, msg: 'Engel kaldırıldı' }) }
-        const exists = !!(await S.get('u:' + t)); if (!exists && (a == 'req' || a == 'acc')) return bad('Bu kullanıcı adı bulunamadı', 404);
+        const tu = await S.get('u:' + t), exists = !!tu;
+        if (a == 'req') {
+          const fl = this.frf || (this.frf = new Map()), FL = (fl.get(nm) || []).filter(x => now - x < 6e5);
+          if (FL.length >= 15) return bad('Çok fazla hatalı kod denedin. 10 dakika sonra tekrar dene.', 429);
+          if (!exists || !tu.tag || tu.tag !== code) { FL.push(now); fl.set(nm, FL); if (fl.size > 500) fl.clear(); return bad('Bu kodla bir kullanıcı bulunamadı. # işaretinden sonraki 4 rakamı kontrol et.', 404) }
+          if (t === nm) return bad('Bu senin kendi kodun 🙂');
+        }
+        if (!exists && a == 'acc') return bad('Bu kullanıcı artık yok', 404);
         const o = await F(t); let notify = null, msg = '';
         const link = () => { me.in = del(me.in, t); me.out = del(me.out, t); o.in = del(o.in, nm); o.out = del(o.out, nm); if (!me.f.includes(t)) me.f.push(t); if (!o.f.includes(nm)) o.f.push(nm) };
         if (a == 'req') {
@@ -1652,16 +1668,18 @@ export class Do {
         return Response.json({ ok: 1, msg, notify });
       }
       // Liste + çevrimiçi durumu (silinmiş hesaplar ayıklanır)
-      const me = await F(nm); seen.set(nm, now);
+      const me = await F(nm); seen.set(nm, now); const self = await S.get('u:' + nm); if (!self.tag) { self.tag = newTag(); await S.put('u:' + nm, self) }
       const inRoom = {}; for (const r of this.fresh()) for (const w of r.who) if (!inRoom[w]) inRoom[w] = r.room;
       const names = [...new Set([...me.f, ...me.in, ...me.out])], U = new Map();
       for (let i = 0; i < names.length; i += 100) { const g = await S.get(names.slice(i, i + 100).map(n => 'u:' + n)); for (const [k, v] of g) U.set(k.slice(2), v) }
+      for (const [n, x] of U) if (!x.tag) { x.tag = newTag(); await S.put('u:' + n, x) }
       const live = n => U.has(n), before = JSON.stringify([me.f, me.in, me.out]);
       me.f = me.f.filter(live); me.in = me.in.filter(live); me.out = me.out.filter(live); if (JSON.stringify([me.f, me.in, me.out]) !== before) await put(nm, me);
       const subs = new Set(); const pg = await S.get(me.f.map(n => 'ps:' + n)); for (const [k, v] of pg) if (v && v.length) subs.add(k.slice(3));
-      const f = me.f.map(n => ({ n, room: inRoom[n] || '', on: !!inRoom[n] || now - (seen.get(n) || 0) < 45000, last: Math.max(U.get(n).last || 0, seen.get(n) || 0), push: subs.has(n) }))
+      const tags = {}; for (const [n, x] of U) tags[n] = x.tag;
+      const f = me.f.map(n => ({ n, tag: tags[n], room: inRoom[n] || '', on: !!inRoom[n] || now - (seen.get(n) || 0) < 45000, last: Math.max(U.get(n).last || 0, seen.get(n) || 0), push: subs.has(n) }))
         .sort((x, y) => (y.room ? 2 : y.on ? 1 : 0) - (x.room ? 2 : x.on ? 1 : 0) || y.last - x.last || (x.n < y.n ? -1 : 1));
-      return Response.json({ f, in: me.in, out: me.out, bl: me.bl });
+      return Response.json({ me: { n: nm, tag: self.tag }, f, in: me.in, out: me.out, bl: me.bl, tags });
     }
     if (p == '/bump') { const x = await S.get('u:' + nm); if (x) { x.v = (x.v || 1) + 1; await S.put('u:' + nm, x) } return Response.json({ ok: 1 }) }
     return new Response('?', { status: 404 });
