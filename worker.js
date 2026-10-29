@@ -55,7 +55,8 @@ input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:d
 .stage video,.stage .yt,.stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
 .stage .yt{display:none}
 .empty{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:8px;color:var(--mu);pointer-events:none}
-.hold{position:absolute;left:12px;right:12px;bottom:56px;display:none;align-items:center;gap:10px;background:#000c;border:1px solid var(--bd);border-radius:12px;padding:8px 12px;font-size:.85rem;pointer-events:none}
+.stage.tap{outline:3px solid var(--wa);outline-offset:2px;animation:mupulse 1.4s ease-in-out infinite}
+.hold{pointer-events:none;position:absolute;left:12px;right:12px;bottom:56px;display:none;align-items:center;gap:10px;background:#000c;border:1px solid var(--bd);border-radius:12px;padding:8px 12px;font-size:.85rem;pointer-events:none}
 .fls{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.fls span{background:var(--s2);border:1px solid var(--bd);border-radius:999px;padding:3px 10px;font-size:.78rem;color:var(--mu)}.fls span.ok{border-color:var(--ok);color:var(--ok)}.fls span.err{border-color:var(--er);color:var(--er)}.fls span.tap{border-color:var(--wa);color:var(--wa)}.fls .btn{min-height:28px}
 .sync{position:absolute;left:10px;top:10px;font-size:.7rem;background:#000a;border-radius:99px;padding:3px 10px;color:var(--mu);pointer-events:none}.sync.ok{color:var(--ok)}
 .sp{width:14px;height:14px;border-radius:50%;border:2px solid #fff4;border-top-color:#fff;animation:spin .8s linear infinite;flex:none}
@@ -145,7 +146,7 @@ let TH=0;const toast=(m,bad)=>{const t=$('#tt');t.textContent=m;t.className='on'
 let T=localStorage.t||sessionStorage.t||'',ME=null,PT='',PTe=0,PEND=cleanCode(new URLSearchParams(location.search).get('oda')),PADD=(new URLSearchParams(location.search).get('ekle')||'').slice(0,30);
 try{ME=JSON.parse(localStorage.me||sessionStorage.me||'null')}catch(e){}
 let LK={film:0,puzzle:0,music:0,word:2},PM=0,MS=null,WG=null,CFG=null,WP=new Map(),WS=-1,WU={};
-let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0,ROOM_MODE=1,ROOM_NEW=0,AUTO=0,LASTM=null,WPO=null,PSL='',PST=0,FSH={},FS={s:'',k:''},FRY=0,FLS=null,YLEAD=.35,YSK=null,MQ=[],MQS='',WL=null,WLU={},WLT=0,MSH={},WPQ={mv:0,s:0},WQ=null,WQT=0,PSEQ=0,WPV=null,WBZ=0,WBT=0;
+let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0,ROOM_MODE=1,ROOM_NEW=0,AUTO=0,LASTM=null,YTH=null,YNEED=0,WPO=null,PSL='',PST=0,FSH={},FS={s:'',k:''},FRY=0,FLS=null,YLEAD=.6,YSK=null,MQ=[],MQS='',WL=null,WLU={},WLT=0,MSH={},WPQ={mv:0,s:0},WQ=null,WQT=0,PSEQ=0,WPV=null,WBZ=0,WBT=0;
 const ov=h('div',{class:'ov',onclick:()=>{ov.classList.remove('on');if(st&&st.url){pl.play();if(FS.s=='tap')setTimeout(()=>fst('ok'),300)}}},ic('play',34),h('span',{text:'Dokun ve başlat'}));document.body.append(ov);
 const mount=(...n)=>{A.replaceChildren(...n);window.scrollTo(0,0)};
 async function api(p,m,b){let r;try{r=await fetch('/api/'+p,{method:m||'GET',headers:{authorization:'Bearer '+T,'content-type':'application/json'},body:b?JSON.stringify(b):undefined})}catch(e){throw 'Sunucuya ulaşılamadı. Bağlantını kontrol et.'}
@@ -478,11 +479,12 @@ const exp=()=>st.pos+((st.playing&&!st.held)?(Date.now()+off-st.at)/1e3:0);
 const ytId=u=>{const m=String(u).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/)|youtube-nocookie\.com\/embed\/)([\w-]{11})/i);return m?m[1]:''};
 const pl={ready(){return Y?!!yr:!!(V&&V.readyState>0)},time(){return Y?(yr?Y.getCurrentTime():0):V.currentTime},
 paused(){if(Y){const s=Y.getPlayerState();return s!=1&&s!=3}return V.paused},busy(){return Y?false:V.seeking},
-play(){lk();if(Y){Y.playVideo();setTimeout(()=>{if(Y&&st&&st.playing&&!st.held&&[1,3].indexOf(Y.getPlayerState())<0){ov.classList.add('on');fst('tap')}},2000)}else{const p=V.play();if(p&&p.catch)p.catch(e=>{if(e&&e.name=='NotAllowedError'){ov.classList.add('on');fst('tap')}})}},
+play(){lk();if(Y){Y.playVideo();setTimeout(()=>{if(Y&&st&&st.playing&&!st.held&&[1,3].indexOf(Y.getPlayerState())<0){ytNeed(1)}},2000)}else{const p=V.play();if(p&&p.catch)p.catch(e=>{if(e&&e.name=='NotAllowedError'){ov.classList.add('on');fst('tap')}})}},
 pause(){lk();Y?Y.pauseVideo():V.pause()},seek(t){lk();Y?Y.seekTo(t,true):(V.currentTime=t)},rate(r){if(!Y&&V.playbackRate!=r)V.playbackRate=r}};
 const px=(u,r)=>'/proxy?u='+encodeURIComponent(u)+'&t='+encodeURIComponent(PT)+(r?'&r='+encodeURIComponent(r):'');
 const getHls=()=>hp||(hp=new Promise((ok,no)=>{if(window.Hls)return ok();const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js';s.onload=ok;s.onerror=()=>{hp=null;no()};document.head.append(s)}));
 function teardown(){lt++;if(hls){try{hls.destroy()}catch(e){}hls=null}if(Y){try{Y.destroy()}catch(e){}Y=null;yr=0}if(V){V.onerror=null;try{V.pause();V.removeAttribute('src');V.load()}catch(e){}V.style.display=''}if(yw)yw.style.display='none';clearTimeout(bufT);bufT=0;if(bs){try{send({t:'buf',b:0})}catch(e){}}bs=0}
+function ytNeed(on){on=on?1:0;if(on===YNEED&&!(on&&FS.s!='tap'))return;YNEED=on;if(YTH)YTH.style.display=on?'':'none';const g=$('#stg');if(g)g.classList.toggle('tap',!!on);if(on){fst('tap');if(YTH)YTH.scrollIntoView({block:'nearest',behavior:'smooth'})}}
 function fst(s,e){if(!st||!st.sid)return;if(FS.s===s&&FS.k===st.sid)return;FS={s,k:st.sid};send({t:'fst',s,k:st.sid,e:e||''});flsRender()}
 const FLM={ok:['✓ hazır','ok'],load:['⏳ yükleniyor',''],err:['✗ açılamadı','err'],tap:['👆 dokunması gerekiyor','tap']};
 function flsRender(){if(!FLS)return;const on=st&&st.url,who=prevWho||[ME.name];if(!on){FLS.replaceChildren();return}
@@ -492,7 +494,7 @@ FLS.replaceChildren(...kids)}
 const bad=m=>{const s=st;
 if(!FRY&&s&&s.url){FRY=1;if(syncEl){syncEl.textContent='Yeniden deneniyor…';syncEl.className='sync'}fst('load');setTimeout(()=>{if(st===s||(st&&st.sid===s.sid)){teardown();loadVid(st,true)}},2500);return}
 if(syncEl){syncEl.textContent='Açılamadı';syncEl.className='sync'}fst('err',m);toast('Video açılamadı ('+m+'). “Yeniden dene”ye bas; olmazsa başka link, Referer ya da YouTube/mp4 dene.',1)};
-function load(s){teardown();ov.classList.remove('on');YSK=null;if(s.url&&s.sid){FS={s:'',k:''};fst('load')}if(EMPTY)EMPTY.style.display=s.url?'none':'';if(!s.url){if(syncEl)syncEl.textContent='';return}const id=ytId(s.url);if(id)return loadYT(id);loadVid(s,false)}
+function load(s){teardown();ov.classList.remove('on');ytNeed(0);YSK=null;if(s.url&&s.sid){FS={s:'',k:''};fst('load')}if(EMPTY)EMPTY.style.display=s.url?'none':'';if(!s.url){if(syncEl)syncEl.textContent='';return}const id=ytId(s.url);if(id)return loadYT(id);loadVid(s,false)}
 function loadVid(s,vp){const my=lt,isH=/\.m3u8/i.test(s.url),src=vp?px(s.url,s.ref):s.url;let nr=0;
 const fail=w=>{if(my!=lt)return;if(vp)return bad(w);getPT().then(()=>{if(my!=lt)return;teardown();loadVid(s,true)}).catch(()=>bad(w))};
 if(isH&&!V.canPlayType('application/vnd.apple.mpegurl')){getHls().then(()=>{if(my!=lt)return;if(!window.Hls||!Hls.isSupported())return bad('tarayıcı HLS desteklemiyor');
@@ -502,9 +504,9 @@ function withYT(cb){if(window.YT&&YT.Player)return cb();(window.ytq=window.ytq||
 function loadYT(id){const my=lt;V.style.display='none';yw.style.display='block';yw.replaceChildren(h('div',{id:'ytp'}));yr=0;
 withYT(()=>{if(my!=lt)return;Y=new YT.Player('ytp',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,origin:location.origin},events:{onReady:()=>{if(my==lt){yr=1;fst('ok');tick();try{fdur(Y.getDuration())}catch(e){}}},onStateChange:ytState,onError:()=>{fst('err','YouTube gömmeye izin vermiyor');toast('YouTube: bu video gömülemiyor, başka bir video dene',1)}}})})}
 function ytState(e){if(!st)return;const s=e.data,t=Y?Y.getCurrentTime():0;
-if(s==1){bufEnd();if(Date.now()>=lock&&!st.playing){uact=Date.now();send({t:'play',pos:t})}}
+if(s==1){bufEnd();ytNeed(0);fst('ok');if(Date.now()>=lock&&!st.playing){uact=Date.now();send({t:'play',pos:t})}}
 else if(s==2){if(Date.now()>=lock&&st.playing){uact=Date.now();send({t:'pause',pos:t})}}
-else if(s==3)bufStart();else if(s==0){if(st.playing)send({t:'pause',pos:t})}}
+else if(s==3){if(!(YSK&&Date.now()-YSK.t<3500))bufStart()}else if(s==0){if(st.playing)send({t:'pause',pos:t})}}
 let ytLast=0;function ytPoll(){if(!Y||!yr||!st)return;const t=Y.getCurrentTime(),d=t-ytLast;ytLast=t;if(Date.now()<lock||Date.now()-uact<1500)return;if(Math.abs(d-(Y.getPlayerState()==1?.5:0))>1.6&&Math.abs(t-exp())>1.6){uact=Date.now();send({t:'seek',pos:t})}}
 function bufStart(){if(!st||!st.playing||bufT||bs)return;bufT=setTimeout(()=>{bufT=0;if(!bs){bs=1;send({t:'buf',b:1})}},600)}
 function bufEnd(){clearTimeout(bufT);bufT=0;if(bs){bs=0;send({t:'buf',b:0})}}
@@ -513,7 +515,7 @@ if(syncEl&&st.playing&&!st.held){const d=pl.time()-exp(),ok=Math.abs(d)<(Y?.9:.6
 if(Date.now()-uact<1200||pl.busy())return;
 const play=st.playing&&!st.held,e=exp(),d=pl.time()-e;
 if(!play){if(!pl.paused()){pl.pause()}if(Math.abs(d)>.7)pl.seek(e);pl.rate(1);return}
-if(Y){const n=Date.now();if(YSK&&!YSK.m&&n-YSK.t>1500&&!pl.paused()){YSK.m=1;YLEAD=Math.max(0,Math.min(3,YLEAD-d))}if(Math.abs(d)>1&&(!YSK||n-YSK.t>4000)){YSK={t:n,m:0};pl.seek(e+YLEAD)}}else if(Math.abs(d)>1.3)pl.seek(e+.25);else pl.rate(d>.3?.94:d<-.3?1.06:1);
+if(Y){const n=Date.now(),ps=Y.getPlayerState();if(YSK&&!YSK.m&&ps==1){if(!YSK.r)YSK.r=n;else if(n-YSK.r>700){YSK.m=1;YLEAD=Math.max(0,Math.min(3,(YLEAD+(YLEAD-d))/2))}}if(ps!=3&&Math.abs(d)>.9&&(!YSK||(YSK.m&&n-YSK.t>2000)||n-YSK.t>6000)){YSK={t:n,m:0,r:0};pl.seek(e+YLEAD)}}else if(Math.abs(d)>1.3)pl.seek(e+.25);else pl.rate(d>.3?.94:d<-.3?1.06:1);
 if(pl.paused())pl.play()}
 function holdUI(){if(!holdEl)return;const on=st&&st.held;holdEl.style.display=on?'flex':'none';if(on)holdEl.lastChild.textContent=(hb.length?hb.join(' & '):'Biri')+' yükleniyor, bekliyoruz…'}
 function setPres(who){const s=$('#pres');if(s)s.textContent=who.join(' & ')+(who.length>1?' · birlikte':' · diğer kişi bekleniyor')}
@@ -546,12 +548,13 @@ const demo=(t,u)=>h('button',{class:'btn sec sm',onclick:()=>fill(u)},t);
 const m=modal('Hangi linki koyacağım?',h('div',{class:'stack'},h('ul',{class:'help'},
 h('li',{},h('b',{text:'YouTube linki'}),' — en kolayı. Herhangi bir video, ikisi de tam senkron izler.'),
 h('li',{},h('b',{text:'.mp4 linki'}),' — kendi videon bir yerde yüklüyse doğrudan dosya adresi. iPhone\'da en sorunsuz biçim budur.'),
-h('li',{},h('b',{text:'.m3u8 linki'}),' — izleme hakkın olan bir yayının akış adresi. Çalışmazsa "Referer" kutusuna kaynak sitenin adresini yaz.')),
-h('small',{text:'Telif hakkı olan içerikleri yetkisiz kaynaklardan eklemeyin. Denemek için aşağıdaki herkese açık test videolarını kullan:'}),
+h('li',{},h('b',{text:'.m3u8 linki'}),' — bir yayının akış adresi. Çalışmazsa "Gelişmiş: Referer" kutusuna videonun açıldığı sayfanın adresini yaz.'),
+h('li',{},h('b',{text:'m3u8 linkini nasıl bulurum?'}),' — telefonuna ',h('b',{text:'Aloha'}),' tarayıcısını indir (App Store / Google Play, ücretsiz). Videonun olduğu sayfayı Aloha’da açıp videoyu başlat; Aloha sayfadaki videoyu algılar. Çıkan video/indirme menüsünden linki kopyala (menünün adı sürüme göre değişebilir), buraya yapıştır ve Yükle’ye bas. Link açılmazsa sayfanın adresini Referer kutusuna da yaz.')),
+h('small',{text:'Denemek için aşağıdaki herkese açık test videolarını kullanabilirsin:'}),
 h('div',{class:'row wrap'},demo('YouTube','https://www.youtube.com/watch?v=aqz-KE-bpKQ'),demo('MP4','https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'),demo('M3U8','https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'))),[h('button',{class:'btn',onclick:()=>m.remove()},'Tamam')])}
 function viewRoom(k,mode,isNew){leaveRoom();closeLive();RM=k;ROOM_MODE=([1,2,3].includes(+mode)?+mode:1);ROOM_NEW=isNew?1:0;localStorage.rm=k;st=null;loadedKey=null;seen=new Set();touched=0;done=0;Z={};
 V=h('video',{playsinline:'',controls:'',preload:'auto'});yw=h('div',{class:'yt'});EMPTY=h('div',{class:'empty'},ic('film',32),h('span',{text:'Bir video linki yükle'}));
-holdEl=h('div',{class:'hold'},h('i',{class:'sp'}),h('span'));syncEl=h('div',{class:'sync'});FLS=h('div',{class:'fls'});
+holdEl=h('div',{class:'hold'},h('i',{class:'sp'}),h('span'));syncEl=h('div',{class:'sync'});FLS=h('div',{class:'fls'});YTH=h('div',{class:'mu-hint',style:'display:none',text:'👇 Telefonun videoyu kendiliğinden başlatmana izin vermiyor. Aşağıdaki videonun ortasındaki ▶ düğmesine bir kez dokun; sonra herkesle eşitlenir.'});YNEED=0;
 for(const [ev,t] of [['play','play'],['pause','pause']])V.addEventListener(ev,()=>{if(Date.now()<lock||!st||!st.url||V.ended)return;uact=Date.now();if(t=='play'&&!st.playing)send({t:'play',pos:V.currentTime});if(t=='pause'&&st.playing)send({t:'pause',pos:V.currentTime})});
 V.addEventListener('seeked',()=>{if(Date.now()<lock||!st||!st.url)return;if(Math.abs(V.currentTime-exp())>1){uact=Date.now();send({t:'seek',pos:V.currentTime})}});
 V.addEventListener('ended',()=>{if(st&&st.playing)send({t:'pause',pos:V.currentTime})});
@@ -563,7 +566,7 @@ const head=h('div',{class:'card'},h('div',{class:'row'},h('button',{class:'btn s
 const u=h('input',{class:'in',id:'vu',type:'url',placeholder:'YouTube, .mp4 veya .m3u8 linki',inputmode:'url',autocapitalize:'none',autocorrect:'off',spellcheck:'false',enterkeyhint:'go'});
 const rf=h('input',{class:'in',type:'url',placeholder:'https://kaynak-site.com/',inputmode:'url',autocapitalize:'none',autocorrect:'off'});
 const ld=()=>{let v=fixLink(u.value.trim());if(v!==u.value.trim())u.value=v;if(!/^https?:\/\//i.test(v))return toast('Link http:// veya https:// ile başlamalı',1);send({t:'set',url:v,ref:rf.value.trim()});toast('Yükleniyor…')};u.onkeydown=e=>{if(e.key=='Enter')ld()};
-const fp=h('div',{class:'card',id:'fp'},h('div',{class:'stage'},V,yw,EMPTY,syncEl,holdEl),FLS,h('div',{class:'row'},u,h('button',{class:'btn',onclick:ld},ic('play',16),'Yükle')),h('details',{},h('summary',{text:'Gelişmiş: Referer (link açılmazsa)'}),rf),h('small',{text:'Oynat, durdur ve ileri sarma ikinizde de anında uygulanır. Biri takılırsa diğeri bekler.'}),wlBox());
+const fp=h('div',{class:'card',id:'fp'},YTH,h('div',{class:'stage',id:'stg'},V,yw,EMPTY,syncEl,holdEl),FLS,h('div',{class:'row'},u,h('button',{class:'btn',onclick:ld},ic('play',16),'Yükle')),h('details',{},h('summary',{text:'Gelişmiş: Referer (link açılmazsa)'}),rf),h('small',{text:'Oynat, durdur ve ileri sarma ikinizde de anında uygulanır. Biri takılırsa diğeri bekler.'}),wlBox());
 const cnt=h('div',{class:'chips'},[100,250,500,1000].map(n=>h('button',{class:n==PN?'on':'','data-n':n,onclick:e=>{PN=n;cnt.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x==e.currentTarget))}},n+' parça')));
 const pf=h('input',{type:'file',accept:'image/*',style:'display:none',onchange:e=>{if(e.target.files[0])pnew(e.target.files[0]);e.target.value=''}});
 const cv=h('canvas',{id:'pcv'});
@@ -695,10 +698,10 @@ function ymc(fn){MU.selfT=Date.now();try{fn()}catch(e){}}
 function ytReady(id,box){if(YM&&YMr)return Promise.resolve();if(YMP)return YMP;
 YMP=new Promise(ok=>{const slow=setTimeout(()=>{MU.msg='YouTube oynatıcısı yavaş yükleniyor, bekleniyor…';mui()},9000);
 box.replaceChildren(h('div',{id:'ymp'}));withYT(()=>{YM=new YT.Player('ymp',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,origin:location.origin},
-events:{onReady:()=>{clearTimeout(slow);YMr=1;YMid=id;if(String(MU.msg).indexOf('yavaş')>=0)MU.msg='';mui();ok()},onStateChange:ytState,onError:ytErr}})})});return YMP}
+events:{onReady:()=>{clearTimeout(slow);YMr=1;YMid=id;if(String(MU.msg).indexOf('yavaş')>=0)MU.msg='';mui();ok()},onStateChange:mytState,onError:ytErr}})})});return YMP}
 function ytErr(){if(MS&&MS.tr&&MS.tr.ids&&MS.tr.ids.au){AD.au.sync(MS.tr.ids.au,MS.playing,0,true).catch(()=>{});MU.msg='YouTube bu videoyu gömmeye izin vermiyor; 30 sn önizleme çalınıyor.'}else MU.msg='YouTube bu videoyu gömmeye izin vermiyor. Başka bir sürümünü seç.';mui()}
 // Videonun kendi ▶/❚❚ düğmesi: herkese iletilir
-function ytState(e){const d=e.data,prev=MU.lastPS;MU.lastPS=d;
+function mytState(e){const d=e.data,prev=MU.lastPS;MU.lastPS=d;
 if(d==1&&MU.need){MU.need=0;mui()}
 if(d==0&&MS&&MS.playing&&MU.prov=='yt'){send({t:'mend',rev:MS.rev});return}
 const mine=Date.now()-(MU.selfT||0)<2500||document.visibilityState!='visible';
