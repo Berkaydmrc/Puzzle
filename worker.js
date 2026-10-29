@@ -60,6 +60,7 @@ input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:d
 .chips button.on{background:var(--ac);border-color:var(--ac);color:#fff}
 details summary{color:var(--mu);font-size:.82rem;cursor:pointer;margin-bottom:8px}
 .chat{display:flex;flex-direction:column;height:430px;padding:12px;gap:10px}
+.vc{display:grid;gap:8px;background:var(--s2);border:1px solid var(--bd);border-radius:14px;padding:10px}.vc .row{gap:6px}.vcl{display:flex;flex-wrap:wrap;gap:6px}.vcl span{border:1px solid var(--bd);border-radius:999px;padding:3px 10px;font-size:.8rem;background:var(--s1);transition:box-shadow .12s,border-color .12s}.vcl span.spk{border-color:var(--ok);box-shadow:0 0 0 3px #31c48d40}.vcl span.mu{color:var(--mu)}.vcl span.bad{border-color:var(--er);color:var(--er)}
 .msgs{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch}
 .msg{max-width:84%;padding:7px 12px;border-radius:14px;background:var(--s3);align-self:flex-start;word-break:break-word}
 .msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--ac),var(--ac2))}
@@ -248,10 +249,69 @@ h('button',{type:'button',class:'btn sec full',onclick:async()=>{try{showTest(aw
 h('label',{class:'chk'},tdkc,h('span',{text:'Bilinmeyen kelimeler için TDK’ye de sor (isteğe bağlı, yavaş ve güvenilmez olabilir)'})),accBox)}
 function adminSec(body){body.append(dictCard());body.append(h('div',{class:'card'},h('h2',{text:'Hesabım'}),ME.def?h('div',{class:'tag wa',text:'Varsayılan şifre kullanılıyor'}):null,h('button',{class:'btn full',onclick:passModal},ic('key'),'Şifremi değiştir'),
 h('button',{class:'btn sec full',onclick:async()=>{try{const r=await api('tdktest?w=av');modal('TDK bağlantı testi',h('pre',{style:'white-space:pre-wrap;word-break:break-all;font-size:.8rem',text:JSON.stringify(r,null,1)}),[h('button',{class:'btn sec',onclick:e=>e.target.closest('.mo').remove()},'Kapat')])}catch(x){toast(x,1)}}},'TDK sözlük bağlantısını sına'),
+h('button',{class:'btn sec full',onclick:async()=>{try{const r=await api('turn');modal('Sesli sohbet aktarması',h('div',{class:'stack',style:'gap:8px'},h('b',{text:r.relay?'✓ Cloudflare TURN çalışıyor: her ağda bağlanır.':'✗ TURN kurulu değil: yalnız doğrudan bağlantı (bazı mobil ağlarda ses gitmeyebilir).'}),r.error?h('small',{class:'err',text:r.error}):null,h('small',{class:'mu',text:'Sunucu adresleri: '+r.iceServers.map(s=>[].concat(s.urls).join(', ')).join(' | ')})),[h('button',{class:'btn sec',onclick:e=>e.target.closest('.mo').remove()},'Kapat')])}catch(x){toast(x,1)}}},'Sesli sohbet aktarmasını sına'),
 h('button',{class:'btn sec full',onclick:async()=>{if(!confirm('Tüm cihazlardaki oturumların kapatılsın mı?'))return;try{await api('me/revoke','POST');logout()}catch(x){toast(x,1)}}},'Tüm cihazlarda oturumu kapat')),
 h('div',{class:'card'},h('h3',{text:'Güvenlik notları'}),h('small',{text:'Oturum anahtarı sunucuda otomatik üretilip saklanır. İstersen Cloudflare > Settings > Variables bölümünden SECRET ve ADMIN_PASS değişkenlerini kendin de tanımlayabilirsin. ADMIN_PASS değiştirilirse yönetici şifresi bir kez o değere sıfırlanır (şifreni unutursan kurtarma yolu budur).'})))}
 // ---------- oda ----------
-function leaveRoom(){clearInterval(LT);LT=0;RM='';clearTimeout(wsTm);wsTm=0;wsq=[];wsTry=0;if(ws){const w=ws;ws=null;w.onclose=null;clearInterval(w.p);try{w.close()}catch(e){}}teardown();mstop();MS=null;WG=null;WP=new Map();WS=-1;st=null;PZ=null;IM=null;PC=[];PP=[];PU=0;clearInterval(tk);tk=0;hb=[];V=null;yw=null;ov.classList.remove('on')}
+// ---------- sesli sohbet (WebRTC, eşler arası; sinyal oda bağlantısından) ----------
+const VC={on:0,busy:0,id:'',mu:0,stream:null,peers:new Map(),roster:[],ice:null,iceT:0,relay:false,ac:null,need:0,err:'',ui:{},miss:{}};
+function voiceBox(){const st=h('small',{class:'mu'}),ls=h('div',{class:'vcl'}),
+join=h('button',{type:'button',class:'btn full',onclick:()=>vJoin()},'🎙 Sesli sohbete katıl'),
+mute=h('button',{type:'button',class:'btn sec sm',onclick:()=>vMute(!VC.mu)}),
+tap=h('button',{type:'button',class:'btn sm',style:'display:none',onclick:()=>vTap()},'🔊 Sesi aç'),
+leave=h('button',{type:'button',class:'btn dng sm',onclick:()=>vLeave()},'Ayrıl'),
+ctl=h('div',{class:'row wrap'},mute,tap,leave);
+VC.ui={st,ls,join,mute,tap,ctl};const box=h('div',{class:'vc'},h('div',{class:'row',style:'justify-content:space-between'},h('b',{text:'🎙 Sesli sohbet',style:'font-size:.9rem'}),st),ls,join,ctl);vui();return box}
+function vui(){const U=VC.ui;if(!U.st)return;const r=VC.roster;
+U.join.style.display=VC.on?'none':'';U.join.disabled=!!VC.busy;U.join.textContent=VC.busy?'Bağlanıyor…':'🎙 Sesli sohbete katıl';U.ctl.style.display=VC.on?'':'none';
+U.mute.textContent=VC.mu?'🎙 Mikrofonu aç':'🔇 Sustur';U.tap.style.display=VC.need?'':'none';
+U.st.textContent=VC.err||(r.length?r.length+' kişi':'kimse yok');U.st.className=VC.err?'err':'mu';
+U.ls.replaceChildren(...r.map(x=>{const me=x.id===VC.id,P=VC.peers.get(x.id),cs=P&&P.pc.connectionState,bad=VC.on&&!me&&P&&(cs=='failed'||cs=='disconnected'),wait=VC.on&&!me&&P&&cs!='connected'&&!bad;
+return h('span',{'data-v':x.id,class:(x.m?'mu':'')+(bad?' bad':''),text:(me?'sen':x.n)+(x.m?' 🔇':' 🎙')+(bad?' · bağlantı yok':wait?' · bağlanıyor…':'')})}))}
+const vRid=()=>Array.from(crypto.getRandomValues(new Uint8Array(10)),b=>(b%36).toString(36)).join('');
+async function vIce(){if(VC.ice&&Date.now()-VC.iceT<36e5*3)return VC.ice;try{const j=await api('turn');VC.ice=j.iceServers;VC.relay=!!j.relay}catch(e){VC.ice=[{urls:['stun:stun.cloudflare.com:3478']}];VC.relay=false}VC.iceT=Date.now();return VC.ice}
+async function vJoin(){if(VC.on||VC.busy)return;if(!navigator.mediaDevices||!window.RTCPeerConnection){VC.err='Bu tarayıcı sesli sohbeti desteklemiyor';return vui()}
+VC.busy=1;VC.err='';vui();
+try{const AC=window.AudioContext||window.webkitAudioContext;if(AC){if(!VC.ac)VC.ac=new AC();VC.ac.resume&&VC.ac.resume()}}catch(e){}
+try{VC.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false})}
+catch(e){VC.busy=0;VC.err=e&&e.name=='NotAllowedError'?'Mikrofon izni verilmedi':'Mikrofon açılamadı';toast(VC.err+(e&&e.name=='NotAllowedError'?'. Tarayıcı ayarlarından bu siteye mikrofon izni ver.':''),1);return vui()}
+await vIce();VC.id=vRid();VC.mu=0;VC.on=1;VC.busy=0;VC.miss={};vMeter('me',VC.stream);send({t:'vjoin',id:VC.id,m:0});vui();if(!VC.relay)console.info('Sesli sohbet: TURN yok, yalnız doğrudan bağlantı')}
+function vLeave(silent){if(!VC.on&&!VC.busy)return;VC.on=0;VC.busy=0;for(const id of [...VC.peers.keys()])vDrop(id);
+try{VC.stream&&VC.stream.getTracks().forEach(t=>t.stop())}catch(e){}VC.stream=null;delete VC.meters;if(!silent)send({t:'vleave'});VC.need=0;vui()}
+function vMute(m){VC.mu=m?1:0;try{VC.stream&&VC.stream.getAudioTracks().forEach(t=>t.enabled=!VC.mu)}catch(e){}send({t:'vmute',m:VC.mu});vui()}
+function vTap(){VC.need=0;for(const P of VC.peers.values())if(P.el)P.el.play().catch(()=>{VC.need=1});try{VC.ac&&VC.ac.resume()}catch(e){}vui()}
+function vRoster(r){VC.roster=r||[];if(VC.on){const ids=new Set(VC.roster.map(x=>x.id));
+if(!ids.has(VC.id)&&ws&&ws.readyState==1)send({t:'vjoin',id:VC.id,m:VC.mu});
+for(const x of VC.roster)if(x.id!==VC.id&&!VC.peers.has(x.id))vPeer(x.id,x.n);
+const now=Date.now();for(const id of VC.peers.keys()){if(ids.has(id))delete VC.miss[id];else if(!VC.miss[id])VC.miss[id]=now}}vui()}
+// Kısa kopmalarda (yeniden bağlanma) eş hemen silinmez; 10 sn görünmezse kapatılır
+setInterval(()=>{if(!VC.on)return;const now=Date.now();for(const id in VC.miss)if(now-VC.miss[id]>10000){delete VC.miss[id];vDrop(id);vui()}},2000);
+function vDrop(id){const P=VC.peers.get(id);if(!P)return;VC.peers.delete(id);try{P.pc.close()}catch(e){}if(P.el){try{P.el.srcObject=null;P.el.remove()}catch(e){}}if(VC.meters)delete VC.meters[id]}
+// Her ikilide yalnız kimliği küçük olan teklif başlatır (çakışma olmaz); karşı taraf sesini teklife yanıt verirken ekler.
+function vAdd(P){if(P.added||!VC.stream)return;P.added=1;VC.stream.getTracks().forEach(t=>P.pc.addTrack(t,VC.stream))}
+function vPeer(id,n){const pc=new RTCPeerConnection({iceServers:VC.ice||[]}),init=VC.id<id,P={pc,n,init,polite:!init,mo:false,ign:false,el:null,cq:[],added:0,dT:0};VC.peers.set(id,P);
+pc.onnegotiationneeded=async()=>{try{P.mo=true;await pc.setLocalDescription();send({t:'vsig',to:id,d:{desc:pc.localDescription}})}catch(e){}finally{P.mo=false}};
+pc.onicecandidate=e=>{if(e.candidate)send({t:'vsig',to:id,d:{cand:e.candidate}})};
+pc.ontrack=e=>{const s=e.streams&&e.streams[0]||new MediaStream([e.track]);if(!P.el){P.el=h('audio',{autoplay:'',playsinline:''});P.el.style.display='none';document.body.append(P.el)}
+P.el.srcObject=s;const pr=P.el.play();if(pr&&pr.catch)pr.catch(()=>{VC.need=1;vui()});vMeter(id,s)};
+pc.onconnectionstatechange=()=>{const cs=pc.connectionState;if(cs=='connected')P.dT=0;else if(cs=='disconnected'&&!P.dT)P.dT=Date.now();if(cs=='failed'&&P.init){try{pc.restartIce()}catch(e){}}vui()};
+if(init)vAdd(P);return P}
+// Bağlantı 6 sn'den uzun "kopuk" kalırsa başlatan taraf yeniden dener
+setInterval(()=>{if(!VC.on)return;for(const P of VC.peers.values())if(P.init&&P.dT&&Date.now()-P.dT>6000){P.dT=Date.now();try{P.pc.restartIce()}catch(e){}}},2000);
+// Sinyaller eş başına SIRAYLA işlenir; uzak açıklama gelmeden ulaşan adresler sıraya alınır, sonra uygulanır
+function vSig(m){if(!VC.on||!m||!m.d)return;let P=VC.peers.get(m.from);if(!P)P=vPeer(m.from,m.n);P.q=(P.q||Promise.resolve()).then(()=>vSigDo(P,m)).catch(()=>{})}
+async function vSigDo(P,m){if(!VC.on||VC.peers.get(m.from)!==P)return;const pc=P.pc,d=m.d;
+try{if(d.desc){const offer=d.desc.type=='offer',coll=offer&&(P.mo||pc.signalingState!='stable');P.ign=!P.polite&&coll;if(P.ign)return;
+await pc.setRemoteDescription(d.desc);
+for(const c of P.cq.splice(0)){try{await pc.addIceCandidate(c)}catch(e){}}
+if(offer){vAdd(P);await pc.setLocalDescription();send({t:'vsig',to:m.from,d:{desc:pc.localDescription}})}}
+else if(d.cand){if(!pc.remoteDescription){P.cq.push(d.cand);return}try{await pc.addIceCandidate(d.cand)}catch(e){if(!P.ign)console.warn(e)}}}catch(e){console.warn('vsig',e)}}
+// Konuşan kişiyi vurgula (ses düzeyi ölçümü)
+function vMeter(id,stream){try{if(!VC.ac)return;const src=VC.ac.createMediaStreamSource(stream),an=VC.ac.createAnalyser();an.fftSize=512;src.connect(an);(VC.meters=VC.meters||{})[id]={an,buf:new Uint8Array(an.fftSize)}}catch(e){}}
+setInterval(()=>{if(!VC.on||!VC.meters||!VC.ui.ls)return;for(const id in VC.meters){const M=VC.meters[id];M.an.getByteTimeDomainData(M.buf);let s=0;for(const v of M.buf){const x=(v-128)/128;s+=x*x}const lv=Math.sqrt(s/M.buf.length);
+if(lv>.035&&!(id=='me'&&VC.mu))M.last=Date.now();const key=id=='me'?VC.id:id,el=VC.ui.ls.querySelector('[data-v="'+key+'"]');if(el)el.classList.toggle('spk',Date.now()-(M.last||0)<400&&!(id=='me'&&VC.mu))}},120);
+
+function leaveRoom(){vLeave(1);clearInterval(LT);LT=0;RM='';clearTimeout(wsTm);wsTm=0;wsq=[];wsTry=0;if(ws){const w=ws;ws=null;w.onclose=null;clearInterval(w.p);try{w.close()}catch(e){}}teardown();mstop();MS=null;WG=null;WP=new Map();WS=-1;st=null;PZ=null;IM=null;PC=[];PP=[];PU=0;clearInterval(tk);tk=0;hb=[];V=null;yw=null;ov.classList.remove('on')}
 let wsq=[],wsTry=0,wsTm=0,wsLast=0;
 const send=m=>{const s=JSON.stringify(m);if(ws&&ws.readyState==1){try{ws.send(s);return}catch(e){}}if(m.t!='ping'&&m.t!='pzm'&&wsq.length<30)wsq.push(s);if(RM&&(!ws||ws.readyState>1))reconnectNow()};
 function reconnectNow(){if(!RM)return;clearTimeout(wsTm);wsTm=0;if(ws&&ws.readyState==1&&Date.now()-wsLast<12000){try{ws.send(JSON.stringify({t:'ping',i:Date.now()}));return}catch(e){}}if(ws){const old=ws;ws=null;old.onclose=null;clearInterval(old.p);try{old.close()}catch(e){}}connect(RM)}
@@ -297,12 +357,12 @@ if(prevWho){for(const x of who)if(!prevWho.includes(x)&&x!=ME.name)toast(x+' oda
 const key=st.url+'|'+st.ref;if(canUse('film')&&key!=loadedKey){loadedKey=key;load(st);const u=$('#vu');if(u&&document.activeElement!==u)u.value=st.url}
 holdUI();tick()}
 function connect(k,mode){clearTimeout(wsTm);wsTm=0;const w=new WebSocket((location.protocol=='https:'?'wss://':'ws://')+location.host+'/ws?room='+encodeURIComponent(k)+'&mode='+encodeURIComponent(mode||ROOM_MODE||1)+(ROOM_NEW?'&new=1':'')+'&t='+encodeURIComponent(T));ws=w;wsLast=Date.now();const smp=[];
-w.onopen=()=>{PSL='';wsTry=0;wsLast=Date.now();const d=$('#dot');if(d)d.className='dot on';const p=()=>{if(w.readyState!=1)return;if(Date.now()-wsLast>15000){reconnectNow();return}try{w.send(JSON.stringify({t:'ping',i:Date.now()}))}catch(e){}};p();setTimeout(p,600);setTimeout(p,1500);w.p=setInterval(p,5000);while(wsq.length&&w.readyState==1){try{w.send(wsq.shift())}catch(e){break}}};
+w.onopen=()=>{PSL='';if(VC.on)setTimeout(()=>send({t:'vjoin',id:VC.id,m:VC.mu}),50);wsTry=0;wsLast=Date.now();const d=$('#dot');if(d)d.className='dot on';const p=()=>{if(w.readyState!=1)return;if(Date.now()-wsLast>15000){reconnectNow();return}try{w.send(JSON.stringify({t:'ping',i:Date.now()}))}catch(e){}};p();setTimeout(p,600);setTimeout(p,1500);w.p=setInterval(p,5000);while(wsq.length&&w.readyState==1){try{w.send(wsq.shift())}catch(e){break}}};
 w.onmessage=e=>{wsLast=Date.now();let m;try{m=JSON.parse(e.data)}catch(x){return}
 if(m.t=='roomMode'){ROOM_NEW=0;const nm=[1,2,3].includes(+m.mode)?+m.mode:ROOM_MODE;if(nm!==ROOM_MODE){viewRoom(RM,nm,false);return}}
 else if(m.t=='st'){if(m.i){const rtt=Date.now()-m.i;smp.push([rtt,m.now+rtt/2-Date.now()]);if(smp.length>8)smp.shift();off=smp.reduce((a,b)=>b[0]<a[0]?b:a)[1]}else if(!smp.length)off=m.now-Date.now();onState(m)}
 else if(m.t=='pz')pzSet(m.pz);else if(m.t=='pzm')pzMove(m);else if(m.t=='chat')chatAdd(m);else if(m.t=='hist')m.c.forEach(chatAdd);
-else if(m.t=='sys'){chatSys(m.x);toast(m.x)}else if(m.t=='react')fly(m.e,m.n);
+else if(m.t=='sys'){chatSys(m.x);toast(m.x)}else if(m.t=='react')fly(m.e,m.n);else if(m.t=='vr')vRoster(m.r);else if(m.t=='vsig')vSig(m);else if(m.t=='vbye'){if(m.id!==VC.id){vDrop(m.id);vui()}}else if(m.t=='verr'){toast(m.e,1);vLeave(1)}
 else if(m.t=='locks'){LK=m.lk;lockUI()}else if(m.t=='wpend'){if(wpSeq(m)){WPO=m.p&&m.p.length&&m.by!=ME.name?{mv:m.mv,p:new Map(m.p.map(x=>[x.i,x]))}:null;wgRender()}}else if(m.t=='wq')wqSet(m);else if(m.t=='wrej')wrej(m);else if(m.t=='wg')wgSet(m.g);else if(m.t=='werr'){wbusy(0);toast(m.e,1)}else if(m.t=='wprev')wprevSet(m);else if(m.t=='wchk')wgChk(m)};
 w.onerror=()=>{if(ws===w){const p=$('#pres');if(p)p.textContent='WebSocket bağlantı hatası; yeniden deneniyor…'}};
 w.onclose=ev=>{clearInterval(w.p);if(ws!==w)return;const d=$('#dot');if(d)d.className='dot';
@@ -347,7 +407,7 @@ const pp=h('div',{class:'card',id:'pp',style:'display:none'},h('small',{text:'Pa
 h('div',{class:'zb'},zbtn('plus','Yakınlaş',()=>zoomBy(1.3)),zbtn('minus','Uzaklaş',()=>zoomBy(1/1.3)),zbtn('fit','Hepsini göster',()=>camFit()),zbtn('puzzle','Tahtaya odaklan',()=>camBoard())),cv,
 h('small',{text:'Parçayı sürükle. Boş yeri sürükleyerek tahtayı kaydır, iki parmakla yakınlaştır.'}));
 const cb=h('div',{class:'msgs',id:'cb'}),ci=h('input',{class:'in',placeholder:'Mesaj yaz…',maxlength:500,enterkeyhint:'send',autocomplete:'off'});
-const chat=h('div',{class:'card chat'},h('div',{class:'row'},ic('users',16),h('b',{text:'Sohbet'})),cb,h('div',{class:'react'},['❤️','😂','😮','👏','🔥','😢'].map(e=>h('button',{type:'button',onclick:()=>send({t:'react',e}),text:e}))),
+const chat=h('div',{class:'card chat'},h('div',{class:'row'},ic('users',16),h('b',{text:'Sohbet'})),voiceBox(),cb,h('div',{class:'react'},['❤️','😂','😮','👏','🔥','😢'].map(e=>h('button',{type:'button',onclick:()=>send({t:'react',e}),text:e}))),
 h('form',{class:'row',onsubmit:e=>{e.preventDefault();const x=ci.value.trim();if(x){send({t:'chat',x});ci.value=''}}},ci,h('button',{class:'btn sq',type:'submit','aria-label':'Gönder'},ic('send'))));
 RP={fp,pp,fpL:h('div',{style:'display:none'}),ppL:h('div',{style:'display:none'}),mp:musicCard(),mpL:h('div',{style:'display:none'}),wp:wordCard(),wpL:h('div',{style:'display:none'})};
 function tab(n){TAB=n;for(let i=1;i<4;i++){const b=$('#t'+i);if(b)b.classList.toggle('on',i==n)}lockUI()}
@@ -751,6 +811,23 @@ const getLocks = async env => await (await dbf(env, '/getlocks')).json();
 const clean = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
 const roomStub = (env, code) => env.DO.get(env.DO.idFromName('room:' + code));
 
+// ---------- Sesli sohbet: ICE/TURN sunucuları ----------
+// Cloudflare Realtime TURN anahtarı (TURN_KEY_ID + TURN_KEY_API_TOKEN gizli değişkenleri) varsa kısa ömürlü kimlik üretilir;
+// anahtar asla tarayıcıya gönderilmez. Yoksa yalnız STUN (doğrudan bağlantı) kullanılır.
+let ICEC = null;
+async function iceServers(env) {
+  const stun = { urls: ['stun:stun.cloudflare.com:3478', 'stun:stun.l.google.com:19302'] };
+  if (!env.TURN_KEY_ID || !env.TURN_KEY_API_TOKEN) return { iceServers: [stun], relay: false };
+  if (ICEC && ICEC.exp > Date.now()) return ICEC.v;
+  try {
+    const r = await fetch('https://rtc.live.cloudflare.com/v1/turn/keys/' + encodeURIComponent(env.TURN_KEY_ID) + '/credentials/generate-ice-servers', { method: 'POST', headers: { authorization: 'Bearer ' + env.TURN_KEY_API_TOKEN, 'content-type': 'application/json' }, body: JSON.stringify({ ttl: 86400 }), signal: AbortSignal.timeout(6000) });
+    if (!r.ok) return { iceServers: [stun], relay: false, error: 'TURN anahtarı reddedildi (HTTP ' + r.status + ')' };
+    const j = await r.json(), list = (j.iceServers || []).map(s => ({ ...s, urls: [].concat(s.urls || []).filter(u => !/:53(\?|$)/.test(u)) })).filter(s => s.urls.length);
+    const v = { iceServers: list.length ? list : [stun], relay: list.some(s => s.urls.some(u => /^turns?:/.test(u))) };
+    ICEC = { v, exp: Date.now() + 6 * 36e5 }; return v;
+  } catch (e) { return { iceServers: [stun], relay: false, error: 'TURN sunucusuna ulaşılamadı' } }
+}
+
 // ---------- Worker ----------
 export default {
   async fetch(req, env) {
@@ -782,6 +859,7 @@ export default {
         return J({ exists: !!r.exists, mode: r.mode | 0 });
       }
       if (p == '/api/me') return J({ name: me.n, role: me.r });
+      if (p == '/api/turn') return J(await iceServers(env));
       if (p == '/api/locks' && req.method == 'GET') return J(await getLocks(env));
       if (p == '/api/music/cfg') return J({ sp: env.SPOTIFY_CLIENT_ID || '', am: !!(env.APPLE_TEAM_ID && env.APPLE_KEY_ID && env.APPLE_PRIVATE_KEY) });
       if (p == '/api/music/search') return J({ items: await musicSearch(u.searchParams.get('q') || '', +u.searchParams.get('n') || 8) });
@@ -1303,6 +1381,7 @@ export class Do {
       await S.deleteAlarm(); this.bcast();
       sv.send(JSON.stringify({ t: 'roomMode', mode: this.roomMode }));
       sv.send(JSON.stringify({ t: 'hist', c: this.chat.slice(-40) }));
+      sv.send(JSON.stringify({ t: 'vr', r: this.vroster() }));
       sv.send(JSON.stringify({ t: 'locks', lk: this.lk }));
       if (this.pzp && this.can('puzzle', att)) sv.send(JSON.stringify({ t: 'pz', pz: { ...this.pzp, img: await this.img() } }));
       if (this.wg && this.can('word', att)) { sv.send(JSON.stringify({ t: 'wg', g: wgView(this.wg, att.n) })); if (!this.wg.over) this.dwarm() }
@@ -1391,6 +1470,8 @@ export class Do {
   }
   msg(i) { return JSON.stringify({ t: 'st', st: this.st, now: Date.now(), who: [...new Set(this.socks().map(w => (w.deserializeAttachment() || {}).n))], hb: this.hb, ms: this.ms, mh: this.mhear(), i }) }
   // Müzik dinleme durumu (yalnız bellekte/soket ekinde, kalıcı yazılmaz): ok=duyuyor, buf=yükleniyor, need=dokunması gerekiyor, pause=durdu
+  vroster() { const r = []; for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (a.v) r.push({ id: a.v, n: a.n, m: a.vm ? 1 : 0 }) } return r }
+  vrSend() { this.all(JSON.stringify({ t: 'vr', r: this.vroster() })) }
   mhear() { const r = {}, rank = { ok: 4, buf: 3, pause: 2, need: 1 }; for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (!a.n || !a.mu) continue; if (!r[a.n] || (rank[a.mu] || 0) > (rank[r[a.n]] || 0)) r[a.n] = a.mu } return r }
   bcast() { this.all(this.msg()) }
   async webSocketMessage(ws, raw) {
@@ -1408,6 +1489,22 @@ export class Do {
       a.ls = now; try { ws.serializeAttachment(a) } catch (e) { }
       if (now - (this.lkAt || 0) > 4000) { this.lkAt = now; try { const r = await this.env.DO.get(this.env.DO.idFromName('db')).fetch('https://do/getlocks', { method: 'POST', body: '{}' }); await this.lkApply(await r.json()) } catch (e) { } }
       return }
+    if (T == 'vjoin' || T == 'vleave' || T == 'vmute') {
+      if (T == 'vjoin') {
+        const id = String(m.id || ''); if (!/^[a-z0-9]{8,32}$/.test(id)) return;
+        const cur = this.vroster(); if (!cur.some(x => x.id === id) && cur.length >= 8) return ws.send(JSON.stringify({ t: 'verr', e: 'Sesli sohbet dolu (en fazla 8 kişi).' }));
+        for (const w of this.socks()) { if (w === ws) continue; const b = w.deserializeAttachment() || {}; if (b.v === id) { delete b.v; w.serializeAttachment(b) } }
+        a.v = id; a.vm = m.m ? 1 : 0;
+      } else if (T == 'vleave') { const old = a.v; delete a.v; delete a.vm; ws.serializeAttachment(a); if (old) this.all(JSON.stringify({ t: 'vbye', id: old })) } else { if (!a.v) return; a.vm = m.m ? 1 : 0 }
+      ws.serializeAttachment(a); return this.vrSend();
+    }
+    if (T == 'vsig') {
+      if (!a.v || typeof m.to != 'string' || !m.d || typeof m.d != 'object') return;
+      const d = JSON.stringify(m.d); if (d.length > 60000) return;
+      const out = JSON.stringify({ t: 'vsig', from: a.v, n, d: m.d });
+      for (const w of this.socks()) { const b = w.deserializeAttachment() || {}; if (b.v === m.to) { try { w.send(out) } catch (e) { } break } }
+      return;
+    }
     if (T == 'mst') { const v = ['ok', 'buf', 'need', 'pause', 'off'].includes(m.s) ? m.s : 'off'; if (a.mu === v) return; a.mu = v; ws.serializeAttachment(a); return this.bcast() }
     if (T == 'buf') { a.b = m.b ? 1 : 0; a.bt = now; ws.serializeAttachment(a); if (this.hold(now)) await S.put('st', this.st); return this.bcast() }
     if (T == 'chat') {
@@ -1675,7 +1772,7 @@ export class Do {
     if (this.pend && !this.socks().some(w => (w.deserializeAttachment() || {}).n === this.pend.by)) this.pendClear();
     if (this.wpm) { const q = this.wpm, g = this.wg, opp = g ? this.oppOf(g, q.by) : ''; if (!this.hasSock(q.by)) await this.wpmCancel(null); else if (!opp || !this.hasSock(opp)) await this.wpmCancel('Rakibin bağlantısı koptu. Hamle iptal edildi, harfler sende; tekrar deneyebilirsin.') }
     const now = Date.now(); if (this.hold(now)) await this.s.storage.put('st', this.st);
-    this.bcast(); await this.report(); if (!this.socks().length) await this.s.storage.setAlarm(now + 6 * 36e5);
+    this.bcast(); this.vrSend(); await this.report(); if (!this.socks().length) await this.s.storage.setAlarm(now + 6 * 36e5);
   }
   async webSocketClose(ws) { await this.gone(ws) }
   async webSocketError(ws) { await this.gone(ws) }
