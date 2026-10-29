@@ -94,6 +94,8 @@ details summary{color:var(--mu);font-size:.82rem;cursor:pointer;margin-bottom:8p
 .mu-art{width:58px;height:58px;border-radius:12px;object-fit:cover;background:var(--s3);flex:none;display:grid;place-items:center;font-size:1.6rem}
 .mu-t{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mu-res{display:grid;gap:6px}
+.wlb{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;border-top:1px solid var(--bd);padding-top:12px;min-width:0}.wll{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;max-height:440px;overflow-y:auto;overflow-x:hidden;min-width:0}.wli,.mqi{min-width:0}.wli>button,.mqi>button{flex:none}.wli{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;background:var(--s2);border:1px solid var(--bd)}.wli.on{border-color:var(--ac)}.wli img,.wlth{width:72px;height:40px;object-fit:cover;border-radius:8px;flex:none;background:#000;display:grid;place-items:center;color:var(--mu)}.wli .grow,.mqi .grow{min-width:0}.wli b,.mqi b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem}.wli small,.mqi small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wlpb{height:4px;background:var(--bd);border-radius:2px;margin-top:5px;overflow:hidden}.wlpb i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2))}
+.mq{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;border-top:1px solid var(--bd);padding-top:10px;min-width:0}.mqi{display:flex;gap:8px;align-items:center;padding:6px;border-radius:10px;background:var(--s2)}.mqi img,.mqi .mu-art{width:36px;height:36px;border-radius:6px;object-fit:cover;flex:none;font-size:1rem}.mu-rw{display:flex;gap:6px;align-items:stretch}.mu-rw .mu-r{flex:1;min-width:0}.mu-rw>button.btn{flex:none}
 .mu-r{display:flex;gap:10px;align-items:center;background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:6px;cursor:pointer;text-align:left;color:var(--tx);font:inherit;width:100%}
 .mu-r img{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none}
 .mu-r div{min-width:0}.mu-r b,.mu-r small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -142,7 +144,7 @@ let TH=0;const toast=(m,bad)=>{const t=$('#tt');t.textContent=m;t.className='on'
 let T=localStorage.t||sessionStorage.t||'',ME=null,PT='',PTe=0,PEND=cleanCode(new URLSearchParams(location.search).get('oda')),PADD=(new URLSearchParams(location.search).get('ekle')||'').slice(0,30);
 try{ME=JSON.parse(localStorage.me||sessionStorage.me||'null')}catch(e){}
 let LK={film:0,puzzle:0,music:0,word:2},PM=0,MS=null,WG=null,CFG=null,WP=new Map(),WS=-1,WU={};
-let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0,ROOM_MODE=1,ROOM_NEW=0,AUTO=0,WPO=null,PSL='',PST=0,MSH={},WPQ={mv:0,s:0},WQ=null,WQT=0,PSEQ=0,WPV=null,WBZ=0,WBT=0;
+let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0,ROOM_MODE=1,ROOM_NEW=0,AUTO=0,WPO=null,PSL='',PST=0,MQ=[],MQS='',WL=null,WLU={},WLT=0,MSH={},WPQ={mv:0,s:0},WQ=null,WQT=0,PSEQ=0,WPV=null,WBZ=0,WBT=0;
 const ov=h('div',{class:'ov',onclick:()=>{ov.classList.remove('on');if(st&&st.url)pl.play()}},ic('play',34),h('span',{text:'Dokun ve başlat'}));document.body.append(ov);
 const mount=(...n)=>{A.replaceChildren(...n);window.scrollTo(0,0)};
 async function api(p,m,b){let r;try{r=await fetch('/api/'+p,{method:m||'GET',headers:{authorization:'Bearer '+T,'content-type':'application/json'},body:b?JSON.stringify(b):undefined})}catch(e){throw 'Sunucuya ulaşılamadı. Bağlantını kontrol et.'}
@@ -354,6 +356,55 @@ let L=[];try{L=(await api('friends')).f}catch(x){list.replaceChildren(h('small',
 const here=new Set(prevWho||[]);
 list.replaceChildren(...(L.length?L.map(x=>{const inR=here.has(x.n),dis=!x.push||inR;return h('label',{class:'chk',style:dis?'opacity:.55':''},h('input',{type:'checkbox',disabled:dis,onchange:e=>{e.target.checked?pick.add(x.n):pick.delete(x.n);go.disabled=!pick.size}}),h('span',{text:x.n+(inR?' · odada':x.push?'':' · bildirimleri kapalı')}))}):[h('small',{class:'mu',text:'Henüz arkadaşın yok. Lobideki “Arkadaşlar” kartından kullanıcı adıyla ekleyebilirsin.'})]))}
 
+// ---------- film izleme listesi ----------
+function fdur(d){if(st&&st.url&&d>0&&isFinite(d))send({t:'fdur',u:st.url,d:Math.round(d)})}
+function wlBox(){const inp=h('input',{class:'in',type:'url',placeholder:'Sonra izlemek için link yapıştır',inputmode:'url',autocapitalize:'none',autocorrect:'off',spellcheck:'false',enterkeyhint:'done'}),
+addCur=h('button',{type:'button',class:'btn sec sm',style:'display:none',onclick:()=>wlAddCur()},'＋ Açık videoyu ekle'),list=h('div',{class:'wll'});
+const addLink=async()=>{const v=inp.value.trim();if(!/^https?:\/\//i.test(v))return toast('Link http:// ya da https:// ile başlamalı',1);const r=await wlAct({a:'add',url:v});if(r){inp.value='';toast('Listeye eklendi')}};
+inp.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();addLink()}};
+WLU={list,addCur};WL=null;setTimeout(wlLoad,200);
+if(!window._wlInt)window._wlInt=setInterval(()=>{if(RM&&WLU.list&&document.body.contains(WLU.list)&&document.visibilityState=='visible')wlLoad()},45000);
+return h('div',{class:'wlb'},h('div',{class:'row',style:'justify-content:space-between;gap:8px'},h('b',{text:'📋 İzleme listesi'}),addCur),h('div',{class:'row'},inp,h('button',{type:'button',class:'btn sec',onclick:addLink},'Ekle')),list)}
+async function wlLoad(){if(!RM||!WLU.list)return;try{WL=await api('wl?room='+encodeURIComponent(RM))}catch(e){return}wlRender()}
+async function wlAct(b){try{const r=await api('wl','POST',{...b,room:RM});await wlLoad();return r||1}catch(x){toast(x,1)}}
+function wlAddCur(){if(!st||!st.url)return toast('Önce bir video yükle',1);let t='';try{if(Y&&yr&&Y.getVideoData)t=Y.getVideoData().title||''}catch(e){}wlAct({a:'add',url:st.url,ref:st.ref,title:t}).then(r=>{if(r)toast('Listeye eklendi')})}
+function wlRender(){const L=WLU.list;if(!L)return;const cur=st&&st.url;WLU.addCur.style.display=cur&&WL&&!WL.some(x=>x.u==cur)?'':'none';
+if(!WL){L.replaceChildren(h('small',{class:'mu',text:'Yükleniyor…'}));return}
+if(!WL.length){L.replaceChildren(h('small',{class:'mu',text:'Liste boş. İzlemek istediğiniz videoları ekleyin; birlikte izlerken kaldığınız yer otomatik kaydedilir.'}));return}
+L.replaceChildren(...WL.map(x=>{const yid=ytId(x.u),on=x.u==cur,pct=x.d?Math.min(100,(x.p||0)/x.d*100):0,started=(x.p||0)>5&&!x.done;
+const sub=x.done?'✓ İzlendi':started?('Kaldığınız yer: '+fmt(x.p)+(x.d?' / '+fmt(x.d):'')):'Henüz başlanmadı';
+return h('div',{class:'wli'+(on?' on':'')},yid?h('img',{src:'https://i.ytimg.com/vi/'+yid+'/mqdefault.jpg',alt:'',loading:'lazy'}):h('div',{class:'wlth'},ic('film',18)),
+h('div',{class:'grow'},h('b',{text:x.t||x.u}),h('small',{class:'mu',text:(on?'▶ Şu an açık · ':'')+sub}),h('small',{class:'mu',text:'ekleyen: '+x.by.join(', ')}),started&&x.d?h('div',{class:'wlpb'},h('i',{style:'width:'+pct.toFixed(1)+'%'})):null),
+on?null:h('button',{type:'button',class:'btn sm',onclick:()=>wlPlay(x,false)},started?'▶ Devam et':'▶ Oynat'),
+h('button',{type:'button',class:'btn sec sm','aria-label':'Diğer seçenekler',onclick:()=>wlMenu(x)},'⋯'))}))}
+function wlPlay(x,fromStart){if(!canUse('film'))return toast('Film kilitli',1);const pos=fromStart||x.done?0:Math.max(0,(x.p||0)-3);send({t:'set',url:x.u,ref:x.r||'',pos});toast(pos>5?'Kaldığınız yerden ('+fmt(pos)+') açılıyor; oynat’a bas':'Video açılıyor');window.scrollTo({top:0,behavior:'smooth'})}
+function wlMenu(x){const mine=x.by.includes(ME.name);const m=modal(x.t||'Video',h('small',{class:'mu',style:'word-break:break-all',text:x.u}),[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Kapat'),
+h('button',{type:'button',class:'btn sec',onclick:()=>{m.remove();wlPlay(x,true)}},'Baştan izle'),
+mine?h('button',{type:'button',class:'btn sec',onclick:()=>{m.remove();wlAct({a:'done',url:x.u,v:x.done?0:1})}},x.done?'İzlenmedi yap':'İzlendi işaretle'):null,
+mine?h('button',{type:'button',class:'btn dng',onclick:()=>{m.remove();wlAct({a:'rm',url:x.u})}},'Listemden çıkar'):null])}
+// ---------- müzik: çalma sırası ve kayıtlı listeler ----------
+async function resolveTr(tr){if(tr.ids&&!tr.ids.yt&&(MU.prov=='yt'||!tr.ids[MU.prov])){try{const r=await ytSearch((tr.title+' '+(tr.artist||'')).trim(),1);if(r.length&&r[0].ids){if(r[0].ids.yt)tr.ids.yt=r[0].ids.yt;if(r[0].ids.au&&!tr.ids.au)tr.ids.au=r[0].ids.au;if(!tr.dur&&r[0].dur)tr.dur=r[0].dur;if(!tr.art&&r[0].art)tr.art=r[0].art}}catch(e){}}return tr}
+async function mqAdd(t){if(!canUse('music'))return;const tr=await resolveTr({...t,ids:{...(t.ids||{})}});send({t:'mqadd',tr});toast(MS&&MS.tr?'Sıraya eklendi: '+tr.title:'Çalıyor: '+tr.title)}
+function mqSet(q){q=q||[];const s=JSON.stringify(q);if(s===MQS)return;MQS=s;MQ=q;mqRender()}
+function mqRender(){const B=MUI.mq;if(!B)return;const q=MQ||[],bt=(t,fn,l)=>h('button',{type:'button',class:'btn sec sm','aria-label':l||t,onclick:fn},t);
+const head=h('div',{class:'row',style:'justify-content:space-between;flex-wrap:wrap;gap:6px'},h('b',{text:'🎶 Sıradakiler'+(q.length?' ('+q.length+')':'')}),
+h('div',{class:'row wrap',style:'gap:6px'},q.length?bt('⏭ Sonraki',()=>send({t:'mqnext'}),'Sonraki şarkı'):null,bt('📂 Listelerim',plModal),(q.length||(MS&&MS.tr))?bt('💾 Kaydet',plSave,'Listeyi kaydet'):null));
+B.replaceChildren(head,...(q.length?q.map((x,i)=>h('div',{class:'mqi'},h('small',{class:'mu',style:'width:16px;text-align:center',text:String(i+1)}),x.tr.art?h('img',{src:x.tr.art,alt:''}):h('span',{class:'mu-art',text:'🎵'}),
+h('div',{class:'grow'},h('b',{text:x.tr.title}),h('small',{class:'mu',text:(x.tr.artist?x.tr.artist+' · ':'')+x.by+' ekledi'})),i?bt('↑',()=>send({t:'mqup',id:x.id}),'Yukarı taşı'):null,bt('✕',()=>send({t:'mqrm',id:x.id}),'Sıradan çıkar'))):
+[h('small',{class:'mu',text:'Sıra boş. Aramada şarkının yanındaki “＋ Sıra”ya bas; çalan şarkı bitince sıradaki herkeste otomatik başlar.'})]))}
+function plSave(){const items=[...(MS&&MS.tr?[MS.tr]:[]),...(MQ||[]).map(x=>x.tr)];if(!items.length)return toast('Kaydedilecek şarkı yok',1);
+const nm=h('input',{class:'in',placeholder:'Liste adı, örn. Yol şarkıları',maxlength:40,enterkeyhint:'done'}),er=h('div',{class:'err'});
+const go=async()=>{const n=nm.value.trim();if(!n){er.textContent='Listeye bir ad ver';return}try{const r=await api('pl','POST',{a:'save',n,items});m.remove();toast((r.upd?'Liste güncellendi: ':'Liste kaydedildi: ')+n+' ('+items.length+' şarkı)')}catch(x){er.textContent=String(x)}};
+nm.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();go()}};
+const m=modal('Listeyi kaydet',h('div',{class:'stack'},h('small',{class:'mu',text:'Çalan şarkı ve sıradakiler ('+items.length+' şarkı) listelerine kaydedilir. Aynı adla kaydedersen eski liste güncellenir.'}),nm,er),[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),h('button',{type:'button',class:'btn',onclick:go},'Kaydet')]);setTimeout(()=>nm.focus(),50)}
+async function plModal(){const box=h('div',{class:'stack',style:'gap:8px'},h('small',{class:'mu',text:'Yükleniyor…'}));const m=modal('📂 Listelerim',box,[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Kapat')]);
+const draw=L=>box.replaceChildren(...(L.length?L.map(x=>h('div',{class:'frr'},h('div',{class:'grow'},h('b',{text:x.n}),h('small',{class:'mu',text:x.items.length+' şarkı'})),
+h('button',{type:'button',class:'btn sm',onclick:()=>{send({t:'mqload',items:x.items,mode:'play'});m.remove();toast('Çalınıyor: '+x.n)}},'▶ Çal'),
+h('button',{type:'button',class:'btn sec sm',onclick:()=>{send({t:'mqload',items:x.items,mode:'add'});m.remove();toast(x.n+' sıraya eklendi')}},'＋ Sıra'),
+h('button',{type:'button',class:'btn sec sm','aria-label':'Listeyi sil',onclick:async()=>{if(!confirm('“'+x.n+'” silinsin mi?'))return;try{await api('pl','POST',{a:'rm',id:x.id});draw(await api('pl'))}catch(e){toast(e,1)}}},'🗑'))):
+[h('small',{class:'mu',text:'Henüz kayıtlı listen yok. Sıraya şarkı ekleyip “💾 Kaydet”e bas.'})]));
+try{draw(await api('pl'))}catch(e){box.replaceChildren(h('small',{class:'err',text:String(e)}))}}
+
 // ---------- profil ----------
 async function myCode(){if(FR&&FR.me&&FR.me.tag)return FR.me.n+'#'+FR.me.tag;try{const j=await api('me');if(j.tag){if(FR)FR.me={n:j.name,tag:j.tag};return j.name+'#'+j.tag}}catch(e){}return ''}
 function codeBox(c){const url=location.origin+'/?ekle='+encodeURIComponent(c),txt='Bizim Sinema’da beni arkadaş olarak ekle: '+c;
@@ -438,7 +489,7 @@ hls=new Hls({maxBufferLength:30,backBufferLength:30});hls.on(Hls.Events.ERROR,(_
 else{V.onerror=()=>fail('erişim/format');V.src=src;V.load()}}
 function withYT(cb){if(window.YT&&YT.Player)return cb();(window.ytq=window.ytq||[]).push(cb);if(!window.ytl){window.ytl=1;window.onYouTubeIframeAPIReady=()=>{(window.ytq||[]).forEach(f=>f());window.ytq=[]};const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';s.onerror=()=>{window.ytl=0;toast('YouTube yüklenemedi',1)};document.head.append(s)}}
 function loadYT(id){const my=lt;V.style.display='none';yw.style.display='block';yw.replaceChildren(h('div',{id:'ytp'}));yr=0;
-withYT(()=>{if(my!=lt)return;Y=new YT.Player('ytp',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,origin:location.origin},events:{onReady:()=>{if(my==lt){yr=1;tick()}},onStateChange:ytState,onError:()=>toast('YouTube: bu video gömülemiyor, başka bir video dene',1)}})})}
+withYT(()=>{if(my!=lt)return;Y=new YT.Player('ytp',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,origin:location.origin},events:{onReady:()=>{if(my==lt){yr=1;tick();try{fdur(Y.getDuration())}catch(e){}}},onStateChange:ytState,onError:()=>toast('YouTube: bu video gömülemiyor, başka bir video dene',1)}})})}
 function ytState(e){if(!st)return;const s=e.data,t=Y?Y.getCurrentTime():0;
 if(s==1){bufEnd();if(Date.now()>=lock&&!st.playing){uact=Date.now();send({t:'play',pos:t})}}
 else if(s==2){if(Date.now()>=lock&&st.playing){uact=Date.now();send({t:'pause',pos:t})}}
@@ -455,7 +506,7 @@ if(Math.abs(d)>(Y?2.2:1.3))pl.seek(e+.25);else pl.rate(d>.3?.94:d<-.3?1.06:1);
 if(pl.paused())pl.play()}
 function holdUI(){if(!holdEl)return;const on=st&&st.held;holdEl.style.display=on?'flex':'none';if(on)holdEl.lastChild.textContent=(hb.length?hb.join(' & '):'Biri')+' yükleniyor, bekliyoruz…'}
 function setPres(who){const s=$('#pres');if(s)s.textContent=who.join(' & ')+(who.length>1?' · birlikte':' · diğer kişi bekleniyor')}
-function onState(m){st=m.st;hb=m.hb||[];const who=m.who||[];MSH=m.mh||{};musicState(m.ms||null);
+function onState(m){const pu=st&&st.url;st=m.st;if(pu!==st.url&&WLU.list)setTimeout(wlRender,0);mqSet(m.mq);hb=m.hb||[];const who=m.who||[];MSH=m.mh||{};musicState(m.ms||null);
 if(prevWho){for(const x of who)if(!prevWho.includes(x)&&x!=ME.name)toast(x+' odaya katıldı');for(const x of prevWho)if(!who.includes(x))toast(x+' ayrıldı')}prevWho=who;setPres(who);
 const key=st.url+'|'+st.ref;if(canUse('film')&&key!=loadedKey){loadedKey=key;load(st);const u=$('#vu');if(u&&document.activeElement!==u)u.value=st.url}
 holdUI();tick()}
@@ -465,7 +516,7 @@ w.onmessage=e=>{wsLast=Date.now();let m;try{m=JSON.parse(e.data)}catch(x){return
 if(m.t=='roomMode'){ROOM_NEW=0;const nm=[1,2,3].includes(+m.mode)?+m.mode:ROOM_MODE;if(nm!==ROOM_MODE){viewRoom(RM,nm,false);return}}
 else if(m.t=='st'){if(m.i){const rtt=Date.now()-m.i;smp.push([rtt,m.now+rtt/2-Date.now()]);if(smp.length>8)smp.shift();off=smp.reduce((a,b)=>b[0]<a[0]?b:a)[1]}else if(!smp.length)off=m.now-Date.now();onState(m)}
 else if(m.t=='pz')pzSet(m.pz);else if(m.t=='pzm')pzMove(m);else if(m.t=='chat')chatAdd(m);else if(m.t=='hist')m.c.forEach(chatAdd);
-else if(m.t=='sys'){chatSys(m.x);toast(m.x)}else if(m.t=='react')fly(m.e,m.n);else if(m.t=='vr')vRoster(m.r);else if(m.t=='vsig')vSig(m);else if(m.t=='vbye'){if(m.id!==VC.id){vDrop(m.id);vui()}}else if(m.t=='verr'){toast(m.e,1);vLeave(1)}
+else if(m.t=='sys'){chatSys(m.x);toast(m.x)}else if(m.t=='react')fly(m.e,m.n);else if(m.t=='wlchg'){clearTimeout(WLT);WLT=setTimeout(wlLoad,400)}else if(m.t=='vr')vRoster(m.r);else if(m.t=='vsig')vSig(m);else if(m.t=='vbye'){if(m.id!==VC.id){vDrop(m.id);vui()}}else if(m.t=='verr'){toast(m.e,1);vLeave(1)}
 else if(m.t=='locks'){LK=m.lk;lockUI()}else if(m.t=='wpend'){if(wpSeq(m)){WPO=m.p&&m.p.length&&m.by!=ME.name?{mv:m.mv,p:new Map(m.p.map(x=>[x.i,x]))}:null;wgRender()}}else if(m.t=='wq')wqSet(m);else if(m.t=='wrej')wrej(m);else if(m.t=='wg')wgSet(m.g);else if(m.t=='werr'){wbusy(0);toast(m.e,1)}else if(m.t=='wprev')wprevSet(m);else if(m.t=='wchk')wgChk(m)};
 w.onerror=()=>{if(ws===w){const p=$('#pres');if(p)p.textContent='WebSocket bağlantı hatası; yeniden deneniyor…'}};
 w.onclose=ev=>{clearInterval(w.p);if(ws!==w)return;const d=$('#dot');if(d)d.className='dot';
@@ -493,7 +544,7 @@ holdEl=h('div',{class:'hold'},h('i',{class:'sp'}),h('span'));syncEl=h('div',{cla
 for(const [ev,t] of [['play','play'],['pause','pause']])V.addEventListener(ev,()=>{if(Date.now()<lock||!st||!st.url||V.ended)return;uact=Date.now();if(t=='play'&&!st.playing)send({t:'play',pos:V.currentTime});if(t=='pause'&&st.playing)send({t:'pause',pos:V.currentTime})});
 V.addEventListener('seeked',()=>{if(Date.now()<lock||!st||!st.url)return;if(Math.abs(V.currentTime-exp())>1){uact=Date.now();send({t:'seek',pos:V.currentTime})}});
 V.addEventListener('ended',()=>{if(st&&st.playing)send({t:'pause',pos:V.currentTime})});
-V.addEventListener('waiting',bufStart);V.addEventListener('playing',bufEnd);V.addEventListener('canplay',bufEnd);V.addEventListener('loadedmetadata',tick);
+V.addEventListener('waiting',bufStart);V.addEventListener('playing',bufEnd);V.addEventListener('canplay',bufEnd);V.addEventListener('loadedmetadata',tick);V.addEventListener('loadedmetadata',()=>fdur(V.duration));
 const dot=h('i',{class:'dot',id:'dot'}),pres=h('span',{id:'pres',text:'Bağlanıyor…'});
 const mk=(n,i,t)=>h('button',{class:n==mode?'on':'',id:'t'+n,onclick:()=>{touched=1;tab(n)}},ic(i,16),t,h('span',{class:'lkm'}));
 const seg=h('div',{class:'seg'},mk(1,'film','Film'),mk(2,'puzzle','Yapboz'),mk(3,'word','Kelimelik'));
@@ -501,7 +552,7 @@ const head=h('div',{class:'card'},h('div',{class:'row'},h('button',{class:'btn s
 const u=h('input',{class:'in',id:'vu',type:'url',placeholder:'YouTube, .mp4 veya .m3u8 linki',inputmode:'url',autocapitalize:'none',autocorrect:'off',spellcheck:'false',enterkeyhint:'go'});
 const rf=h('input',{class:'in',type:'url',placeholder:'https://kaynak-site.com/',inputmode:'url',autocapitalize:'none',autocorrect:'off'});
 const ld=()=>{const v=u.value.trim();if(!/^https?:\/\//i.test(v))return toast('Link http:// veya https:// ile başlamalı',1);send({t:'set',url:v,ref:rf.value.trim()});toast('Yükleniyor…')};u.onkeydown=e=>{if(e.key=='Enter')ld()};
-const fp=h('div',{class:'card',id:'fp'},h('div',{class:'stage'},V,yw,EMPTY,syncEl,holdEl),h('div',{class:'row'},u,h('button',{class:'btn',onclick:ld},ic('play',16),'Yükle')),h('details',{},h('summary',{text:'Gelişmiş: Referer (link açılmazsa)'}),rf),h('small',{text:'Oynat, durdur ve ileri sarma ikinizde de anında uygulanır. Biri takılırsa diğeri bekler.'}));
+const fp=h('div',{class:'card',id:'fp'},h('div',{class:'stage'},V,yw,EMPTY,syncEl,holdEl),h('div',{class:'row'},u,h('button',{class:'btn',onclick:ld},ic('play',16),'Yükle')),h('details',{},h('summary',{text:'Gelişmiş: Referer (link açılmazsa)'}),rf),h('small',{text:'Oynat, durdur ve ileri sarma ikinizde de anında uygulanır. Biri takılırsa diğeri bekler.'}),wlBox());
 const cnt=h('div',{class:'chips'},[100,250,500,1000].map(n=>h('button',{class:n==PN?'on':'','data-n':n,onclick:e=>{PN=n;cnt.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x==e.currentTarget))}},n+' parça')));
 const pf=h('input',{type:'file',accept:'image/*',style:'display:none',onchange:e=>{if(e.target.files[0])pnew(e.target.files[0]);e.target.value=''}});
 const cv=h('canvas',{id:'pcv'});
@@ -590,7 +641,7 @@ const expOf=ms=>ms&&ms.tr?Math.max(0,ms.pos+(ms.playing?(Date.now()+off-ms.at)/1
 const mexp=()=>expOf(MS);
 const fmt=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+pad(s%60)};
 const b64u=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-function getMA(){if(!MA){MA=new Audio();MA.playsInline=true;MA.preload='auto';MA.onended=()=>{if(MS&&MS.playing&&(MU.prov=='au'||(MS.tr&&MS.tr.ids&&MS.tr.ids.au==MS.tr.ids[MU.prov])))send({t:'mpause',pos:0})}}return MA}
+function getMA(){if(!MA){MA=new Audio();MA.playsInline=true;MA.preload='auto';MA.onended=()=>{if(MS&&MS.playing&&(MU.prov=='au'||(MS.tr&&MS.tr.ids&&MS.tr.ids.au==MS.tr.ids[MU.prov])))send({t:'mend',rev:MS.rev})}}return MA}
 function mpauseAll(){if(YM&&YMr)ymc(()=>YM.pauseVideo());try{if(MA&&!MA.paused)MA.pause()}catch(e){}try{if(AM&&AM.isPlaying)AM.pause()}catch(e){}if(MU.on&&MU.prov=='sp')spApi('me/player/pause','PUT');MU.on=0}
 function mstop(){MU.seq++;MU.loaded='';MU.rev=-1;MU.lp='';mpauseAll();if(MUI.yt)MUI.yt.style.display='none';mui()}
 function musicState(ms){MS=ms;if(!ms||!ms.tr){if(MU.loaded)mstop();mui();return}
@@ -638,7 +689,7 @@ function ytErr(){if(MS&&MS.tr&&MS.tr.ids&&MS.tr.ids.au){AD.au.sync(MS.tr.ids.au,
 // Videonun kendi ▶/❚❚ düğmesi: herkese iletilir
 function ytState(e){const d=e.data,prev=MU.lastPS;MU.lastPS=d;
 if(d==1&&MU.need){MU.need=0;mui()}
-if(d==0&&MS&&MS.playing&&MU.prov=='yt'){send({t:'mpause',pos:0});return}
+if(d==0&&MS&&MS.playing&&MU.prov=='yt'){send({t:'mend',rev:MS.rev});return}
 const mine=Date.now()-(MU.selfT||0)<2500||document.visibilityState!='visible';
 if(mine||!MS||!MS.tr||MU.prov!='yt'||!canUse('music')||!YM||!YMr)return;
 let p=0;try{p=YM.getCurrentTime()||0}catch(x){}
@@ -703,7 +754,7 @@ if(!MU.prov){MU.prov='yt';localStorage.mp='yt';mui()}
 const lk=parseLink(v);if(lk){const tr=await fillMeta({title:'',artist:'',art:'',dur:0,ids:lk.ids});return pickTrack(tr)}
 try{MUI.res.replaceChildren(h('small',{class:'mu',text:'Aranıyor…'}));
 let L=[];if(MU.prov=='sp'&&localStorage.sp)L=await spSearch(v,8);else if(MU.prov=='am'&&AM&&AM.isAuthorized)L=await amSearch(v,8);else L=await ytSearch(v,8);
-MUI.res.replaceChildren(...(L.length?L.map(t=>h('button',{type:'button',class:'mu-r',onclick:()=>pickTrack(t)},t.art?h('img',{src:t.art,alt:''}):h('span',{class:'mu-art',text:'🎵',style:'width:40px;height:40px;font-size:1.1rem'}),h('div',{},h('b',{text:t.title}),h('small',{text:t.artist+(t.dur?' · '+fmt(t.dur):'')})))):[h('small',{class:'mu',text:'Sonuç bulunamadı'})]))}catch(e){MUI.res.replaceChildren();toast(String((e&&e.message)||e),1)}}
+MUI.res.replaceChildren(...(L.length?L.map(t=>h('div',{class:'mu-rw'},h('button',{type:'button',class:'mu-r',onclick:()=>pickTrack(t)},t.art?h('img',{src:t.art,alt:''}):h('span',{class:'mu-art',text:'🎵',style:'width:40px;height:40px;font-size:1.1rem'}),h('div',{},h('b',{text:t.title}),h('small',{text:t.artist+(t.dur?' · '+fmt(t.dur):'')}))),h('button',{type:'button',class:'btn sec sm','aria-label':'Sıraya ekle',onclick:()=>mqAdd(t)},'＋ Sıra'))):[h('small',{class:'mu',text:'Sonuç bulunamadı'})]))}catch(e){MUI.res.replaceChildren();toast(String((e&&e.message)||e),1)}}
 function setProv(p){if(MU.prov==p)return;mpauseAll();if(MUI.yt&&p!='yt')MUI.yt.style.display='none';MU.prov=p;localStorage.mp=p;MU.loaded='';MU.rev=-1;MU.msg='';MU.need=0;
 loadCfg().then(()=>p=='am'?amInit().catch(e=>{MU.msg=String((e&&e.message)||e)}):0).then(()=>{mui();if(MS&&MS.tr)mapply()});mui()}
 function musicCard(){
@@ -718,14 +769,14 @@ bp=act('play',()=>{if(!MS||!MS.tr)return toast('Önce bir şarkı ara ve seç');
 b1=act('back10',()=>{if(MS&&MS.tr)send({t:'mseek',pos:Math.max(0,mexp()-10)})},1,'10 saniye geri'),
 b2=act('fwd10',()=>{if(MS&&MS.tr)send({t:'mseek',pos:mexp()+10})},1,'10 saniye ileri'),
 rg=h('input',{type:'range',min:0,max:100,value:0,style:'width:100%;display:none;accent-color:var(--ac)',onchange:e=>send({t:'mseek',pos:+e.target.value})}),
-msg=h('small',{class:'err'}),need=h('button',{type:'button',class:'btn full',style:'display:none',onclick:()=>mjoin()},'▶ Dinlemeye katıl'),hint=h('div',{class:'mu-hint',style:'display:none'}),ls=h('div',{class:'mu-ls'}),yt=h('div',{class:'mu-yt'});
+msg=h('small',{class:'err'}),need=h('button',{type:'button',class:'btn full',style:'display:none',onclick:()=>mjoin()},'▶ Dinlemeye katıl'),hint=h('div',{class:'mu-hint',style:'display:none'}),ls=h('div',{class:'mu-ls'}),yt=h('div',{class:'mu-yt'}),mqb=h('div',{class:'mq'});
 q.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();msearch()}};
 const root=h('div',{class:'card',id:'mp'},h('div',{class:'row'},ic('music',18),h('h3',{text:'Birlikte müzik'})),
 h('small',{text:'Hesap bağlamadan doğrudan şarkı arayıp tam senkron dinleyebilirsiniz. İsterseniz Spotify veya Apple Music de seçebilirsiniz.'}),
 h('div',{class:'lbl',text:'Dinleme modu'}),chips,st,cb,
 h('div',{class:'row'},q,h('button',{type:'button',class:'btn sq','aria-label':'Ara',onclick:msearch},ic('eye',18))),res,
-h('div',{class:'mu-now'},art,h('div',{class:'grow'},tt,ar,tm)),ls,rg,h('div',{class:'row'},b1,bp,b2),msg,need,hint,yt);
-MUI={root,chips,st,cb,q,res,art,tt,ar,tm,bp,rg,msg,need,hint,ls,yt,lastArt:null,lastP:null};mui();return root}
+h('div',{class:'mu-now'},art,h('div',{class:'grow'},tt,ar,tm)),ls,rg,h('div',{class:'row'},b1,bp,b2),mqb,msg,need,hint,yt);
+MUI={root,chips,st,cb,q,res,art,tt,ar,tm,bp,rg,msg,need,hint,ls,yt,mq:mqb,lastArt:null,lastP:null};setTimeout(mqRender,0);mui();return root}
 function mui(){const U=MUI;if(!U.root)return;
 if(!MU.prov){MU.prov='yt';localStorage.mp='yt'}
 U.chips.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.p==MU.prov));
@@ -753,7 +804,7 @@ function mjoin(){MU.need=0;MU.fail=0;try{if(MA&&MU.prov=='au')MA.play()}catch(e)
 function mrep(){let s='off';try{if(MS&&MS.tr&&canUse('music')){if(!MS.playing)s='pause';else if(MU.prov=='yt'&&YM&&YMr&&YM.getPlayerState){const p=YM.getPlayerState();s=p==1?'ok':MU.need?'need':'buf'}else if(MU.prov=='au'&&MA)s=!MA.paused?'ok':MU.need?'need':'buf';else s=MU.on?'ok':MU.need?'need':'buf'}}catch(e){}
 if(s!==MU.rs){MU.rs=s;send({t:'mst',s})}}
 function mtick(){if(!MUI.root||!MS||!MS.tr)return;const p=mexp(),d=MS.tr.dur||0;MUI.tm.textContent=fmt(p)+(d?' / '+fmt(d):'');
-if(d){MUI.rg.style.display='';if(document.activeElement!==MUI.rg){MUI.rg.max=d;MUI.rg.value=Math.min(p,d)}if(MS.playing&&p>d+1&&!MU.endSent){MU.endSent=1;send({t:'mpause',pos:d})}}
+if(d){MUI.rg.style.display='';if(document.activeElement!==MUI.rg){MUI.rg.max=d;MUI.rg.value=Math.min(p,d)}if(MS.playing&&p>d+1&&!MU.endSent){MU.endSent=1;send({t:'mend',rev:MS.rev})}}
 if(!MS.playing||!canUse('music'))return;
 try{if(MU.prov=='au'&&MA&&!MA.paused&&p<29&&Math.abs(MA.currentTime-p)>2)MA.currentTime=p;else if(MU.prov=='am'&&AM&&AM.isPlaying&&Math.abs((AM.currentPlaybackTime||0)-p)>2.5)AM.seekToTime(p)}catch(e){}}
 
@@ -1039,6 +1090,39 @@ export default {
       if (p == '/api/turn') return J(await iceServers(env));
       // ---- bildirimler ----
       if (p == '/api/push/key') return J({ k: (await vapid(env)).pub });
+      // ---- izleme listesi (film) ----
+      if (p == '/api/wl') {
+        if (req.method == 'GET') {
+          const code = clean(u.searchParams.get('room')); let names = [me.n];
+          if (code) { try { const w = await (await roomStub(env, code).fetch('https://do/rwho', { method: 'POST', body: '{}' })).json(); if (Array.isArray(w) && w.includes(me.n)) names = [...new Set([me.n, ...w])].slice(0, 8) } catch (e) { } }
+          return J(await (await dbf(env, '/wlget', { names })).json());
+        }
+        const b = await req.json().catch(() => ({})), a = String(b.a || ''), url = String(b.url || '').trim().slice(0, 2000); let r;
+        if (!/^https?:\/\//i.test(url)) return J({ error: 'Link http:// ya da https:// ile başlamalı' }, 400);
+        if (a == 'add') {
+          let ref = String(b.ref || '').trim().slice(0, 500); if (ref && !/^https?:\/\//i.test(ref)) ref = '';
+          let title = String(b.title || '').replace(/[\u0000-\u001f]/g, '').trim().slice(0, 150);
+          if (!title) { const y = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/))([\w-]{11})/i);
+            if (y) { try { const o = await fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + y[1]), { signal: AbortSignal.timeout(4000) }); if (o.ok) title = String((await o.json()).title || '').slice(0, 150) } catch (e) { } }
+            if (!title) { try { const x = new URL(url); title = decodeURIComponent(x.pathname.split('/').filter(Boolean).pop() || x.hostname).replace(/\.(mp4|m3u8|webm|mkv|mov)$/i, '').replace(/[_+.-]+/g, ' ').slice(0, 150) || x.hostname } catch (e) { title = 'Video' } } }
+          r = await dbf(env, '/wladd', { name: me.n, it: { u: url, r: ref, t: title } });
+        } else if (a == 'rm') r = await dbf(env, '/wlrm', { name: me.n, u: url });
+        else if (a == 'done') r = await dbf(env, '/wldone', { name: me.n, u: url, v: b.v ? 1 : 0 });
+        else return J({ error: 'Geçersiz işlem' }, 400);
+        const code = clean(b.room); if (code) await later(roomStub(env, code).fetch('https://do/wlchg', { method: 'POST', body: '{}' }));
+        return J(await r.json(), r.status);
+      }
+      // ---- kayıtlı şarkı listeleri ----
+      if (p == '/api/pl') {
+        if (req.method == 'GET') return J(await (await dbf(env, '/plget', { name: me.n })).json());
+        const b = await req.json().catch(() => ({})); let r;
+        if (b.a == 'save') { const items = (Array.isArray(b.items) ? b.items : []).slice(0, 100).map(cleanTr).filter(Boolean), n = String(b.n || '').replace(/[\u0000-\u001f]/g, '').trim().slice(0, 40);
+          if (!n) return J({ error: 'Listeye bir ad ver' }, 400); if (!items.length) return J({ error: 'Listede şarkı yok' }, 400);
+          r = await dbf(env, '/plsave', { name: me.n, n, items }) }
+        else if (b.a == 'rm') r = await dbf(env, '/plrm', { name: me.n, id: String(b.id || '') });
+        else return J({ error: 'Geçersiz işlem' }, 400);
+        return J(await r.json(), r.status);
+      }
       // ---- arkadaşlar ----
       if (p == '/api/friends') {
         if (req.method == 'GET') return J(await (await dbf(env, '/fr', { name: me.n })).json());
@@ -1541,9 +1625,9 @@ export class Do {
   constructor(s, env) {
     this.s = s; this.env = env; this.rl = new Map(); this.hb = []; this.pzi = null; this.ok = 0;
     s.blockConcurrencyWhile(async () => {
-      const g = await s.storage.get(['st', 'pzp', 'chat', 'code', 'rooms', 'lk', 'ms', 'wg', 'roomMode', 'wpm', 'wacc']);
+      const g = await s.storage.get(['st', 'pzp', 'chat', 'code', 'rooms', 'lk', 'ms', 'wg', 'roomMode', 'wpm', 'wacc', 'mq']);
       this.st = g.get('st') || fresh(); this.pend = null; this.pzp = g.get('pzp') || null; this.chat = g.get('chat') || []; this.code = g.get('code') || ''; this.rooms = g.get('rooms') || {}; this.lk = normLk(g.get('lk')); this.ms = g.get('ms') || null; this.wg = g.get('wg') || null; this.roomMode = [1,2,3].includes(+g.get('roomMode')) ? +g.get('roomMode') : 1; this.roomModeSet = [1,2,3].includes(+g.get('roomMode'));
-      this.wpm = g.get('wpm') || null; this.wacc = new Set(g.get('wacc') || []); this.pq = null; this.lex = null; this.dmeta = null; this.dcfg = { tdk: 0 }; this.dver = 0; if (this.wpm) this.wpmArm();
+      this.mq = g.get('mq') || []; this.fd = null; this.wlT = 0; this.wpm = g.get('wpm') || null; this.wacc = new Set(g.get('wacc') || []); this.pq = null; this.lex = null; this.dmeta = null; this.dcfg = { tdk: 0 }; this.dver = 0; if (this.wpm) this.wpmArm();
     });
   }
   socks() { return this.s.getWebSockets().filter(w => w.readyState === 1) }
@@ -1600,10 +1684,12 @@ export class Do {
     if (p == '/adminws') { const [c, sv] = Object.values(new WebSocketPair()); this.s.acceptWebSocket(sv, ['admin']); sv.send(this.snap()); return new Response(null, { status: 101, webSocket: c }) }
     if (p == '/kill') {
       this.socks().forEach(w => { try { w.close(4000, 'kapatildi') } catch (e) { } });
-      await S.deleteAll(); this.st = fresh(); this.pzp = null; this.pzi = null; this.chat = []; this.code = ''; this.roomMode = 1; this.roomModeSet = false; this.ms = null; this.wg = null; this.wpm = null; this.wacc = new Set(); clearTimeout(this.wpmT); return Response.json({ ok: 1 });
+      await S.deleteAll(); this.st = fresh(); this.pzp = null; this.pzi = null; this.chat = []; this.code = ''; this.roomMode = 1; this.roomModeSet = false; this.ms = null; this.mq = []; this.wg = null; this.wpm = null; this.wacc = new Set(); clearTimeout(this.wpmT); return Response.json({ ok: 1 });
     }
     const b = await req.json().catch(() => ({}));
     if (p.startsWith('/dict')) return this.dictRoute(p, b);
+    if (p == '/rwho') return Response.json(this.names());
+    if (p == '/wlchg') { this.all(JSON.stringify({ t: 'wlchg' })); return Response.json({ ok: 1 }) }
     if (p == '/info') return Response.json({ exists: this.roomModeSet, mode: this.roomModeSet ? this.roomMode : 0 });
     if (p == '/locks') { await this.lkApply(b.lk); return Response.json({ ok: 1 }) }
     if (p == '/getlocks') { const l = await S.get('locks'); return Response.json(normLk(l)) }
@@ -1640,7 +1726,35 @@ export class Do {
       if (b.role && nm != 'admin') { x.role = b.role == 'admin' ? 'admin' : 'user'; x.v = (x.v || 1) + 1 }
       await S.put('u:' + nm, x); return Response.json({ ok: 1 });
     }
-    if (p == '/del') { if (nm == 'admin' || nm == String(b.by || '').toLowerCase()) return bad('Bu hesap silinemez'); await S.delete('u:' + nm); await S.delete('ps:' + nm); await S.delete('fr:' + nm); return Response.json({ ok: 1 }) }
+    if (p == '/del') { if (nm == 'admin' || nm == String(b.by || '').toLowerCase()) return bad('Bu hesap silinemez'); await S.delete(['u:' + nm, 'ps:' + nm, 'fr:' + nm, 'wl:' + nm, 'pl:' + nm]); return Response.json({ ok: 1 }) }
+    // ---- izleme listesi: wl:<ad> = [{ u, r, t, p (konum sn), d (süre), ts (eklenme), w (son izleme), done }] ----
+    if (p.startsWith('/wl')) {
+      const now = Date.now();
+      if (p == '/wlprog') {
+        const url = String(b.u || ''), pp = Math.max(0, +b.p || 0), d = Math.max(0, Math.round(+b.d || 0)); let ch = 0;
+        for (const n of (Array.isArray(b.names) ? b.names : []).slice(0, 10)) { const k = 'wl:' + String(n).toLowerCase(), L = await S.get(k); if (!L) continue; const it = L.find(x => x.u === url); if (!it) continue;
+          it.p = Math.round(pp); if (d) it.d = d; it.w = now; const D = it.d || 0; if (D && pp >= D - 90) it.done = 1; else if (pp > 60) it.done = 0; await S.put(k, L); ch = 1 }
+        return Response.json({ ch });
+      }
+      if (p == '/wlget') {
+        const M = new Map();
+        for (const n of (Array.isArray(b.names) ? b.names : []).slice(0, 8)) { const L = (await S.get('wl:' + String(n).toLowerCase())) || [];
+          for (const it of L) { const x = M.get(it.u); if (!x) M.set(it.u, { ...it, by: [n] }); else { x.by.push(n); if ((it.w || 0) > (x.w || 0)) Object.assign(x, { p: it.p, d: it.d || x.d, w: it.w, done: it.done }); if (!x.t && it.t) x.t = it.t } } }
+        const rank = x => x.done ? 2 : (x.p || 0) > 5 ? 0 : 1;
+        return Response.json([...M.values()].sort((x, y) => rank(x) - rank(y) || (rank(x) == 0 ? (y.w || 0) - (x.w || 0) : (y.ts || 0) - (x.ts || 0))).slice(0, 150));
+      }
+      const k = 'wl:' + nm, L = (await S.get(k)) || [];
+      if (p == '/wladd') { const it = b.it || {}, i = L.findIndex(x => x.u === it.u); if (i >= 0) { const [x] = L.splice(i, 1); x.ts = now; if (it.t && !x.t) x.t = it.t; L.unshift(x) } else { if (L.length >= 100) return bad('Listende en fazla 100 video olabilir. Bazılarını çıkar.'); L.unshift({ u: it.u, r: it.r || '', t: it.t || '', p: 0, d: 0, ts: now, w: 0, done: 0 }) } await S.put(k, L); return Response.json({ ok: 1 }) }
+      if (p == '/wlrm') { await S.put(k, L.filter(x => x.u !== b.u)); return Response.json({ ok: 1 }) }
+      if (p == '/wldone') { const it = L.find(x => x.u === b.u); if (!it) return bad('Bu video senin listende değil', 404); it.done = b.v ? 1 : 0; if (!b.v && it.d && it.p >= it.d - 90) it.p = 0; await S.put(k, L); return Response.json({ ok: 1 }) }
+      return bad('yok', 404);
+    }
+    // ---- kayıtlı şarkı listeleri: pl:<ad> = [{ id, n, items, ts }] ----
+    if (p == '/plget') return Response.json((await S.get('pl:' + nm)) || []);
+    if (p == '/plsave') { const L = (await S.get('pl:' + nm)) || [], i = L.findIndex(x => trLower(x.n) === trLower(b.n));
+      if (i >= 0) { L[i].items = b.items; L[i].ts = Date.now(); L[i].n = b.n } else { if (L.length >= 30) return bad('En fazla 30 liste kaydedebilirsin'); L.unshift({ id: crypto.randomUUID().slice(0, 8), n: b.n, items: b.items, ts: Date.now() }) }
+      await S.put('pl:' + nm, L); return Response.json({ ok: 1, upd: i >= 0 }) }
+    if (p == '/plrm') { await S.put('pl:' + nm, ((await S.get('pl:' + nm)) || []).filter(x => x.id !== b.id)); return Response.json({ ok: 1 }) }
     if (p == '/meinfo') { const x = await S.get('u:' + nm); if (!x) return bad('Kullanıcı yok', 404); if (!x.tag) { x.tag = newTag(); await S.put('u:' + nm, x) } const fr = await S.get('fr:' + nm); return Response.json({ tag: x.tag, ts: x.ts || 0, fr: fr && fr.f ? fr.f.length : 0 }) }
     if (p == '/selfdel') {
       const x = await S.get('u:' + nm); if (!x) return bad('Kullanıcı yok', 404);
@@ -1648,7 +1762,7 @@ export class Do {
       if (!same(x.h, await hash(String(b.pass || ''), x.salt))) return bad('Şifre yanlış', 403);
       const fr = await S.get('fr:' + nm);
       if (fr) for (const o of new Set([...(fr.f || []), ...(fr.in || []), ...(fr.out || [])])) { const y = await S.get('fr:' + o); if (!y) continue; for (const k of ['f', 'in', 'out']) y[k] = (y[k] || []).filter(z => z !== nm); await S.put('fr:' + o, y) }
-      await S.delete(['u:' + nm, 'ps:' + nm, 'fr:' + nm]); return Response.json({ ok: 1 });
+      await S.delete(['u:' + nm, 'ps:' + nm, 'fr:' + nm, 'wl:' + nm, 'pl:' + nm]); return Response.json({ ok: 1 });
     }
     if (p == '/setpass') {
       const x = await S.get('u:' + nm); if (!x || !same(x.h, await hash(String(b.old || '').slice(0, 200), x.salt))) return bad('Mevcut şifre yanlış');
@@ -1755,8 +1869,22 @@ export class Do {
     if (held !== this.st.held) { this.st = { ...this.st, pos: this.exp(now), at: now, held, rev: (this.st.rev || 0) + 1 }; return true }
     return false;
   }
-  msg(i) { return JSON.stringify({ t: 'st', st: this.st, now: Date.now(), who: [...new Set(this.socks().map(w => (w.deserializeAttachment() || {}).n))], hb: this.hb, ms: this.ms, mh: this.mhear(), i }) }
+  msg(i) { return JSON.stringify({ t: 'st', st: this.st, now: Date.now(), who: [...new Set(this.socks().map(w => (w.deserializeAttachment() || {}).n))], hb: this.hb, ms: this.ms, mq: this.mq, mh: this.mhear(), i }) }
   // Müzik dinleme durumu (yalnız bellekte/soket ekinde, kalıcı yazılmaz): ok=duyuyor, buf=yükleniyor, need=dokunması gerekiyor, pause=durdu
+  names(extra) { return [...new Set([...this.socks().filter(w => !this.s.getTags(w).includes('admin')).map(w => (w.deserializeAttachment() || {}).n), ...(extra || [])].filter(Boolean))] }
+  // Birlikte izlenen videonun konumunu, odadakilerin izleme listelerine kaydet (kalıcı: kaldığınız yer)
+  async wlSave(extra) {
+    const st = this.st; if (!st || !st.url) return; const now = Date.now(); this.wlT = now;
+    const names = this.names(extra); if (!names.length) return;
+    const fd = this.fd && this.fd.u === st.url ? this.fd.d : 0;
+    try { const r = await (await this.env.DO.get(this.env.DO.idFromName('db')).fetch('https://do/wlprog', { method: 'POST', body: JSON.stringify({ names, u: st.url, p: this.exp(now), d: fd }) })).json(); if (r.ch) this.all(JSON.stringify({ t: 'wlchg' })) } catch (e) { }
+  }
+  // Çalma sırasındaki bir sonraki şarkıya geç
+  async mqNext() {
+    const it = this.mq.shift(); if (!it) return false; const ms = this.ms;
+    this.ms = { tr: it.tr, playing: true, pos: 0, at: Date.now(), by: it.by, rev: (ms ? ms.rev : 0) + 1 };
+    await this.s.storage.put({ ms: this.ms, mq: this.mq }); this.all(JSON.stringify({ t: 'sys', x: '🎵 Sıradaki: ' + it.tr.title + (it.tr.artist ? ' – ' + it.tr.artist : '') })); this.bcast(); return true;
+  }
   vroster() { const r = []; for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (a.v) r.push({ id: a.v, n: a.n, m: a.vm ? 1 : 0 }) } return r }
   vrSend() { this.all(JSON.stringify({ t: 'vr', r: this.vroster() })) }
   mhear() { const r = {}, rank = { ok: 4, buf: 3, pause: 2, need: 1 }; for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (!a.n || !a.mu) continue; if (!r[a.n] || (rank[a.mu] || 0) > (rank[r[a.n]] || 0)) r[a.n] = a.mu } return r }
@@ -1771,6 +1899,7 @@ export class Do {
     if (T == 'ping') {
       if (this.wpm && now >= this.wpm.dl) await this.wpmCancel('Rakip ' + (WPM_MS / 1000) + ' saniye içinde yanıt vermedi. Hamle iptal edildi, harfler sende; tekrar deneyebilirsin.');
       if (this.pend && this.pend.by !== n && this.pend.p.length) { try { ws.send(this.pendMsg()) } catch (e) { } }
+      if (this.st && this.st.url && this.st.playing && !this.st.held && now - (this.wlT || 0) > 30000) await this.wlSave();
       if (this.wpm) { try { ws.send(this.wqMsg(n)) } catch (e) { } }
       if (this.hold(now)) { await S.put('st', this.st); this.bcast() } else ws.send(this.msg(+m.i || 0)); if (now - (this.lp || 0) > 30000) { this.lp = now; await this.report() }
       a.ls = now; try { ws.serializeAttachment(a) } catch (e) { }
@@ -1803,6 +1932,21 @@ export class Do {
     if (T == 'react') { const e = String(m.e || ''); if (!['❤️', '😂', '😮', '👏', '🔥', '😢'].includes(e)) return; return this.all(JSON.stringify({ t: 'react', e, n })) }
     if (T == 'pzn' || T == 'pzm') { if (!this.can('puzzle', a)) return this.deny(ws) }
     if (T == 'set' || T == 'play' || T == 'pause' || T == 'seek') { if (!this.can('film', a)) return this.deny(ws) }
+    if (T == 'mqadd' || T == 'mqrm' || T == 'mqup' || T == 'mqnext' || T == 'mqload' || T == 'mqclr' || T == 'mend') {
+      if (!this.can('music', a)) return this.deny(ws);
+      const q = this.mq, nid = () => crypto.randomUUID().slice(0, 8);
+      if (T == 'mqadd') { const tr = cleanTr(m.tr); if (!tr) return; if (q.length >= 50) return ws.send(JSON.stringify({ t: 'sys', x: 'Sıra dolu (en fazla 50 şarkı)' })); q.push({ id: nid(), tr, by: n }); if (!this.ms || !this.ms.tr) return this.mqNext() }
+      else if (T == 'mqload') { const items = (Array.isArray(m.items) ? m.items : []).slice(0, 100).map(cleanTr).filter(Boolean).map(tr => ({ id: nid(), tr, by: n })); if (!items.length) return;
+        if (m.mode == 'play') { this.mq = items.slice(0, 50); return this.mqNext() } this.mq = q.concat(items).slice(0, 50); if (!this.ms || !this.ms.tr) return this.mqNext() }
+      else if (T == 'mqrm') this.mq = q.filter(x => x.id !== m.id);
+      else if (T == 'mqup') { const i = q.findIndex(x => x.id === m.id); if (i > 0) [q[i - 1], q[i]] = [q[i], q[i - 1]]; else return }
+      else if (T == 'mqclr') this.mq = [];
+      else if (T == 'mqnext') { if (!q.length) return; return this.mqNext() }
+      else if (T == 'mend') { const ms = this.ms; if (!ms || !ms.playing || +m.rev !== ms.rev) return; if (q.length) return this.mqNext();
+        this.ms = { ...ms, playing: false, pos: 0, at: now, rev: ms.rev + 1 }; await S.put('ms', this.ms); return this.bcast() }
+      await S.put('mq', this.mq); return this.bcast();
+    }
+    if (T == 'fdur') { if (this.st && m.u === this.st.url) this.fd = { u: m.u, d: Math.max(0, Math.min(1e6, Math.round(+m.d || 0))) }; return }
     if (T == 'mset' || T == 'mplay' || T == 'mpause' || T == 'mseek') {
       if (!this.can('music', a)) return this.deny(ws);
       const ms = this.ms, p = Math.max(0, Math.min(36000, +m.pos || 0));
@@ -1863,7 +2007,8 @@ export class Do {
     if (T == 'set') {
       const url = String(m.url || '').trim().slice(0, 2000); if (!/^https?:\/\//i.test(url)) return;
       let ref = String(m.ref || '').trim().slice(0, 500); if (ref && !/^https?:\/\//i.test(ref)) ref = '';
-      ns = { url, ref, playing: false, held: false, pos: 0, at: now, by: n };
+      await this.wlSave(); this.fd = null;
+      ns = { url, ref, playing: false, held: false, pos: Math.max(0, Math.min(1e6, +m.pos || 0)), at: now, by: n };
       this.socks().forEach(w => { const q = w.deserializeAttachment() || {}; q.b = 0; w.serializeAttachment(q) });
       this.all(JSON.stringify({ t: 'sys', x: n + ' yeni bir video yükledi' }));
     }
@@ -1872,7 +2017,7 @@ export class Do {
     else if (T == 'seek') ns = { ...st, pos, at: now, by: n };
     else return;
     ns.rev = (st.rev || 0) + 1; this.st = ns; this.hold(now);
-    await S.put('st', this.st); this.bcast(); if (T == 'set') await this.report();
+    await S.put('st', this.st); this.bcast(); if (T == 'set') await this.report(); if (T == 'pause') await this.wlSave();
   }
   // ---------- Sözlük DO'su ('dict') ----------
   async dictLoad() {
@@ -2055,8 +2200,10 @@ export class Do {
     this.pend = { by: n, mv: g.mv, p }; this.pendSend(n); if (!p.length) this.pend = null;
   }
   async gone(ws) {
+    const leaver = (ws.deserializeAttachment() || {}).n;
     try { ws.close(1000) } catch (e) { } this.rl.delete(ws); if (this.s.getTags(ws).includes('admin')) return;
     if (this.pend && !this.socks().some(w => (w.deserializeAttachment() || {}).n === this.pend.by)) this.pendClear();
+    if (this.st && this.st.url && leaver) await this.wlSave([leaver]);
     if (this.wpm) { const q = this.wpm, g = this.wg, opp = g ? this.oppOf(g, q.by) : ''; if (!this.hasSock(q.by)) await this.wpmCancel(null); else if (!opp || !this.hasSock(opp)) await this.wpmCancel('Rakibin bağlantısı koptu. Hamle iptal edildi, harfler sende; tekrar deneyebilirsin.') }
     const now = Date.now(); if (this.hold(now)) await this.s.storage.put('st', this.st);
     this.bcast(); this.vrSend(); await this.report(); if (!this.socks().length) await this.s.storage.setAlarm(now + 6 * 36e5);
@@ -2065,6 +2212,6 @@ export class Do {
   async webSocketError(ws) { await this.gone(ws) }
   async alarm() {
     if (this.socks().length) return;
-    await this.s.storage.deleteAll(); this.st = fresh(); this.pzp = null; this.pzi = null; this.chat = []; this.code = ''; this.roomMode = 1; this.roomModeSet = false; this.ms = null; this.wg = null; this.wpm = null; this.wacc = new Set(); clearTimeout(this.wpmT);
+    await this.s.storage.deleteAll(); this.st = fresh(); this.pzp = null; this.pzi = null; this.chat = []; this.code = ''; this.roomMode = 1; this.roomModeSet = false; this.ms = null; this.mq = []; this.wg = null; this.wpm = null; this.wacc = new Set(); clearTimeout(this.wpmT);
   }
 }
