@@ -83,6 +83,17 @@ details summary{color:var(--mu);font-size:.82rem;cursor:pointer;margin-bottom:8p
 .ftt{font-weight:700;font-size:1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dgrid{display:grid;gap:5px;justify-content:center}.drow{display:grid;grid-template-columns:repeat(5,min(14vw,52px));gap:5px}.dt{aspect-ratio:1;border:2px solid var(--bd);border-radius:8px;display:grid;place-items:center;font-weight:800;font-size:1.35rem;background:var(--s2);transition:background .25s,border-color .25s}.dt.f{border-color:var(--mu)}.dt.c0{background:#3a3f4b;border-color:#3a3f4b}.dt.c1{background:#c9a227;border-color:#c9a227;color:#111}.dt.c2{background:#2e9e5b;border-color:#2e9e5b;color:#fff}.drow.shake{animation:dshake .35s}@keyframes dshake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}.dopp{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}.dmini{display:grid;gap:2px;justify-items:center}.dmini .drow{grid-template-columns:repeat(5,12px);gap:2px}.dmini i{width:12px;height:12px;border-radius:2px;background:var(--s3)}.dmini i.c0{background:#3a3f4b}.dmini i.c1{background:#c9a227}.dmini i.c2{background:#2e9e5b}.dkb{display:grid;gap:6px}.dkr{display:flex;gap:4px;justify-content:center}.dk{flex:1;max-width:40px;min-width:0;height:46px;border:0;border-radius:6px;background:#565b68;color:#fff;font:inherit;font-weight:700;font-size:.95rem;padding:0;cursor:pointer;touch-action:manipulation}.dk.wide{max-width:60px;flex:1.5}.dk.c0{background:#2a2e37;color:#7a7f8c}.dk.c1{background:#c9a227;color:#111}.dk.c2{background:#2e9e5b}
 .bgrid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:2px;width:100%;max-width:420px;margin:0 auto;background:#0b3550;padding:3px;border-radius:10px}.bgrid.sm{max-width:240px}.bc{aspect-ratio:1;border:0;border-radius:3px;background:#12507a;color:#fff;font:inherit;font-size:.75rem;font-weight:700;padding:0;display:grid;place-items:center;cursor:pointer;min-width:0;touch-action:manipulation}.bc:disabled{cursor:default;opacity:1}.bc.ship{background:#8b95a7}.bc.ship.sel{background:#d4dbe8;box-shadow:inset 0 0 0 2px #fff}.bc.miss{background:#0e3d5e;color:#9fc3dd}.bc.hit{background:#e0533d}.bc.sunk{background:#6b1a10;color:#ffb4a8}.bc.ghost{background:#5d6b82}.bgrid.tgt .bc:not(:disabled){background:#1667a0}.bgrid.tgt .bc:not(:disabled):active{background:#2a86c7}.tag.sunk{text-decoration:line-through;opacity:.5}
+.gprop{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#6d7cff1c;border:1px solid var(--ac);border-radius:12px;padding:10px}.gprop .grow{min-width:140px}.gprop b,.gprop small{display:block}#gsw button.pend{border-color:var(--wa);color:var(--wa)}
+.bgrid{background:repeating-linear-gradient(135deg,#0a3a5c 0 10px,#0c4269 10px 20px)!important;box-shadow:inset 0 0 24px #0008}.bc{position:relative;background:#13557f99!important;overflow:visible}.bc>span{position:relative;z-index:2;line-height:1}
+.bc.miss{background:#0b324fcc!important;color:#bfe0f5}.bc.hit{background:#c2412d!important}.bc.ship,.bc.ship.sunk,.bc.ship.ghost{background:#13557f55!important}
+.bc.ship::before{content:'';position:absolute;z-index:1;background:linear-gradient(180deg,#d5dce8,#8792a6 60%,#5d687c);box-shadow:inset 0 -2px 0 #4a5466}
+.bc.ship.sh-h::before{top:18%;bottom:18%;left:-1px;right:-1px}.bc.ship.sh-v::before{left:18%;right:18%;top:-1px;bottom:-1px;background:linear-gradient(90deg,#d5dce8,#8792a6 60%,#5d687c)}
+.bc.ship.sh-h.sh-s::before{left:6%;border-radius:70% 0 0 70%/50% 0 0 50%}.bc.ship.sh-h.sh-e::before{right:10%;border-radius:0 30% 30% 0}
+.bc.ship.sh-v.sh-s::before{top:6%;border-radius:50% 50% 0 0/70% 70% 0 0}.bc.ship.sh-v.sh-e::before{bottom:10%;border-radius:0 0 30% 30%}
+.bc.ship.sh-m::after{content:'';position:absolute;z-index:1;width:30%;height:30%;left:35%;top:35%;background:#4b5568;border-radius:3px;box-shadow:0 0 0 1px #2f3747}
+.bc.ship.sel{box-shadow:none!important}.bc.ship.sel::before{filter:brightness(1.3) drop-shadow(0 0 4px #9fd3ff)}
+.bc.ship.sunk::before{background:linear-gradient(180deg,#9a3a2a,#5a1a10)}.bc.ship.sunk::after{background:#2a0c07}.bc.ship.hitship::before{background:linear-gradient(180deg,#e7a092,#b2513f)}
+.bc.ship.ghost::before{opacity:.45}
 #tt{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translate(-50%,30px);opacity:0;pointer-events:none;background:#232838;border:1px solid var(--bd);color:var(--tx);padding:11px 18px;border-radius:14px;font-weight:600;font-size:.9rem;z-index:90;max-width:92vw;text-align:center;transition:.25s;box-shadow:0 10px 30px #000a}
 #tt.on{opacity:1;transform:translate(-50%,0)}#tt.bad{background:#3a1b22;border-color:#7a2a38}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tile{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:14px}.tile b{display:block;font-size:1.8rem;letter-spacing:-.02em}
@@ -415,29 +426,41 @@ h('button',{type:'button',class:'btn sec sm','aria-label':'Listeyi sil',onclick:
 try{draw(await api('pl'))}catch(e){box.replaceChildren(h('small',{class:'err',text:String(e)}))}}
 
 // ---------- oyun seçici ----------
-let GSEL=(()=>{try{return localStorage.gsel||'word'}catch(e){return 'word'}})(),GSW=null;
-function gameSwitch(){const c=h('div',{class:'chips',id:'gsw'});GSW=()=>c.replaceChildren(...[['word','🔤 Kelimelik'],['duel','🟩 Kelime Düellosu'],['bs','🚢 Amiral Battı']].map(([k,t])=>h('button',{type:'button',class:GSEL==k?'on':'',onclick:()=>gSel(k)},t)));GSW();return h('div',{class:'card',style:'padding:12px'},c)}
-function gSel(k){GSEL=k;try{localStorage.gsel=k}catch(e){}if(GSW)GSW();lockUI()}
+let GSEL='duel',GSW=null,GSP=null,GPB=null,GSPT=0;
+const GNM={word:'Kelimelik',duel:'Kelime Düellosu',bs:'Amiral Battı'};
+function gameSwitch(){const c=h('div',{class:'chips',id:'gsw'});GPB=h('div',{class:'gprop',style:'display:none'});
+GSW=()=>{c.replaceChildren(...[['word','🔤 Kelimelik'],['duel','🟩 Kelime Düellosu'],['bs','🚢 Amiral Battı']].map(([k,t])=>{const pend=GSP&&GSP.to==k;return h('button',{type:'button',class:(GSEL==k?'on':'')+(pend?' pend':''),onclick:()=>{if(k==GSEL)return;if(GSP){if(GSP.by==ME.name)return toast('Önce bekleyen isteğin yanıtlanmalı');return toast('Önce bekleyen isteği yanıtla',1)}send({t:'gsel',g:k})}},t+(pend?' ⏳':''))}));gpRender()};
+GSW();return h('div',{class:'card',style:'padding:12px;gap:10px'},c,GPB)}
+function gpRender(){const B=GPB;if(!B)return;const p=GSP;if(!p){B.style.display='none';B.replaceChildren();return}B.style.display='';
+const mine=p.by==ME.name,iOk=p.ok.includes(ME.name),s=Math.ceil(p.end-Date.now())/1000|0;
+if(mine||iOk)B.replaceChildren(h('div',{class:'grow'},h('b',{text:'⏳ '+GNM[p.to]+' oyununa geçiş'}),h('small',{class:'mu',text:(p.need.length?p.need.join(', ')+' bekleniyor… ':'')+'('+Math.max(0,s)+' sn)'})),mine?h('button',{type:'button',class:'btn sec sm',onclick:()=>send({t:'gcancel'})},'İptal'):null);
+else B.replaceChildren(h('div',{class:'grow'},h('b',{text:'🎮 '+p.by+' '+GNM[p.to]+' oyununa geçmek istiyor'}),h('small',{class:'mu',text:'Kabul edersen oda o oyuna geçer ('+Math.max(0,s)+' sn)'})),
+h('button',{type:'button',class:'btn sm',onclick:()=>send({t:'gvote',ok:true})},'Kabul'),h('button',{type:'button',class:'btn sec sm',onclick:()=>send({t:'gvote',ok:false})},'Hayır'))}
+function gsState(gs){if(!gs)return;const ch=gs.g!==GSEL;GSEL=gs.g||'duel';const p=gs.p?{...gs.p,end:Date.now()+gs.p.left}:null;const pj=JSON.stringify(gs.p&&{to:gs.p.to,ok:gs.p.ok,need:gs.p.need});
+if(pj!==GSPT||ch){GSPT=pj;GSP=p;if(GSW)GSW();if(ch)lockUI()}else if(p&&GSP)GSP.end=p.end}
+if(!window._gpInt)window._gpInt=setInterval(()=>{if(GSP)gpRender()},1000);
 // ---------- Kelime Düellosu ----------
-let DLG=null,DLGI='',DLIN='',DLU={};
+let DLG=null,DLGI='',DLIN='',DLU={},DPOOL=(()=>{try{return localStorage.dpool||'common'}catch(e){return 'common'}})();
 const DKEYS=[['E','R','T','Y','U','I','O','P','Ğ','Ü'],['A','S','D','F','G','H','J','K','L','Ş','İ'],['⏎','Z','C','V','B','N','M','Ö','Ç','⌫']];
 const tU=s=>String(s).toLocaleUpperCase('tr-TR');
 function duelCard(){const grid=h('div',{class:'dgrid'}),opp=h('div',{class:'dopp'}),kb=h('div',{class:'dkb'}),st=h('div',{class:'lbl',style:'margin:0;text-align:center'}),sc=h('div',{class:'chips'}),
-bnew=h('button',{type:'button',class:'btn full',onclick:()=>{if(DLG&&!DLG.over&&!confirm('Devam eden oyun bitecek. Yeni oyun başlatılsın mı?'))return;send({t:'dnew'})}},'Yeni oyun başlat');
+bnew=h('button',{type:'button',class:'btn full',onclick:()=>{if(DLG&&!DLG.over&&!confirm('Devam eden oyun bitecek. Yeni oyun başlatılsın mı?'))return;send({t:'dnew',pool:DPOOL})}},'Yeni oyun başlat'),
+pool=h('div',{class:'chips',style:'justify-content:center'});
 kb.append(...DKEYS.map(r=>h('div',{class:'dkr'},r.map(k=>h('button',{type:'button',class:'dk'+(k=='⏎'||k=='⌫'?' wide':''),'data-k':k,'aria-label':k=='⏎'?'Gönder':k=='⌫'?'Sil':k,onclick:()=>dKey(k)},k)))));
-const root=h('div',{class:'card',id:'dp'},h('div',{class:'row',style:'justify-content:space-between;flex-wrap:wrap'},h('h3',{text:'🟩 Kelime Düellosu'}),sc),st,grid,opp,kb,bnew,
+const root=h('div',{class:'card',id:'dp'},h('div',{class:'row',style:'justify-content:space-between;flex-wrap:wrap'},h('h3',{text:'🟩 Kelime Düellosu'}),sc),st,grid,opp,kb,pool,bnew,
 h('small',{class:'mu',text:'Gizli 5 harfli kelimeyi herkes aynı anda tahmin eder; 6 hakkın var. 🟩 doğru yerde, 🟨 kelimede var ama başka yerde, ⬛ kelimede yok. Rakiplerinin renklerini görürsün, harflerini görmezsin. İlk bilen kazanır.'}));
-DLU={root,grid,opp,kb,st,sc,bnew};dRender();return root}
+DLU={root,grid,opp,kb,st,sc,bnew,pool};dRender();return root}
 const dMe=()=>DLG&&DLG.pl.find(p=>p.n==ME.name);
-function dSet(g){const pm=dMe(),pr=pm?pm.rows.length:0;DLG=g;const nm=dMe();if(!g||g.id!==DLGI){DLIN='';const was=DLGI;DLGI=g?g.id:'';if(g&&was&&g.by!=ME.name&&TAB==3&&GSEL!='duel'&&!g.over)gSel('duel')}else if(nm&&nm.rows.length>pr)DLIN='';dRender()}
+function dSet(g){const pm=dMe(),pr=pm?pm.rows.length:0;DLG=g;const nm=dMe();if(!g||g.id!==DLGI){DLIN='';DLGI=g?g.id:''}else if(nm&&nm.rows.length>pr)DLIN='';dRender()}
 function dErr(e){toast(e,1);const r=DLU.grid&&DLU.grid.querySelector('.cur');if(r){r.classList.remove('shake');void r.offsetWidth;r.classList.add('shake')}}
 function dKey(k){const me=dMe();if(!DLG||DLG.over||(me&&me.done))return;if(k=='⌫')DLIN=DLIN.slice(0,-1);else if(k=='⏎'){if([...DLIN].length<5)return dErr('Kelime 5 harf olmalı');send({t:'dguess',w:DLIN})}else if([...DLIN].length<5)DLIN+=k;dRender()}
 if(!window._dkb){window._dkb=1;document.addEventListener('keydown',e=>{if(TAB!=3||GSEL!='duel'||!DLU.root||!document.body.contains(DLU.root)||e.metaKey||e.ctrlKey||e.altKey)return;const t=e.target;if(t&&t.matches&&t.matches('input,textarea,[contenteditable]'))return;
 if(e.key=='Enter'){e.preventDefault();dKey('⏎')}else if(e.key=='Backspace'){e.preventDefault();dKey('⌫')}else if(e.key.length==1){const u=tU(e.key);if(DKEYS.flat().includes(u)){e.preventDefault();dKey(u)}}})}
 function dRender(){const U=DLU;if(!U.root)return;const g=DLG,me=dMe(),rows=me?me.rows:[],act=g&&!g.over&&!(me&&me.done);
 U.sc.replaceChildren(...(g?Object.entries(g.sc||{}).sort((a,b)=>b[1]-a[1]).map(([n,v])=>h('span',{class:'tag',text:(n==ME.name?'sen':n)+' '+v})):[]));
-U.bnew.style.display=!g||g.over?'':'none';U.kb.style.display=act?'':'none';
-U.st.textContent=!g?'Henüz oyun yok. “Yeni oyun başlat”a bas; odadaki herkes aynı kelimeyi tahmin eder.':g.over?(g.win?(g.win==ME.name?'🏆 Tebrikler, buldun!':'🏆 '+g.win+' buldu.'):'Kimse bulamadı.')+' Kelime: '+tU(g.sec):me&&me.done?'Hakların bitti, diğerlerini bekliyorsun…':'Tahminini yaz ('+(rows.length+1)+'/'+g.mx+')';
+U.bnew.style.display=!g||g.over?'':'none';U.pool.style.display=!g||g.over?'':'none';
+U.pool.replaceChildren(h('small',{class:'mu',style:'width:100%;text-align:center',text:'Kelime havuzu'}),...[['common','Yaygın kelimeler'],['all','Tüm sözlük (zor)']].map(([k,t])=>h('button',{type:'button',class:DPOOL==k?'on':'',onclick:()=>{DPOOL=k;try{localStorage.dpool=k}catch(e){}dRender()}},t)));U.kb.style.display=act?'':'none';
+U.st.textContent=(g&&g.pool=='all'&&!g.over?'📚 Tüm sözlük · ':'')+(!g?'Henüz oyun yok. “Yeni oyun başlat”a bas; odadaki herkes aynı kelimeyi tahmin eder.':g.over?(g.win?(g.win==ME.name?'🏆 Tebrikler, buldun!':'🏆 '+g.win+' buldu.'):'Kimse bulamadı.')+' Kelime: '+tU(g.sec):me&&me.done?'Hakların bitti, diğerlerini bekliyorsun…':'Tahminini yaz ('+(rows.length+1)+'/'+g.mx+')');
 const R=[];for(let r=0;r<(g?g.mx:6);r++){const x=rows[r],cur=act&&r==rows.length,L=x?[...tU(x.w)]:cur?[...DLIN]:[];
 R.push(h('div',{class:'drow'+(cur?' cur':'')},[0,1,2,3,4].map(i=>h('div',{class:'dt'+(x?' c'+x.r[i]:L[i]?' f':'')},L[i]||''))))}U.grid.replaceChildren(...R);
 U.opp.replaceChildren(...(g?g.pl.filter(p=>p.n!=ME.name).map(p=>{const won=p.rows.some(x=>x.r.every(v=>v==2));return h('div',{class:'dmini'},h('small',{class:'mu',text:p.n+(won?' 🏆':p.done?' ✗':' · '+p.rows.length+'/'+g.mx)}),...p.rows.map(x=>h('div',{class:'drow'},x.r.map(v=>h('i',{class:'c'+v})))))}):[]));
@@ -454,39 +477,60 @@ function bsCard(){const st=h('div',{class:'lbl',style:'margin:0;text-align:cente
 const root=h('div',{class:'card',id:'bp'},h('div',{class:'row',style:'justify-content:space-between;flex-wrap:wrap'},h('h3',{text:'🚢 Amiral Battı'}),sc),st,area,acts,log,
 h('small',{class:'mu',text:'Gemilerini yerleştir ve “Hazırım”a bas. Sırayla rakibin denizine ateş edin; vurursan bir kez daha atarsın. Rakibin bütün gemilerini ilk batıran kazanır.'}));
 BU={root,st,sc,area,acts,log};bRender();return root}
-function bSet(g){const was=BSI;BS=g;if(!g||g.id!==BSI){BSI=g?g.id:'';BL=g&&g.me>=0&&g.ph=='place'?(g.my?g.my.map(s=>({i:s.i,v:s.v})):bRandom()):null;BSEL=0;if(g&&was&&TAB==3&&GSEL!='bs'&&g.ph=='place'&&g.me>=0)gSel('bs')}bRender()}
-function bGrid(cls,cellFn,onTap){const g=h('div',{class:'bgrid '+cls});for(let i=0;i<100;i++){const [c,t,en]=cellFn(i);g.append(h('button',{type:'button',class:'bc '+c,disabled:!(onTap&&en),'aria-label':'ABCDEFGHIJ'[i/10|0]+(i%10+1),onclick:onTap&&en?()=>onTap(i):null},t||''))}return g}
+function bSet(g){BS=g;if(!g||g.id!==BSI){BSI=g?g.id:'';BL=null;BSEL=0}
+// yerleştirme aşamasına girildiğinde (yeni oyun ya da rakip bekleme bitince) gemi düzenini hazırla
+if(g&&g.me>=0&&g.ph=='place'&&!BL)BL=g.my?g.my.map(s=>({i:s.i,v:s.v})):bRandom();bRender()}
+function bGrid(cls,cellFn,onTap){const g=h('div',{class:'bgrid '+cls});for(let i=0;i<100;i++){const [c,t,en]=cellFn(i);g.append(h('button',{type:'button',class:'bc '+c,disabled:!(onTap&&en),'aria-label':'ABCDEFGHIJ'[i/10|0]+(i%10+1),onclick:onTap&&en?()=>onTap(i):null},t?h('span',{text:t}):null))}return g}
+// Gemi parçası sınıfları: yön (sh-h / sh-v) ve konum (baş sh-s / gövde sh-m / kıç sh-e)
+function bSeg(list){const m={};for(const cells of list){if(!cells||!cells.length)continue;const v=cells.length>1&&cells[1]-cells[0]==10;cells.forEach((c,k)=>m[c]='ship '+(v?'sh-v':'sh-h')+' '+(k==0?'sh-s':k==cells.length-1?'sh-e':'sh-m'))}return m}
+const bShipsL=L=>(L||[]).map((s,k)=>s?bCellsC(s.i,s.v,BF[k]):null);
 function bPlace(i){if(!BL)return;const len=BF[BSEL],c=bCellsC(i,BV,len);if(!c)return toast('Gemi tahtadan taşıyor; yönü değiştir ya da başka kare seç',1);const occ=bOcc(BL,BSEL);if(c.some(x=>occ[x]!=null))return toast('Başka bir geminin üstüne gelemez',1);
 BL[BSEL]={i,v:BV};const nx=BL.findIndex(s=>!s);if(nx>=0)BSEL=nx;bRender()}
 function bRender(){const U=BU;if(!U.root)return;const g=BS,bt=(t,fn,c)=>h('button',{type:'button',class:'btn '+(c||'sec')+' sm',onclick:fn},t);
 U.sc.replaceChildren(...(g?Object.entries(g.sc||{}).sort((a,b)=>b[1]-a[1]).map(([n,v])=>h('span',{class:'tag',text:(n==ME.name?'sen':n)+' '+v})):[]));
 U.log.replaceChildren(...(g?g.log.slice().reverse().map(x=>h('div',{text:x})):[]));
-const newBtn=()=>bt('Yeni oyun başlat',()=>{const others=(prevWho||[]).filter(x=>x!=ME.name);if(!others.length)return toast('Oyun için odada bir arkadaşın daha olmalı',1);if(others.length==1)return send({t:'bnew',vs:others[0],force:1});
+const newBtn=()=>bt('Yeni oyun başlat',()=>{const others=(prevWho||[]).filter(x=>x!=ME.name);if(others.length<=1)return send({t:'bnew',vs:others[0]||'',force:1});
 const m=modal('Kiminle oynayacaksın?',h('div',{class:'stack',style:'gap:8px'},...others.map(n=>h('button',{type:'button',class:'btn sec full',onclick:()=>{m.remove();send({t:'bnew',vs:n,force:1})}},n))),[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Vazgeç')])},' ');
-if(!g){U.st.textContent='Henüz oyun yok. İki kişilik: odadaki bir arkadaşınla oynarsın.';U.area.replaceChildren();U.acts.replaceChildren(newBtn());return}
+if(!g){U.st.textContent='Henüz oyun yok. İki kişilik: başlat, sonra arkadaşını davet et ya da odadaki biriyle oyna.';U.area.replaceChildren();U.acts.replaceChildren(newBtn());return}
 const me=g.me,opp=me>=0?g.pl[1-me]:null;
+if(g.ph=='wait'){if(me>=0){U.st.textContent='⏳ Rakip bekleniyor';U.area.replaceChildren(h('div',{class:'mu-hint',text:'Arkadaşını davet et: odaya girdiği anda otomatik olarak rakibin olur ve oyun başlar.'}));U.acts.replaceChildren(bt('🔗 Arkadaşını davet et',()=>inviteModal(),' '),bt('Vazgeç',()=>send({t:'bquit'})))}
+else{U.st.textContent=g.pl[0]+' rakip bekliyor';U.area.replaceChildren();U.acts.replaceChildren(bt('⚔️ Rakip ol',()=>send({t:'bjoin'}),' '))}return}
 if(g.ph=='place'){
  if(me<0){U.st.textContent=g.pl.join(' ve ')+' gemilerini yerleştiriyor…';U.area.replaceChildren();U.acts.replaceChildren();return}
  const rd=g.ready[me],ord=g.ready[1-me];U.st.textContent=rd?(ord?'Başlıyor…':opp+' gemilerini yerleştiriyor, bekleniyor…'):'Gemilerini yerleştir'+(ord?' · '+opp+' hazır ✓':'');
- const occ=bOcc(BL),selC=BL&&BL[BSEL]?bCellsC(BL[BSEL].i,BL[BSEL].v,BF[BSEL]):[];
+ const occ=bOcc(BL),selC=BL&&BL[BSEL]?bCellsC(BL[BSEL].i,BL[BSEL].v,BF[BSEL]):[],seg=bSeg(bShipsL(BL));
  const fleet=h('div',{class:'chips'},BF.map((len,k)=>h('button',{type:'button',class:(k==BSEL&&!rd?'on':''),disabled:!!rd,onclick:()=>{BSEL=k;bRender()}},BNM[k]+' ('+len+')'+(BL&&BL[k]?' ✓':''))));
  U.area.replaceChildren(rd?h('small',{class:'mu',text:'Hazırsın. Değiştirmek istersen “Değiştir”e bas.'}):h('small',{class:'mu',text:'Gemiyi seç, sonra başlayacağı kareye dokun. Yönü aşağıdaki düğmeyle değiştir.'}),fleet,
-  bGrid('',i=>[occ[i]!=null?(selC&&selC.includes(i)&&!rd?'ship sel':'ship'):'','',!rd],rd?null:bPlace));
+  bGrid('',i=>[occ[i]!=null?seg[i]+(selC&&selC.includes(i)&&!rd?' sel':''):'','',!rd],rd?null:bPlace));
  U.acts.replaceChildren(...(rd?[bt('Değiştir',()=>send({t:'bready',v:0}))]:[bt(BV?'Yön: Dikey ↕':'Yön: Yatay ↔',()=>{BV=1-BV;bRender()}),bt('🎲 Rastgele',()=>{BL=bRandom();bRender()}),
   bt('✓ Hazırım',()=>{if(!BL||BL.some(s=>!s))return toast('Önce bütün gemileri yerleştir',1);send({t:'bready',v:1,L:BL})},' ')]));return}
 if(me<0){U.st.textContent=g.ph=='over'?'🏆 '+g.win+' kazandı':'Sıra: '+g.pl[g.tn];
- U.area.replaceChildren(...g.boards.map(B=>{const sk=new Set(B.sunk.flatMap(s=>s.cells)),m={};B.shots.forEach(x=>m[x.i]=x.h);return h('div',{class:'stack',style:'gap:4px'},h('small',{class:'mu',text:B.n+' denizi'}),bGrid('sm',i=>[sk.has(i)?'sunk':m[i]===1?'hit':m[i]===0?'miss':'',m[i]===0?'•':m[i]===1?'✕':''],null))}));
+ U.area.replaceChildren(...g.boards.map(B=>{const sg=bSeg(B.sunk.map(s=>s.cells)),m={};B.shots.forEach(x=>m[x.i]=x.h);return h('div',{class:'stack',style:'gap:4px'},h('small',{class:'mu',text:B.n+' denizi'}),bGrid('sm',i=>[sg[i]?sg[i]+' sunk':m[i]===1?'hit':m[i]===0?'miss':'',sg[i]?'🔥':m[i]===0?'•':m[i]===1?'💥':''],null))}));
  U.acts.replaceChildren(g.ph=='over'?newBtn():'');return}
 const my=g.tn==me&&g.ph=='play',onOp={},onMe={};g.onOp.forEach(x=>onOp[x.i]=x.h);g.onMe.forEach(x=>onMe[x.i]=x.h);
-const opSunk=new Set(g.opSunk.flatMap(s=>s.cells)),mineOcc={};(g.my||[]).forEach(s=>s.cells.forEach(c=>mineOcc[c]=1));const reveal=new Set((g.opShips||[]).flatMap(s=>s.cells));
+const opSeg=bSeg(g.opSunk.map(s=>s.cells)),mySeg=bSeg((g.my||[]).map(s=>s.cells)),revSeg=bSeg((g.opShips||[]).map(s=>s.cells)),mySunkC=new Set((g.my||[]).filter(s=>g.mySunk.includes(s.k)).flatMap(s=>s.cells));
 U.st.textContent=g.ph=='over'?(g.win==ME.name?'🏆 Kazandın! Rakibin bütün gemilerini batırdın.':'💥 '+g.win+' kazandı.'):my?'🎯 Sıra sende: rakibin denizine ateş et':'⏳ Sıra: '+opp;
 const left=BF.map((len,k)=>h('span',{class:'tag'+(g.opSunk.some(s=>s.k==k)?' sunk':''),text:BNM[k]+' '+len}));
 U.area.replaceChildren(h('small',{class:'mu',text:opp+' denizi'+(my?' — bir kareye dokun':'')}),
- bGrid('tgt',i=>[opSunk.has(i)?'sunk':onOp[i]===1?'hit':onOp[i]===0?'miss':reveal.has(i)?'ghost':'',onOp[i]===0?'•':onOp[i]===1?'✕':'',my&&onOp[i]==null],i=>send({t:'bshot',i})),
+ bGrid('tgt',i=>[opSeg[i]?opSeg[i]+' sunk':onOp[i]===1?'hit':onOp[i]===0?'miss':revSeg[i]?revSeg[i]+' ghost':'',opSeg[i]?'🔥':onOp[i]===0?'•':onOp[i]===1?'💥':'',my&&onOp[i]==null],i=>{if(navigator.vibrate)try{navigator.vibrate(15)}catch(e){}send({t:'bshot',i})}),
  h('div',{class:'chips',style:'justify-content:center'},left),
- h('small',{class:'mu',text:'Senin denizin'}),bGrid('sm',i=>[onMe[i]===1?'hit':mineOcc[i]?'ship':onMe[i]===0?'miss':'',onMe[i]===0?'•':onMe[i]===1?'✕':''],null));
+ h('small',{class:'mu',text:'Senin denizin'}),bGrid('sm',i=>[mySeg[i]?mySeg[i]+(mySunkC.has(i)?' sunk':onMe[i]===1?' hitship':''):onMe[i]===0?'miss':'',mySeg[i]&&onMe[i]===1?(mySunkC.has(i)?'🔥':'💥'):onMe[i]===0?'•':''],null));
 U.acts.replaceChildren(g.ph=='over'?newBtn():bt('Teslim ol',()=>{if(confirm('Teslim olmak istiyor musun?'))send({t:'bquit'})},'dng'))}
 
+// Bağlama göre yardım: hangi sekmedeysen onu anlatır
+function helpModal(){if(TAB==1)return filmHelp();const li=(b,t)=>h('li',{},h('b',{text:b}),' — '+t);let title,items;
+if(TAB==2){title='Yapboz ve müzik';items=[li('Yapboz','Parça sayısını seç, “Fotoğraf seç ve başlat”a bas. Parçaları sürükle; herkes aynı anda taşıyabilir. Boş yeri sürükleyerek tahtayı kaydır, iki parmakla yakınlaştır.'),
+li('Müzik','Şarkı adını yaz ya da YouTube linki yapıştır. Herkes aynı anda duyar; telefonun izin vermezse videonun ▶ düğmesine bir kez dokun.'),
+li('Sıra ve listeler','Aramada “＋ Sıra” ile sıraya ekle; çalan bitince sıradaki herkeste başlar. “💾 Kaydet” ile listeni sakla, “📂 Listelerim”den tekrar çal.')]}
+else if(GSEL=='duel'){title='Kelime Düellosu';items=[li('Amaç','Gizli 5 harfli Türkçe kelimeyi rakiplerinden önce bul. 6 hakkın var.'),li('Renkler','🟩 harf doğru yerde · 🟨 kelimede var ama başka yerde · ⬛ kelimede yok.'),
+li('Rakipler','Rakiplerinin renklerini canlı görürsün, harflerini görmezsin. İlk bilen kazanır; seri skoru tutulur.'),li('Kelime havuzu','“Yaygın kelimeler” herkesin bildiği kelimelerden seçer; “Tüm sözlük” on binlerce kelimeden seçer, daha zordur.'),
+li('Yazma','Ekrandaki ya da bilgisayarındaki klavyeyi kullan; ⏎ gönderir, ⌫ siler. Tahminler sözlükten denetlenir.')]}
+else if(GSEL=='bs'){title='Amiral Battı';items=[li('Kurulum','Gemiler otomatik dizilir. Değiştirmek için 🎲 Rastgele ya da gemiyi seç → yönü ayarla → başlayacağı kareye dokun. Sonra “Hazırım”.'),
+li('Filo','Uçak gemisi 5 · Muharebe gemisi 4 · Kruvazör 3 · Denizaltı 3 · Muhrip 2 kare.'),li('Savaş','Sırası gelen, rakibin denizinde bir kareye dokunur: 💥 isabet, • ıska. Vurursan bir kez daha atarsın.'),
+li('Kazanma','Rakibin bütün gemilerini ilk batıran kazanır; batan gemi 🔥 ile gösterilir.'),li('Rakip yoksa','Oyunu başlat ve 🔗 ile arkadaşını davet et; odaya girdiği anda rakibin olur.')]}
+else{title='Kelimelik';items=[li('Oyun','İki kişilik Türkçe kelime oyunu. Harfleri sürükleyip tahtaya bırak, “Oyna”ya bas.'),li('Puan','Renkli kareler harf ya da kelime puanını katlar; 7 harfin hepsini kullanırsan +50 puan.'),li('Sözlük','Sözlükte olmayan kelime için rakibine onay sorulur.')]}
+if(TAB==3)items.push(li('Oyun değiştirme','Üstteki düğmelerden başka bir oyun seçince odadaki herkese sorulur; herkes kabul edince oda o oyuna geçer.'));
+const m=modal(title+' – nasıl kullanılır?',h('ul',{class:'help'},items),[h('button',{class:'btn',onclick:()=>m.remove()},'Tamam')])}
 // ---------- profil ----------
 async function myCode(){if(FR&&FR.me&&FR.me.tag)return FR.me.n+'#'+FR.me.tag;try{const j=await api('me');if(j.tag){if(FR)FR.me={n:j.name,tag:j.tag};return j.name+'#'+j.tag}}catch(e){}return ''}
 function codeBox(c){const url=location.origin+'/?ekle='+encodeURIComponent(c),txt='Bizim Sinema’da beni arkadaş olarak ekle: '+c;
@@ -597,7 +641,7 @@ if(Y){const n=Date.now(),ps=Y.getPlayerState();if(YSK&&!YSK.m&&ps==1){if(!YSK.r)
 if(pl.paused())pl.play()}
 function holdUI(){if(!holdEl)return;const on=st&&st.held;holdEl.style.display=on?'flex':'none';if(on)holdEl.lastChild.textContent=(hb.length?hb.join(' & '):'Biri')+' yükleniyor, bekliyoruz…'}
 function setPres(who){const s=$('#pres');if(s)s.textContent=who.join(' & ')+(who.length>1?' · birlikte':' · diğer kişi bekleniyor')}
-function onState(m){LASTM=m;FSH=m.fh||{};const pu=st&&st.url;st=m.st;if(pu!==st.url&&WLU.list)setTimeout(wlRender,0);mqSet(m.mq);hb=m.hb||[];const who=m.who||[];MSH=m.mh||{};musicState(m.ms||null);
+function onState(m){LASTM=m;gsState(m.gs);FSH=m.fh||{};const pu=st&&st.url;st=m.st;if(pu!==st.url&&WLU.list)setTimeout(wlRender,0);mqSet(m.mq);hb=m.hb||[];const who=m.who||[];MSH=m.mh||{};musicState(m.ms||null);
 if(prevWho){for(const x of who)if(!prevWho.includes(x)&&x!=ME.name)toast(x+' odaya katıldı');for(const x of prevWho)if(!who.includes(x))toast(x+' ayrıldı')}prevWho=who;setPres(who);
 const key=st.url+'|'+st.ref+'|'+(st.sid||'');if(canUse('film')&&key!=loadedKey){loadedKey=key;FRY=0;load(st);const u=$('#vu');if(u&&document.activeElement!==u)u.value=st.url;const t=$('#vt');if(t&&document.activeElement!==t)t.value=st.title||''}
 if(FTT){FTT.style.display=st.url&&st.title?'':'none';FTT.textContent='🎬 '+(st.title||'')}
@@ -622,7 +666,7 @@ b.append(h('div',{class:'msg'+(me?' me':'')},me?null:h('b',{text:m.n}),h('span',
 function chatSys(x){const b=$('#cb');if(!b)return;b.append(h('div',{class:'sys',text:x}));b.scrollTop=b.scrollHeight}
 function fly(e,n){document.body.append(h('div',{class:'fl',style:'left:'+(8+Math.random()*80)+'%'},h('span',{text:e}),h('small',{text:n})));setTimeout(()=>{const f=document.querySelector('.fl');if(f)f.remove()},2800)}
 async function invite(){const u=location.origin+'/?oda='+RM;try{if(navigator.share)await navigator.share({title:'Bizim Sinema',text:'Odaya gel: '+RM,url:u});else{await navigator.clipboard.writeText(u);toast('Davet linki kopyalandı')}}catch(e){}}
-function helpModal(){const fill=u=>{const i=$('#vu');if(i)i.value=u;m.remove();toast('Link yazıldı, Yükle\'ye bas')};
+function filmHelp(){const fill=u=>{const i=$('#vu');if(i)i.value=u;m.remove();toast('Link yazıldı, Yükle\'ye bas')};
 const demo=(t,u)=>h('button',{class:'btn sec sm',onclick:()=>fill(u)},t);
 const m=modal('Hangi linki koyacağım?',h('div',{class:'stack'},h('ul',{class:'help'},
 h('li',{},h('b',{text:'YouTube linki'}),' — en kolayı. Herhangi bir video, ikisi de tam senkron izler.'),
@@ -1130,14 +1174,14 @@ async function pushTo(env, names, msg, origin) {
 
 
 // ---------- Kelime Düellosu (Wordle tarzı yarış) ----------
-const DWORDS = 'kalem kitap deniz güneş bulut çiçek ayran limon armut kiraz elmas altın gümüş bakır demir köprü sokak şehir kasım nisan mayıs ekmek kavun hurma incir şeker biber soğan salça çorba pilav börek kebap köfte yemek tatlı kahve tabak çatal bıçak kaşık yatak perde duvar bahçe orman nehir ırmak dalga liman havuz kumaş ceket şapka çanta çorap kazak palto yüzük kolye tarak sabun havlu banyo salon sınıf silgi resim fırça tuval müzik şarkı gitar davul keman sahne takım yüzme nefes beyin kemik kanat pençe aslan tilki koyun horoz tavuk ördek şahin serçe balık yunus böcek yılan zebra panda koala köpek tohum fidan çimen meyve sebze turşu reçel mango çilek vişne ceviz badem mısır nohut kabak havuç marul kekik sirke krema pasta simit lokum helva aşure gazoz salep sevgi barış savaş hayat dünya zaman hafta tatil yolcu valiz bilet çadır sepet sabah öğlen akşam gölge beyaz siyah yeşil pembe bronz çamur maden kömür hızlı yavaş büyük küçük geniş derin sıcak soğuk ıslak temiz kirli güzel yakın erken yaşlı fakir mutlu üzgün sakin cesur korku merak sabır fikir bilgi bilim sanat tarih cümle rakam hesap banka kredi fiyat pazar satış paket kargo posta ekran kablo lamba duman kilit kapak torba poşet düğüm makas tahta çekiç teyze kuzen komşu polis asker şoför pilot terzi kasap yazar prens çocuk bebek insan kadın erkek burun kulak dudak boyun bacak topuk karın ciğer damar sakal bıyık kayık roket motor tekne sapka kazan kepçe'.split(' ');
+const DWORDS = 'acele adres ahşap akıcı akşam alkış altın alçak ambar anlam anons antik araba arama arazi armut aroma arıza asker aslan avize aydın ayran ayrım aşama aşure bacak badem bahar bahçe bakım bakır balta balık banka banyo barış basit basın bavul bayan bayat başka bebek bekçi belge benek beyaz beyin biber bilet bilgi bilim bitki bomba borsa boyun boyut bozuk boğaz bronz bucak bugün bulut burun buzul böcek bölge börek bütün büyük bıyık bıçak cadde cahil camlı canlı cazip ceket cesur cevap ceviz cisim ciğer coşku cumba cümle dahil daire dalga damar damla davet davul dekor demet demir deney deniz dergi derin derya devam devre deyim değer değil dikiş dilek dilim direk dolap dolar dolma donuk doğal doğru doğum dudak duman durak durum duvar duygu dümen dünya düzen düğme düğüm düğün düşük ekmek ekran eksik elbet elmas emlak emsal enfes engel enkaz erkek erken esnaf esnek etken etkin evlat evrak evren eylem ezber eşarp eşkal fakir fayda fener fidan fikir filiz final firma fiyat fizik fular fırça fırın gamze garaj gazel gazoz gelin genel geniş geyik gidon giriş gitar gölge gönül görev görüş gövde gözlü gübre gülüş gümüş güneş güven güzel güçlü hafif hafta hakem hakim halat halka hamak hamur hapis harap hasat hasta hatır havlu havuz havuç hayal hayat hayır hazne hazır hedef helva hesap heves hilal hisse horoz hukuk hurma huzur hücre hızlı ifade ihlal ikili ilham imkan inanç incir insan irade isyan itaat işlem jeton jilet kabak kablo kabuk kadeh kader kadın kafes kahve kalem kalın kalıp kamış kanal kanat kanun kapak kapan karar karga kargo karın kasap kaset kasım katır kavak kavga kavun kayık kayın kayıt kazak kazan kaşık kebap kekik keman kemer kemik kenar kepçe keten keşif kiler kilim kilit kimse kiraz kirli kitap koala kolay kolon kolye komşu konak konuk konum kopya korku kovan koyun koçan kredi krema kukla kulak kulüp kumaş kumru kupon kural kutup kuzen kuzey köfte kömür köpek köprü körük külah kürek kütük küçük kılıç kırık kısım kıyas kıyma kızak lamba leğen liman limon lisan liste lokum lüfer maden makam makas mango mantı marka marul masal masum mayıs mekan melek melez merak mesaj metin metro meyve mezar mezun mimar misal mizah model modem moral motor mucit mutlu mühür müzik mısır nadir nakil namus narin nasıl nazar nefes nehir nemli nesil nimet nisan nişan nohut nokta nüfus oktav olgun omlet orman ortak otlak paket palto pamuk panda panik parti parça pasta patik pazar pelüş pembe pençe perde peron pilav pilot plaka polen polis posta poşet prens pudra radar radyo rakam rakip ralli rampa rapor refah resim reçel roket rozet sabah sabun sabır sahne sakal sakin salep salon salça sanat saray sargı satır satış savaş sayfa saygı sebep sebze sefer seher sehpa sekiz selam sepet sergi serin serçe sesli sevgi silgi simit sinek sirke siyah sokak somun sonuç sorun sosis soyut soğan soğuk sucuk sulak sözcü söğüt süngü sürat sürgü sütun sıcak sıfır sınav sınıf sınır sırma tabak tabur tahta takas taksi takım talep tamir tanık tarak tarif tarih tarla tasma tatil tatlı tavan tavuk tavus tekne telaş temiz teras terzi testi teyze tilki tohum topuk torba torun tozlu tulum turna turşu tutku tuval tuzlu tuğla tünel türkü tütün uygun uzman uğraş vagon vakit vakıf valiz vapur varış vatan vergi villa viraj vites vişne yakın yakıt yalan yamaç yanak yapım yarış yatak yavaş yavru yayla yazar yazın yağlı yağış yaşam yaşlı yedek yemek yetki yeşil yokuş yolcu yosun yudum yunus yüzme yüzük yılan zafer zaman zarar zarif zebra zemin zirve zurna çadır çakıl çalgı çamur çanak çanta çarşı çatal çağrı çekiç çelik çevik çevre çeşme çilek çimen çizgi çizim çiçek çoban çocuk çorap çorba çubuk çukur çökme çözüm ödeme öksüz ölçek ölçüm önlem ördek örnek özgür özlem öğlen ücret ünite ünlem ürkek üstün üzgün ılgın ılıca ırmak ıslak ısrar şahin şahıs şakak şapka şarkı şehir şeker şeref şerit şimdi şoför şubat şükür'.split(' ');
 const DMAX = 6;
 function dScore(g, s) { const G = [...g], S = [...s], r = [0, 0, 0, 0, 0], left = {}; for (let i = 0; i < 5; i++) { if (G[i] === S[i]) r[i] = 2; else left[S[i]] = (left[S[i]] || 0) + 1 } for (let i = 0; i < 5; i++) if (r[i] !== 2 && left[G[i]] > 0) { r[i] = 1; left[G[i]]-- } return r }
 const dSolved = rows => rows.some(x => x.r.every(v => v === 2));
 const dDone = (d, p) => { const rows = d.g[p] || []; return rows.length >= DMAX || dSolved(rows) };
 function dView(d, n) {
   if (!d) return null;
-  return { id: d.id, mx: DMAX, over: d.over, win: d.win, sec: d.over ? d.sec : '', sc: d.sc, by: d.by,
+  return { id: d.id, pool: d.pool || 'common', mx: DMAX, over: d.over, win: d.win, sec: d.over ? d.sec : '', sc: d.sc, by: d.by,
     pl: d.pl.map(p => ({ n: p, done: dDone(d, p) ? 1 : 0, rows: (d.g[p] || []).map(x => p === n ? { w: x.w, r: x.r } : { r: x.r }) })) };
 }
 // ---------- Amiral Battı ----------
@@ -1153,12 +1197,14 @@ function bView(b, n) {
   if (!b) return null; const me = b.pl.indexOf(n), opp = me >= 0 ? b.pl[1 - me] : null;
   const shotsOn = p => { const sh = b.shots[b.pl[1 - b.pl.indexOf(p)]] || [], sh2 = b.ships[p] || []; return sh.map(i => ({ i, h: sh2.some(s => s.cells.includes(i)) ? 1 : 0 })) };
   const sunk = p => (b.ships[p] || []).filter(s => s.cells.every(c => (b.shots[b.pl[1 - b.pl.indexOf(p)]] || []).includes(c))).map(s => ({ k: s.k, cells: s.cells }));
-  const v = { id: b.id, pl: b.pl, ph: b.ph, tn: b.tn, win: b.win, sc: b.sc, ready: b.pl.map(p => b.ready[p] ? 1 : 0), me, log: b.log.slice(-6) };
-  if (me >= 0) { v.my = b.ships[n] || null; v.onMe = shotsOn(n); v.onOp = opp ? shotsOn(opp) : []; v.opSunk = opp ? sunk(opp) : []; v.mySunk = sunk(n).map(s => s.k);
+  const v = { id: b.id, pl: b.pl, ph: b.ph, wait: b.ph == 'wait' ? 1 : 0, tn: b.tn, win: b.win, sc: b.sc, ready: b.pl.map(p => b.ready[p] ? 1 : 0), me, log: b.log.slice(-6) };
+  if (me >= 0 && b.ph != 'wait') { v.my = b.ships[n] || null; v.onMe = shotsOn(n); v.onOp = opp ? shotsOn(opp) : []; v.opSunk = opp ? sunk(opp) : []; v.mySunk = sunk(n).map(s => s.k);
     if (b.ph == 'over' && opp) v.opShips = b.ships[opp] || [] }
-  else { v.boards = b.pl.map(p => ({ n: p, shots: shotsOn(p), sunk: sunk(p) })) }
+  else if (me < 0) { v.boards = b.pl.map(p => ({ n: p, shots: shotsOn(p), sunk: sunk(p) })) }
   return v;
 }
+
+const GNAME = { word: 'Kelimelik', duel: 'Kelime Düellosu', bs: 'Amiral Battı' };
 
 // ---------- Sesli sohbet: ICE/TURN sunucuları ----------
 // Cloudflare Realtime TURN anahtarı (TURN_KEY_ID + TURN_KEY_API_TOKEN gizli değişkenleri) varsa kısa ömürlü kimlik üretilir;
@@ -1275,8 +1321,8 @@ export default {
           const info = await (await roomStub(env, code).fetch('https://do/info', { method: 'POST', body: '{}' })).json();
           if (!info.exists) return J({ error: 'Bu oda artık açık değil' }, 404);
           rl.push(now); PRL.set(me.n, rl); fresh.forEach(n => PRL.set(me.n + '>' + n, now)); if (PRL.size > 2000) PRL.clear();
-          const kind = { 1: 'Film', 2: 'Yapboz ve müzik', 3: 'Kelimelik' }[info.mode] || '';
-          return J({ r: await pushTo(env, fresh, { title: me.n + ' seni çağırıyor', body: (kind ? kind + ' odası' : 'Oda') + ' · ' + code + ' · Katılmak için dokun', url: '/?oda=' + code, tag: 'davet-' + code }, u.origin) });
+          const kind = info.mode == 3 ? 'Oyun · ' + (GNAME[info.game] || 'Oyunlar') : ({ 1: 'Film', 2: 'Yapboz ve müzik' }[info.mode] || '');
+          return J({ r: await pushTo(env, fresh, { title: me.n + ' seni çağırıyor', body: (kind ? kind + (info.mode == 3 ? '' : ' odası') : 'Oda') + ' · ' + code + ' · Katılmak için dokun', url: '/?oda=' + code, tag: 'davet-' + code }, u.origin) });
         }
       }
       if (p == '/api/locks' && req.method == 'GET') return J(await getLocks(env));
@@ -1753,9 +1799,9 @@ export class Do {
   constructor(s, env) {
     this.s = s; this.env = env; this.rl = new Map(); this.hb = []; this.pzi = null; this.ok = 0;
     s.blockConcurrencyWhile(async () => {
-      const g = await s.storage.get(['st', 'pzp', 'chat', 'code', 'rooms', 'lk', 'ms', 'wg', 'roomMode', 'wpm', 'wacc', 'mq', 'dg', 'bs']);
+      const g = await s.storage.get(['st', 'pzp', 'chat', 'code', 'rooms', 'lk', 'ms', 'wg', 'roomMode', 'wpm', 'wacc', 'mq', 'dg', 'bs', 'gsel']);
       this.st = g.get('st') || fresh(); this.pend = null; this.pzp = g.get('pzp') || null; this.chat = g.get('chat') || []; this.code = g.get('code') || ''; this.rooms = g.get('rooms') || {}; this.lk = normLk(g.get('lk')); this.ms = g.get('ms') || null; this.wg = g.get('wg') || null; this.roomMode = [1,2,3].includes(+g.get('roomMode')) ? +g.get('roomMode') : 1; this.roomModeSet = [1,2,3].includes(+g.get('roomMode'));
-      this.mq = g.get('mq') || []; this.dg = g.get('dg') || null; this.bs = g.get('bs') || null; this.fd = null; this.wlT = 0; this.wpm = g.get('wpm') || null; this.wacc = new Set(g.get('wacc') || []); this.pq = null; this.lex = null; this.dmeta = null; this.dcfg = { tdk: 0 }; this.dver = 0; if (this.wpm) this.wpmArm();
+      this.mq = g.get('mq') || []; this.dg = g.get('dg') || null; this.bs = g.get('bs') || null; this.gsel = GNAME[g.get('gsel')] ? g.get('gsel') : 'duel'; this.gprop = null; this.fd = null; this.wlT = 0; this.wpm = g.get('wpm') || null; this.wacc = new Set(g.get('wacc') || []); this.pq = null; this.lex = null; this.dmeta = null; this.dcfg = { tdk: 0 }; this.dver = 0; if (this.wpm) this.wpmArm();
     });
   }
   socks() { return this.s.getWebSockets().filter(w => w.readyState === 1) }
@@ -1804,6 +1850,7 @@ export class Do {
       sv.send(JSON.stringify({ t: 'vr', r: this.vroster() }));
       sv.send(JSON.stringify({ t: 'locks', lk: this.lk }));
       if (this.pzp && this.can('puzzle', att)) sv.send(JSON.stringify({ t: 'pz', pz: { ...this.pzp, img: await this.img() } }));
+      if (this.can('games', att)) await this.gameJoin(att.n);
       if (this.can('games', att)) { if (this.dg) sv.send(JSON.stringify({ t: 'dg', g: dView(this.dg, att.n) })); if (this.bs) sv.send(JSON.stringify({ t: 'bs', g: bView(this.bs, att.n) })) }
       if (this.wg && this.can('word', att)) { sv.send(JSON.stringify({ t: 'wg', g: wgView(this.wg, att.n) })); if (!this.wg.over) this.dwarm() }
       if (this.pend && this.pend.by !== att.n && this.can('word', att)) sv.send(this.pendMsg());
@@ -1813,13 +1860,13 @@ export class Do {
     if (p == '/adminws') { const [c, sv] = Object.values(new WebSocketPair()); this.s.acceptWebSocket(sv, ['admin']); sv.send(this.snap()); return new Response(null, { status: 101, webSocket: c }) }
     if (p == '/kill') {
       this.socks().forEach(w => { try { w.close(4000, 'kapatildi') } catch (e) { } });
-      await S.deleteAll(); this.st = fresh(); this.pzp = null; this.pzi = null; this.chat = []; this.code = ''; this.roomMode = 1; this.roomModeSet = false; this.ms = null; this.mq = []; this.dg = null; this.bs = null; this.wg = null; this.wpm = null; this.wacc = new Set(); clearTimeout(this.wpmT); return Response.json({ ok: 1 });
+      await S.deleteAll(); this.st = fresh(); this.pzp = null; this.pzi = null; this.chat = []; this.code = ''; this.roomMode = 1; this.roomModeSet = false; this.ms = null; this.mq = []; this.dg = null; this.bs = null; this.gsel = 'duel'; this.gprop = null; this.wg = null; this.wpm = null; this.wacc = new Set(); clearTimeout(this.wpmT); return Response.json({ ok: 1 });
     }
     const b = await req.json().catch(() => ({}));
     if (p.startsWith('/dict')) return this.dictRoute(p, b);
     if (p == '/rwho') return Response.json(this.names());
     if (p == '/wlchg') { this.all(JSON.stringify({ t: 'wlchg' })); return Response.json({ ok: 1 }) }
-    if (p == '/info') return Response.json({ exists: this.roomModeSet, mode: this.roomModeSet ? this.roomMode : 0 });
+    if (p == '/info') return Response.json({ exists: this.roomModeSet, mode: this.roomModeSet ? this.roomMode : 0, game: this.roomMode == 3 ? this.gsel : '' });
     if (p == '/locks') { await this.lkApply(b.lk); return Response.json({ ok: 1 }) }
     if (p == '/getlocks') { const l = await S.get('locks'); return Response.json(normLk(l)) }
     if (p == '/setlocks') {
@@ -2001,7 +2048,7 @@ export class Do {
     if (held !== this.st.held) { this.st = { ...this.st, pos: this.exp(now), at: now, held, rev: (this.st.rev || 0) + 1 }; return true }
     return false;
   }
-  msg(i) { return JSON.stringify({ t: 'st', st: this.st, now: Date.now(), who: [...new Set(this.socks().map(w => (w.deserializeAttachment() || {}).n))], hb: this.hb, fh: this.fhear(), ms: this.ms, mq: this.mq, mh: this.mhear(), i }) }
+  msg(i) { return JSON.stringify({ t: 'st', st: this.st, now: Date.now(), who: [...new Set(this.socks().map(w => (w.deserializeAttachment() || {}).n))], hb: this.hb, gs: this.gsView(), fh: this.fhear(), ms: this.ms, mq: this.mq, mh: this.mhear(), i }) }
   // Müzik dinleme durumu (yalnız bellekte/soket ekinde, kalıcı yazılmaz): ok=duyuyor, buf=yükleniyor, need=dokunması gerekiyor, pause=durdu
   names(extra) { return [...new Set([...this.socks().filter(w => !this.s.getTags(w).includes('admin')).map(w => (w.deserializeAttachment() || {}).n), ...(extra || [])].filter(Boolean))] }
   // Birlikte izlenen videonun konumunu, odadakilerin izleme listelerine kaydet (kalıcı: kaldığınız yer)
@@ -2023,10 +2070,13 @@ export class Do {
   async dMsg(ws, a, n, T, m) {
     const S = this.s.storage, err = e => ws.send(JSON.stringify({ t: 'derr', e }));
     if (T == 'dnew') {
-      const old = this.dg, hist = (old && old.hist) || [], pool = DWORDS.filter(w => !hist.includes(w));
-      const sec = pool[rnd(pool.length)], names = this.names().filter(x => x).slice(0, 8);
-      this.dg = { id: crypto.randomUUID().slice(0, 8), sec, pl: names.includes(n) ? names : [n, ...names], g: {}, over: 0, win: '', by: n, sc: (old && old.sc) || {}, hist: [...hist, sec].slice(-60), ts: Date.now() };
-      await S.put('dg', this.dg); this.all(JSON.stringify({ t: 'sys', x: '🟩 ' + n + ' Kelime Düellosu başlattı' })); return this.dSend();
+      if (this.gsel !== 'duel') return err('Oda şu an ' + (GNAME[this.gsel] || 'başka bir oyun') + ' oyununda. Önce oyunu değiştirin.');
+      const old = this.dg, hist = (old && old.hist) || [], pool = m.pool == 'all' ? 'all' : 'common'; let sec = '';
+      if (pool == 'all') { try { const j = await (await dictf(this.env, '/dictrand', { n: 5 })).json(); if (j.w && /^[a-zçğıiöşü]{5}$/.test(j.w) && !hist.includes(j.w)) sec = j.w } catch (e) { } }
+      if (!sec) { const L = DWORDS.filter(w => !hist.includes(w)); sec = L[rnd(L.length)] }
+      const names = this.names().filter(x => x).slice(0, 8);
+      this.dg = { id: crypto.randomUUID().slice(0, 8), sec, pool, pl: names.includes(n) ? names : [n, ...names], g: {}, over: 0, win: '', by: n, sc: (old && old.sc) || {}, hist: [...hist, sec].slice(-120), ts: Date.now() };
+      await S.put('dg', this.dg); this.all(JSON.stringify({ t: 'sys', x: '🟩 ' + n + ' Kelime Düellosu başlattı' + (pool == 'all' ? ' (tüm sözlük)' : '') })); return this.dSend();
     }
     if (T == 'dguess') {
       const d = this.dg; if (!d || d.over) return err('Önce yeni oyun başlat');
@@ -2047,14 +2097,18 @@ export class Do {
   async bMsg(ws, a, n, T, m) {
     const S = this.s.storage, err = e => ws.send(JSON.stringify({ t: 'berr', e })), b = this.bs, log = x => { b.log.push(x); if (b.log.length > 30) b.log.splice(0, b.log.length - 30) };
     if (T == 'bnew') {
+      if (this.gsel !== 'bs') return err('Oda şu an ' + (GNAME[this.gsel] || 'başka bir oyun') + ' oyununda. Önce oyunu değiştirin.');
       if (b && b.ph == 'play' && b.pl.includes(n) && !m.force) return err('Devam eden bir oyun var');
-      const others = this.names().filter(x => x !== n); if (!others.length) return err('Oyun için odada bir arkadaşın daha olmalı');
-      const opp = m.vs && others.includes(m.vs) ? m.vs : others[0];
+      const others = this.names().filter(x => x !== n), opp = m.vs && others.includes(m.vs) ? m.vs : others[0];
+      if (!opp) { this.bs = { id: crypto.randomUUID().slice(0, 8), pl: [n], ph: 'wait', ships: {}, ready: {}, shots: { [n]: [] }, tn: 0, win: '', sc: (b && b.sc) || {}, log: [] };
+        await S.put('bs', this.bs); return this.bSend() }
       this.bs = { id: crypto.randomUUID().slice(0, 8), pl: [n, opp], ph: 'place', ships: {}, ready: {}, shots: { [n]: [], [opp]: [] }, tn: rnd(2), win: '', sc: (b && b.sc) || {}, log: [] };
       await S.put('bs', this.bs); this.all(JSON.stringify({ t: 'sys', x: '🚢 ' + n + ' Amiral Battı başlattı: ' + n + ' – ' + opp })); return this.bSend();
     }
     if (!b) return err('Önce yeni oyun başlat');
+    if (T == 'bjoin') { if (b.ph == 'wait' && !b.pl.includes(n)) { await this.bJoin(n); } return }
     if (!b.pl.includes(n)) return err('Bu oyunda izleyicisin');
+    if (b.ph == 'wait') return err('Rakip bekleniyor');
     if (T == 'bready') {
       if (b.ph != 'place') return;
       if (m.v) { const L = bLayout(m.L); if (!L) return err('Gemi yerleşimi geçersiz: gemiler tahtadan taşmamalı ve üst üste gelmemeli'); b.ships[n] = L; b.ready[n] = 1 } else b.ready[n] = 0;
@@ -2071,7 +2125,29 @@ export class Do {
       } else { log(n + ' ' + coord + ': ıska'); b.tn = 1 - b.tn }
       await S.put('bs', b); return this.bSend();
     }
+    if (T == 'bquit' && b.ph == 'wait') { this.bs = null; await S.delete('bs'); return this.bSend() }
     if (T == 'bquit') { if (b.ph == 'over') return; const opp = b.pl.find(p => p !== n); b.ph = 'over'; b.win = opp; if (opp) b.sc[opp] = (b.sc[opp] || 0) + 1; log(n + ' teslim oldu'); await S.put('bs', b); return this.bSend() }
+  }
+
+  // Bekleyen Amiral Battı'ya ikinci oyuncuyu al
+  async bJoin(n) { const b = this.bs; if (!b || b.ph != 'wait' || b.pl.includes(n)) return; b.pl.push(n); b.shots[n] = []; b.ph = 'place'; b.tn = rnd(2);
+    await this.s.storage.put('bs', b); this.all(JSON.stringify({ t: 'sys', x: '🚢 ' + n + ' Amiral Battı\'ya katıldı: ' + b.pl[0] + ' – ' + n })); this.bSend() }
+  // Odaya giren kişi açık oyuna otomatik katılır
+  async gameJoin(n) { if (!n) return; if (this.gsel == 'bs' && this.bs && this.bs.ph == 'wait') await this.bJoin(n);
+    if (this.gsel == 'duel' && this.dg && !this.dg.over && !this.dg.pl.includes(n)) { this.dg.pl.push(n); await this.s.storage.put('dg', this.dg); this.dSend() } }
+  // ---------- ortak oyun seçimi (değiştirmek için herkesin onayı) ----------
+  gsView() { const p = this.gprop; return { g: this.gsel, p: p ? { to: p.to, by: p.by, ok: p.ok, need: this.names().filter(x => !p.ok.includes(x)), left: Math.max(0, p.dl - Date.now()) } : null } }
+  async gsApply(g, by) { this.gsel = g; this.gprop = null; await this.s.storage.put('gsel', g); this.all(JSON.stringify({ t: 'sys', x: '🎮 Oyun değişti: ' + GNAME[g] })); this.bcast(); this.gameJoinAll() }
+  gameJoinAll() { for (const n of this.names()) this.gameJoin(n) }
+  async gsCheck() { const p = this.gprop; if (!p) return; if (Date.now() > p.dl) { this.gprop = null; this.all(JSON.stringify({ t: 'sys', x: '🎮 Oyun değiştirme isteği zaman aşımına uğradı' })); return this.bcast() }
+    if (this.names().every(x => p.ok.includes(x))) return this.gsApply(p.to, p.by); this.bcast() }
+  async gsMsg(ws, a, n, T, m) {
+    if (T == 'gsel') { const g = String(m.g || ''); if (!GNAME[g] || g === this.gsel) return; if (!this.can(g == 'word' ? 'word' : 'games', a)) return this.deny(ws);
+      if (this.names().filter(x => x !== n).length == 0) return this.gsApply(g, n);
+      this.gprop = { to: g, by: n, ok: [n], dl: Date.now() + 60000 }; this.all(JSON.stringify({ t: 'sys', x: '🎮 ' + n + ' ' + GNAME[g] + ' oyununa geçmek istiyor' })); return this.gsCheck() }
+    const p = this.gprop; if (!p) return;
+    if (T == 'gvote') { if (m.ok) { if (!p.ok.includes(n)) p.ok.push(n); return this.gsCheck() } this.gprop = null; this.all(JSON.stringify({ t: 'sys', x: '🎮 ' + n + ' oyun değiştirmeyi kabul etmedi' })); return this.bcast() }
+    if (T == 'gcancel' && p.by === n) { this.gprop = null; return this.bcast() }
   }
   vroster() { const r = []; for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (a.v) r.push({ id: a.v, n: a.n, m: a.vm ? 1 : 0 }) } return r }
   vrSend() { this.all(JSON.stringify({ t: 'vr', r: this.vroster() })) }
@@ -2089,6 +2165,7 @@ export class Do {
       if (this.wpm && now >= this.wpm.dl) await this.wpmCancel('Rakip ' + (WPM_MS / 1000) + ' saniye içinde yanıt vermedi. Hamle iptal edildi, harfler sende; tekrar deneyebilirsin.');
       if (this.pend && this.pend.by !== n && this.pend.p.length) { try { ws.send(this.pendMsg()) } catch (e) { } }
       if (this.st && this.st.url && this.st.playing && !this.st.held && now - (this.wlT || 0) > 30000) await this.wlSave();
+      if (this.gprop && now > this.gprop.dl) await this.gsCheck();
       if (this.wpm) { try { ws.send(this.wqMsg(n)) } catch (e) { } }
       if (this.hold(now)) { await S.put('st', this.st); this.bcast() } else ws.send(this.msg(+m.i || 0)); if (now - (this.lp || 0) > 30000) { this.lp = now; await this.report() }
       a.ls = now; try { ws.serializeAttachment(a) } catch (e) { }
@@ -2157,7 +2234,8 @@ export class Do {
       this.ms.rev = ms.rev + 1; await S.put('ms', this.ms); return this.bcast();
     }
     if (T == 'dnew' || T == 'dguess') { if (!this.can('games', a)) return this.deny(ws); return this.dMsg(ws, a, n, T, m) }
-    if (T == 'bnew' || T == 'bready' || T == 'bshot' || T == 'bquit') { if (!this.can('games', a)) return this.deny(ws); return this.bMsg(ws, a, n, T, m) }
+    if (T == 'gsel' || T == 'gvote' || T == 'gcancel') return this.gsMsg(ws, a, n, T, m);
+    if (T == 'bnew' || T == 'bready' || T == 'bshot' || T == 'bquit' || T == 'bjoin') { if (!this.can('games', a)) return this.deny(ws); return this.bMsg(ws, a, n, T, m) }
     if (T && T[0] == 'w') {
       if (!this.can('word', a)) return this.deny(ws);
       if (T == 'wpend') { this.pendSet(n, m.p, m.s); return this.wprev(ws, n, m.s) }
@@ -2165,6 +2243,7 @@ export class Do {
       if (this.wpm && (T == 'wplay' || T == 'wpass' || T == 'wex' || T == 'wundo' || T == 'wobj' || T == 'wnew')) return ws.send(JSON.stringify({ t: 'werr', e: 'Rakibin onayı bekleniyor, birkaç saniye bekle.' }));
       const g = this.wg; let r = null, chk = null;
       if (T == 'wnew') {
+        if (this.gsel !== 'word') return ws.send(JSON.stringify({ t: 'werr', e: 'Oda şu an ' + (GNAME[this.gsel] || 'başka bir oyun') + ' oyununda. Önce oyunu değiştirin.' }));
         if (g && !g.over) return ws.send(JSON.stringify({ t: 'werr', e: 'Önce mevcut oyunu bitir (teslim ol)' }));
         const names = [...new Set(this.socks().filter(w => !this.s.getTags(w).includes('admin') && this.can('word', w.deserializeAttachment() || {})).map(w => (w.deserializeAttachment() || {}).n))].filter(Boolean);
         if (names.length < 2 || names.indexOf(n) < 0) return ws.send(JSON.stringify({ t: 'werr', e: 'Oyun için iki kişi odada olmalı' }));
@@ -2233,6 +2312,11 @@ export class Do {
   }
   async dictRoute(p, b) {
     const S = this.s.storage, err = (e, s = 400) => Response.json({ error: e }, { status: s }), lex = await this.dictLoad();
+    if (p == '/dictrand') {
+      const N = Math.max(4, Math.min(7, b.n | 0 || 5)), re = new RegExp('^[a-zçğıiöşü]{' + N + '}$');
+      for (let t = 0; t < 400; t++) { const k = lex.b[Math.random() * lex.b.length | 0]; if (!k || k.length < 3) continue; const L = k.split('\n').filter(w => re.test(w) && wordShape(w)); if (L.length) return Response.json({ w: L[Math.random() * L.length | 0] }) }
+      return Response.json({ w: '' });
+    }
     if (p == '/dictcheck') {
       const r = {}; for (const w of (Array.isArray(b.w) ? b.w : []).slice(0, 20)) { const q = String(w); r[q] = wordShape(q) && lex.ok(q) ? 1 : 0 }
       return Response.json({ r, v: this.dver, full: !!this.dmeta, tdk: this.dcfg.tdk ? 1 : 0 });
@@ -2403,6 +2487,7 @@ export class Do {
     try { ws.close(1000) } catch (e) { } this.rl.delete(ws); if (this.s.getTags(ws).includes('admin')) return;
     if (this.pend && !this.socks().some(w => (w.deserializeAttachment() || {}).n === this.pend.by)) this.pendClear();
     if (this.st && this.st.url && leaver) await this.wlSave([leaver]);
+    if (this.gprop) { if (this.gprop.by === leaver) { this.gprop = null } else await this.gsCheck() }
     if (this.wpm) { const q = this.wpm, g = this.wg, opp = g ? this.oppOf(g, q.by) : ''; if (!this.hasSock(q.by)) await this.wpmCancel(null); else if (!opp || !this.hasSock(opp)) await this.wpmCancel('Rakibin bağlantısı koptu. Hamle iptal edildi, harfler sende; tekrar deneyebilirsin.') }
     const now = Date.now(); if (this.hold(now)) await this.s.storage.put('st', this.st);
     this.bcast(); this.vrSend(); await this.report(); if (!this.socks().length) await this.s.storage.setAlarm(now + 6 * 36e5);
@@ -2411,6 +2496,6 @@ export class Do {
   async webSocketError(ws) { await this.gone(ws) }
   async alarm() {
     if (this.socks().length) return;
-    await this.s.storage.deleteAll(); this.st = fresh(); this.pzp = null; this.pzi = null; this.chat = []; this.code = ''; this.roomMode = 1; this.roomModeSet = false; this.ms = null; this.mq = []; this.dg = null; this.bs = null; this.wg = null; this.wpm = null; this.wacc = new Set(); clearTimeout(this.wpmT);
+    await this.s.storage.deleteAll(); this.st = fresh(); this.pzp = null; this.pzi = null; this.chat = []; this.code = ''; this.roomMode = 1; this.roomModeSet = false; this.ms = null; this.mq = []; this.dg = null; this.bs = null; this.gsel = 'duel'; this.gprop = null; this.wg = null; this.wpm = null; this.wacc = new Set(); clearTimeout(this.wpmT);
   }
 }
