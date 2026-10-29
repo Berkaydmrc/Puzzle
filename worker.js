@@ -56,6 +56,7 @@ input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:d
 .stage .yt{display:none}
 .empty{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:8px;color:var(--mu);pointer-events:none}
 .hold{position:absolute;left:12px;right:12px;bottom:56px;display:none;align-items:center;gap:10px;background:#000c;border:1px solid var(--bd);border-radius:12px;padding:8px 12px;font-size:.85rem;pointer-events:none}
+.fls{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.fls span{background:var(--s2);border:1px solid var(--bd);border-radius:999px;padding:3px 10px;font-size:.78rem;color:var(--mu)}.fls span.ok{border-color:var(--ok);color:var(--ok)}.fls span.err{border-color:var(--er);color:var(--er)}.fls span.tap{border-color:var(--wa);color:var(--wa)}.fls .btn{min-height:28px}
 .sync{position:absolute;left:10px;top:10px;font-size:.7rem;background:#000a;border-radius:99px;padding:3px 10px;color:var(--mu);pointer-events:none}.sync.ok{color:var(--ok)}
 .sp{width:14px;height:14px;border-radius:50%;border:2px solid #fff4;border-top-color:#fff;animation:spin .8s linear infinite;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -144,8 +145,8 @@ let TH=0;const toast=(m,bad)=>{const t=$('#tt');t.textContent=m;t.className='on'
 let T=localStorage.t||sessionStorage.t||'',ME=null,PT='',PTe=0,PEND=cleanCode(new URLSearchParams(location.search).get('oda')),PADD=(new URLSearchParams(location.search).get('ekle')||'').slice(0,30);
 try{ME=JSON.parse(localStorage.me||sessionStorage.me||'null')}catch(e){}
 let LK={film:0,puzzle:0,music:0,word:2},PM=0,MS=null,WG=null,CFG=null,WP=new Map(),WS=-1,WU={};
-let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0,ROOM_MODE=1,ROOM_NEW=0,AUTO=0,WPO=null,PSL='',PST=0,MQ=[],MQS='',WL=null,WLU={},WLT=0,MSH={},WPQ={mv:0,s:0},WQ=null,WQT=0,PSEQ=0,WPV=null,WBZ=0,WBT=0;
-const ov=h('div',{class:'ov',onclick:()=>{ov.classList.remove('on');if(st&&st.url)pl.play()}},ic('play',34),h('span',{text:'Dokun ve başlat'}));document.body.append(ov);
+let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0,ROOM_MODE=1,ROOM_NEW=0,AUTO=0,LASTM=null,WPO=null,PSL='',PST=0,FSH={},FS={s:'',k:''},FRY=0,FLS=null,YLEAD=.35,YSK=null,MQ=[],MQS='',WL=null,WLU={},WLT=0,MSH={},WPQ={mv:0,s:0},WQ=null,WQT=0,PSEQ=0,WPV=null,WBZ=0,WBT=0;
+const ov=h('div',{class:'ov',onclick:()=>{ov.classList.remove('on');if(st&&st.url){pl.play();if(FS.s=='tap')setTimeout(()=>fst('ok'),300)}}},ic('play',34),h('span',{text:'Dokun ve başlat'}));document.body.append(ov);
 const mount=(...n)=>{A.replaceChildren(...n);window.scrollTo(0,0)};
 async function api(p,m,b){let r;try{r=await fetch('/api/'+p,{method:m||'GET',headers:{authorization:'Bearer '+T,'content-type':'application/json'},body:b?JSON.stringify(b):undefined})}catch(e){throw 'Sunucuya ulaşılamadı. Bağlantını kontrol et.'}
 let j={};try{j=await r.json()}catch(e){}
@@ -357,6 +358,8 @@ const here=new Set(prevWho||[]);
 list.replaceChildren(...(L.length?L.map(x=>{const inR=here.has(x.n),dis=!x.push||inR;return h('label',{class:'chk',style:dis?'opacity:.55':''},h('input',{type:'checkbox',disabled:dis,onchange:e=>{e.target.checked?pick.add(x.n):pick.delete(x.n);go.disabled=!pick.size}}),h('span',{text:x.n+(inR?' · odada':x.push?'':' · bildirimleri kapalı')}))}):[h('small',{class:'mu',text:'Henüz arkadaşın yok. Lobideki “Arkadaşlar” kartından kullanıcı adıyla ekleyebilirsin.'})]))}
 
 // ---------- film izleme listesi ----------
+// Dropbox paylaşım linkini doğrudan oynatılabilir hâle getir
+function fixLink(v){try{const x=new URL(v);if(/(^|\.)dropbox\.com$/i.test(x.hostname)&&/\/(s|scl)\//.test(x.pathname)){x.searchParams.delete('dl');x.searchParams.set('raw','1');return x.toString()}}catch(e){}return v}
 function fdur(d){if(st&&st.url&&d>0&&isFinite(d))send({t:'fdur',u:st.url,d:Math.round(d)})}
 function wlBox(){const inp=h('input',{class:'in',type:'url',placeholder:'Sonra izlemek için link yapıştır',inputmode:'url',autocapitalize:'none',autocorrect:'off',spellcheck:'false',enterkeyhint:'done'}),
 addCur=h('button',{type:'button',class:'btn sec sm',style:'display:none',onclick:()=>wlAddCur()},'＋ Açık videoyu ekle'),list=h('div',{class:'wll'});
@@ -475,13 +478,21 @@ const exp=()=>st.pos+((st.playing&&!st.held)?(Date.now()+off-st.at)/1e3:0);
 const ytId=u=>{const m=String(u).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/)|youtube-nocookie\.com\/embed\/)([\w-]{11})/i);return m?m[1]:''};
 const pl={ready(){return Y?!!yr:!!(V&&V.readyState>0)},time(){return Y?(yr?Y.getCurrentTime():0):V.currentTime},
 paused(){if(Y){const s=Y.getPlayerState();return s!=1&&s!=3}return V.paused},busy(){return Y?false:V.seeking},
-play(){lk();if(Y){Y.playVideo();setTimeout(()=>{if(Y&&st&&st.playing&&!st.held&&[1,3].indexOf(Y.getPlayerState())<0)ov.classList.add('on')},2000)}else{const p=V.play();if(p&&p.catch)p.catch(e=>{if(e&&e.name=='NotAllowedError')ov.classList.add('on')})}},
+play(){lk();if(Y){Y.playVideo();setTimeout(()=>{if(Y&&st&&st.playing&&!st.held&&[1,3].indexOf(Y.getPlayerState())<0){ov.classList.add('on');fst('tap')}},2000)}else{const p=V.play();if(p&&p.catch)p.catch(e=>{if(e&&e.name=='NotAllowedError'){ov.classList.add('on');fst('tap')}})}},
 pause(){lk();Y?Y.pauseVideo():V.pause()},seek(t){lk();Y?Y.seekTo(t,true):(V.currentTime=t)},rate(r){if(!Y&&V.playbackRate!=r)V.playbackRate=r}};
 const px=(u,r)=>'/proxy?u='+encodeURIComponent(u)+'&t='+encodeURIComponent(PT)+(r?'&r='+encodeURIComponent(r):'');
 const getHls=()=>hp||(hp=new Promise((ok,no)=>{if(window.Hls)return ok();const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js';s.onload=ok;s.onerror=()=>{hp=null;no()};document.head.append(s)}));
-function teardown(){lt++;if(hls){try{hls.destroy()}catch(e){}hls=null}if(Y){try{Y.destroy()}catch(e){}Y=null;yr=0}if(V){V.onerror=null;try{V.pause();V.removeAttribute('src');V.load()}catch(e){}V.style.display=''}if(yw)yw.style.display='none';clearTimeout(bufT);bufT=0;bs=0}
-const bad=m=>{if(syncEl)syncEl.textContent='Açılamadı';toast('Video açılamadı ('+m+'). Başka link dene, Referer ekle veya YouTube/mp4 kullan.',1)};
-function load(s){teardown();ov.classList.remove('on');if(EMPTY)EMPTY.style.display=s.url?'none':'';if(!s.url){if(syncEl)syncEl.textContent='';return}const id=ytId(s.url);if(id)return loadYT(id);loadVid(s,false)}
+function teardown(){lt++;if(hls){try{hls.destroy()}catch(e){}hls=null}if(Y){try{Y.destroy()}catch(e){}Y=null;yr=0}if(V){V.onerror=null;try{V.pause();V.removeAttribute('src');V.load()}catch(e){}V.style.display=''}if(yw)yw.style.display='none';clearTimeout(bufT);bufT=0;if(bs){try{send({t:'buf',b:0})}catch(e){}}bs=0}
+function fst(s,e){if(!st||!st.sid)return;if(FS.s===s&&FS.k===st.sid)return;FS={s,k:st.sid};send({t:'fst',s,k:st.sid,e:e||''});flsRender()}
+const FLM={ok:['✓ hazır','ok'],load:['⏳ yükleniyor',''],err:['✗ açılamadı','err'],tap:['👆 dokunması gerekiyor','tap']};
+function flsRender(){if(!FLS)return;const on=st&&st.url,who=prevWho||[ME.name];if(!on){FLS.replaceChildren();return}
+const kids=who.map(n=>{const x=n==ME.name?(FS.k===st.sid&&FS.s?{s:FS.s}:FSH[n]):FSH[n],d=FLM[x&&x.s]||['… bekleniyor',''];return h('span',{class:d[1],title:x&&x.e?x.e:'',text:(n==ME.name?'sen':n)+' '+d[0]})});
+if(FS.k===st.sid&&FS.s=='err')kids.push(h('button',{type:'button',class:'btn sec sm',onclick:()=>{FRY=0;loadedKey=null;onState({...LASTM})}},'↻ Yeniden dene'));
+FLS.replaceChildren(...kids)}
+const bad=m=>{const s=st;
+if(!FRY&&s&&s.url){FRY=1;if(syncEl){syncEl.textContent='Yeniden deneniyor…';syncEl.className='sync'}fst('load');setTimeout(()=>{if(st===s||(st&&st.sid===s.sid)){teardown();loadVid(st,true)}},2500);return}
+if(syncEl){syncEl.textContent='Açılamadı';syncEl.className='sync'}fst('err',m);toast('Video açılamadı ('+m+'). “Yeniden dene”ye bas; olmazsa başka link, Referer ya da YouTube/mp4 dene.',1)};
+function load(s){teardown();ov.classList.remove('on');YSK=null;if(s.url&&s.sid){FS={s:'',k:''};fst('load')}if(EMPTY)EMPTY.style.display=s.url?'none':'';if(!s.url){if(syncEl)syncEl.textContent='';return}const id=ytId(s.url);if(id)return loadYT(id);loadVid(s,false)}
 function loadVid(s,vp){const my=lt,isH=/\.m3u8/i.test(s.url),src=vp?px(s.url,s.ref):s.url;let nr=0;
 const fail=w=>{if(my!=lt)return;if(vp)return bad(w);getPT().then(()=>{if(my!=lt)return;teardown();loadVid(s,true)}).catch(()=>bad(w))};
 if(isH&&!V.canPlayType('application/vnd.apple.mpegurl')){getHls().then(()=>{if(my!=lt)return;if(!window.Hls||!Hls.isSupported())return bad('tarayıcı HLS desteklemiyor');
@@ -489,7 +500,7 @@ hls=new Hls({maxBufferLength:30,backBufferLength:30});hls.on(Hls.Events.ERROR,(_
 else{V.onerror=()=>fail('erişim/format');V.src=src;V.load()}}
 function withYT(cb){if(window.YT&&YT.Player)return cb();(window.ytq=window.ytq||[]).push(cb);if(!window.ytl){window.ytl=1;window.onYouTubeIframeAPIReady=()=>{(window.ytq||[]).forEach(f=>f());window.ytq=[]};const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';s.onerror=()=>{window.ytl=0;toast('YouTube yüklenemedi',1)};document.head.append(s)}}
 function loadYT(id){const my=lt;V.style.display='none';yw.style.display='block';yw.replaceChildren(h('div',{id:'ytp'}));yr=0;
-withYT(()=>{if(my!=lt)return;Y=new YT.Player('ytp',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,origin:location.origin},events:{onReady:()=>{if(my==lt){yr=1;tick();try{fdur(Y.getDuration())}catch(e){}}},onStateChange:ytState,onError:()=>toast('YouTube: bu video gömülemiyor, başka bir video dene',1)}})})}
+withYT(()=>{if(my!=lt)return;Y=new YT.Player('ytp',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,origin:location.origin},events:{onReady:()=>{if(my==lt){yr=1;fst('ok');tick();try{fdur(Y.getDuration())}catch(e){}}},onStateChange:ytState,onError:()=>{fst('err','YouTube gömmeye izin vermiyor');toast('YouTube: bu video gömülemiyor, başka bir video dene',1)}}})})}
 function ytState(e){if(!st)return;const s=e.data,t=Y?Y.getCurrentTime():0;
 if(s==1){bufEnd();if(Date.now()>=lock&&!st.playing){uact=Date.now();send({t:'play',pos:t})}}
 else if(s==2){if(Date.now()>=lock&&st.playing){uact=Date.now();send({t:'pause',pos:t})}}
@@ -498,18 +509,18 @@ let ytLast=0;function ytPoll(){if(!Y||!yr||!st)return;const t=Y.getCurrentTime()
 function bufStart(){if(!st||!st.playing||bufT||bs)return;bufT=setTimeout(()=>{bufT=0;if(!bs){bs=1;send({t:'buf',b:1})}},600)}
 function bufEnd(){clearTimeout(bufT);bufT=0;if(bs){bs=0;send({t:'buf',b:0})}}
 function tick(){if(!RM||!st||!st.url||!pl.ready())return;
-if(syncEl&&st.playing&&!st.held&&!Y){const d=pl.time()-exp();syncEl.textContent=Math.abs(d)<.6?'● Senkron':'Eşitleniyor…';syncEl.className='sync'+(Math.abs(d)<.6?' ok':'')}else if(syncEl)syncEl.textContent='';
+if(syncEl&&st.playing&&!st.held){const d=pl.time()-exp(),ok=Math.abs(d)<(Y?.9:.6);syncEl.textContent=ok?'● Senkron':'Eşitleniyor…';syncEl.className='sync'+(ok?' ok':'')}else if(syncEl&&FS.s!='err')syncEl.textContent='';
 if(Date.now()-uact<1200||pl.busy())return;
 const play=st.playing&&!st.held,e=exp(),d=pl.time()-e;
 if(!play){if(!pl.paused()){pl.pause()}if(Math.abs(d)>.7)pl.seek(e);pl.rate(1);return}
-if(Math.abs(d)>(Y?2.2:1.3))pl.seek(e+.25);else pl.rate(d>.3?.94:d<-.3?1.06:1);
+if(Y){const n=Date.now();if(YSK&&!YSK.m&&n-YSK.t>1500&&!pl.paused()){YSK.m=1;YLEAD=Math.max(0,Math.min(3,YLEAD-d))}if(Math.abs(d)>1&&(!YSK||n-YSK.t>4000)){YSK={t:n,m:0};pl.seek(e+YLEAD)}}else if(Math.abs(d)>1.3)pl.seek(e+.25);else pl.rate(d>.3?.94:d<-.3?1.06:1);
 if(pl.paused())pl.play()}
 function holdUI(){if(!holdEl)return;const on=st&&st.held;holdEl.style.display=on?'flex':'none';if(on)holdEl.lastChild.textContent=(hb.length?hb.join(' & '):'Biri')+' yükleniyor, bekliyoruz…'}
 function setPres(who){const s=$('#pres');if(s)s.textContent=who.join(' & ')+(who.length>1?' · birlikte':' · diğer kişi bekleniyor')}
-function onState(m){const pu=st&&st.url;st=m.st;if(pu!==st.url&&WLU.list)setTimeout(wlRender,0);mqSet(m.mq);hb=m.hb||[];const who=m.who||[];MSH=m.mh||{};musicState(m.ms||null);
+function onState(m){LASTM=m;FSH=m.fh||{};const pu=st&&st.url;st=m.st;if(pu!==st.url&&WLU.list)setTimeout(wlRender,0);mqSet(m.mq);hb=m.hb||[];const who=m.who||[];MSH=m.mh||{};musicState(m.ms||null);
 if(prevWho){for(const x of who)if(!prevWho.includes(x)&&x!=ME.name)toast(x+' odaya katıldı');for(const x of prevWho)if(!who.includes(x))toast(x+' ayrıldı')}prevWho=who;setPres(who);
-const key=st.url+'|'+st.ref;if(canUse('film')&&key!=loadedKey){loadedKey=key;load(st);const u=$('#vu');if(u&&document.activeElement!==u)u.value=st.url}
-holdUI();tick()}
+const key=st.url+'|'+st.ref+'|'+(st.sid||'');if(canUse('film')&&key!=loadedKey){loadedKey=key;FRY=0;load(st);const u=$('#vu');if(u&&document.activeElement!==u)u.value=st.url}
+holdUI();flsRender();tick()}
 function connect(k,mode){clearTimeout(wsTm);wsTm=0;const w=new WebSocket((location.protocol=='https:'?'wss://':'ws://')+location.host+'/ws?room='+encodeURIComponent(k)+'&mode='+encodeURIComponent(mode||ROOM_MODE||1)+(ROOM_NEW?'&new=1':'')+'&t='+encodeURIComponent(T));ws=w;wsLast=Date.now();const smp=[];
 w.onopen=()=>{PSL='';if(VC.on)setTimeout(()=>send({t:'vjoin',id:VC.id,m:VC.mu}),50);wsTry=0;wsLast=Date.now();const d=$('#dot');if(d)d.className='dot on';const p=()=>{if(w.readyState!=1)return;if(Date.now()-wsLast>15000){reconnectNow();return}try{w.send(JSON.stringify({t:'ping',i:Date.now()}))}catch(e){}};p();setTimeout(p,600);setTimeout(p,1500);w.p=setInterval(p,5000);while(wsq.length&&w.readyState==1){try{w.send(wsq.shift())}catch(e){break}}};
 w.onmessage=e=>{wsLast=Date.now();let m;try{m=JSON.parse(e.data)}catch(x){return}
@@ -540,19 +551,19 @@ h('small',{text:'Telif hakkı olan içerikleri yetkisiz kaynaklardan eklemeyin. 
 h('div',{class:'row wrap'},demo('YouTube','https://www.youtube.com/watch?v=aqz-KE-bpKQ'),demo('MP4','https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'),demo('M3U8','https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'))),[h('button',{class:'btn',onclick:()=>m.remove()},'Tamam')])}
 function viewRoom(k,mode,isNew){leaveRoom();closeLive();RM=k;ROOM_MODE=([1,2,3].includes(+mode)?+mode:1);ROOM_NEW=isNew?1:0;localStorage.rm=k;st=null;loadedKey=null;seen=new Set();touched=0;done=0;Z={};
 V=h('video',{playsinline:'',controls:'',preload:'auto'});yw=h('div',{class:'yt'});EMPTY=h('div',{class:'empty'},ic('film',32),h('span',{text:'Bir video linki yükle'}));
-holdEl=h('div',{class:'hold'},h('i',{class:'sp'}),h('span'));syncEl=h('div',{class:'sync'});
+holdEl=h('div',{class:'hold'},h('i',{class:'sp'}),h('span'));syncEl=h('div',{class:'sync'});FLS=h('div',{class:'fls'});
 for(const [ev,t] of [['play','play'],['pause','pause']])V.addEventListener(ev,()=>{if(Date.now()<lock||!st||!st.url||V.ended)return;uact=Date.now();if(t=='play'&&!st.playing)send({t:'play',pos:V.currentTime});if(t=='pause'&&st.playing)send({t:'pause',pos:V.currentTime})});
 V.addEventListener('seeked',()=>{if(Date.now()<lock||!st||!st.url)return;if(Math.abs(V.currentTime-exp())>1){uact=Date.now();send({t:'seek',pos:V.currentTime})}});
 V.addEventListener('ended',()=>{if(st&&st.playing)send({t:'pause',pos:V.currentTime})});
-V.addEventListener('waiting',bufStart);V.addEventListener('playing',bufEnd);V.addEventListener('canplay',bufEnd);V.addEventListener('loadedmetadata',tick);V.addEventListener('loadedmetadata',()=>fdur(V.duration));
+V.addEventListener('waiting',bufStart);V.addEventListener('playing',bufEnd);V.addEventListener('canplay',bufEnd);V.addEventListener('canplay',()=>fst('ok'));V.addEventListener('playing',()=>fst('ok'));V.addEventListener('loadedmetadata',tick);V.addEventListener('loadedmetadata',()=>fdur(V.duration));
 const dot=h('i',{class:'dot',id:'dot'}),pres=h('span',{id:'pres',text:'Bağlanıyor…'});
 const mk=(n,i,t)=>h('button',{class:n==mode?'on':'',id:'t'+n,onclick:()=>{touched=1;tab(n)}},ic(i,16),t,h('span',{class:'lkm'}));
 const seg=h('div',{class:'seg'},mk(1,'film','Film'),mk(2,'puzzle','Yapboz'),mk(3,'word','Kelimelik'));
 const head=h('div',{class:'card'},h('div',{class:'row'},h('button',{class:'btn sec sq','aria-label':'Çık',onclick:()=>viewLobby()},ic('back')),h('div',{class:'grow'},h('b',{text:'Oda '+k}),h('div',{class:'pill'},dot,pres)),h('button',{class:'btn sec sq','aria-label':'Davet et',onclick:inviteModal},ic('link')),h('button',{class:'btn sec sq','aria-label':'Yardım',onclick:helpModal},ic('help'))),seg);
 const u=h('input',{class:'in',id:'vu',type:'url',placeholder:'YouTube, .mp4 veya .m3u8 linki',inputmode:'url',autocapitalize:'none',autocorrect:'off',spellcheck:'false',enterkeyhint:'go'});
 const rf=h('input',{class:'in',type:'url',placeholder:'https://kaynak-site.com/',inputmode:'url',autocapitalize:'none',autocorrect:'off'});
-const ld=()=>{const v=u.value.trim();if(!/^https?:\/\//i.test(v))return toast('Link http:// veya https:// ile başlamalı',1);send({t:'set',url:v,ref:rf.value.trim()});toast('Yükleniyor…')};u.onkeydown=e=>{if(e.key=='Enter')ld()};
-const fp=h('div',{class:'card',id:'fp'},h('div',{class:'stage'},V,yw,EMPTY,syncEl,holdEl),h('div',{class:'row'},u,h('button',{class:'btn',onclick:ld},ic('play',16),'Yükle')),h('details',{},h('summary',{text:'Gelişmiş: Referer (link açılmazsa)'}),rf),h('small',{text:'Oynat, durdur ve ileri sarma ikinizde de anında uygulanır. Biri takılırsa diğeri bekler.'}),wlBox());
+const ld=()=>{let v=fixLink(u.value.trim());if(v!==u.value.trim())u.value=v;if(!/^https?:\/\//i.test(v))return toast('Link http:// veya https:// ile başlamalı',1);send({t:'set',url:v,ref:rf.value.trim()});toast('Yükleniyor…')};u.onkeydown=e=>{if(e.key=='Enter')ld()};
+const fp=h('div',{class:'card',id:'fp'},h('div',{class:'stage'},V,yw,EMPTY,syncEl,holdEl),FLS,h('div',{class:'row'},u,h('button',{class:'btn',onclick:ld},ic('play',16),'Yükle')),h('details',{},h('summary',{text:'Gelişmiş: Referer (link açılmazsa)'}),rf),h('small',{text:'Oynat, durdur ve ileri sarma ikinizde de anında uygulanır. Biri takılırsa diğeri bekler.'}),wlBox());
 const cnt=h('div',{class:'chips'},[100,250,500,1000].map(n=>h('button',{class:n==PN?'on':'','data-n':n,onclick:e=>{PN=n;cnt.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x==e.currentTarget))}},n+' parça')));
 const pf=h('input',{type:'file',accept:'image/*',style:'display:none',onchange:e=>{if(e.target.files[0])pnew(e.target.files[0]);e.target.value=''}});
 const cv=h('canvas',{id:'pcv'});
@@ -1864,12 +1875,14 @@ export class Do {
   }
   exp(now) { return this.st.pos + (this.st.playing && !this.st.held ? (now - this.st.at) / 1000 : 0) }
   hold(now) {
-    const hb = []; for (const w of this.socks()) { const a = w.deserializeAttachment() || {}; if (a.b) { if (now - a.bt > 20000) { a.b = 0; w.serializeAttachment(a) } else hb.push(a.n) } }
+    const hb = [], sid = this.st && this.st.sid; for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {};
+      const loading = a.fs && a.fs.k === sid && a.fs.s === 'load' && now - a.fs.t < 20000, failed = a.fs && a.fs.k === sid && a.fs.s === 'err';
+      if (a.b && !failed) { if (now - a.bt > 20000) { a.b = 0; w.serializeAttachment(a) } else hb.push(a.n) } else if (loading && !hb.includes(a.n)) hb.push(a.n) }
     this.hb = hb; const held = this.st.playing && hb.length > 0;
     if (held !== this.st.held) { this.st = { ...this.st, pos: this.exp(now), at: now, held, rev: (this.st.rev || 0) + 1 }; return true }
     return false;
   }
-  msg(i) { return JSON.stringify({ t: 'st', st: this.st, now: Date.now(), who: [...new Set(this.socks().map(w => (w.deserializeAttachment() || {}).n))], hb: this.hb, ms: this.ms, mq: this.mq, mh: this.mhear(), i }) }
+  msg(i) { return JSON.stringify({ t: 'st', st: this.st, now: Date.now(), who: [...new Set(this.socks().map(w => (w.deserializeAttachment() || {}).n))], hb: this.hb, fh: this.fhear(), ms: this.ms, mq: this.mq, mh: this.mhear(), i }) }
   // Müzik dinleme durumu (yalnız bellekte/soket ekinde, kalıcı yazılmaz): ok=duyuyor, buf=yükleniyor, need=dokunması gerekiyor, pause=durdu
   names(extra) { return [...new Set([...this.socks().filter(w => !this.s.getTags(w).includes('admin')).map(w => (w.deserializeAttachment() || {}).n), ...(extra || [])].filter(Boolean))] }
   // Birlikte izlenen videonun konumunu, odadakilerin izleme listelerine kaydet (kalıcı: kaldığınız yer)
@@ -1887,6 +1900,7 @@ export class Do {
   }
   vroster() { const r = []; for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (a.v) r.push({ id: a.v, n: a.n, m: a.vm ? 1 : 0 }) } return r }
   vrSend() { this.all(JSON.stringify({ t: 'vr', r: this.vroster() })) }
+  fhear() { const r = {}, sid = this.st && this.st.sid; if (!sid) return r; for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (a.n && a.fs && a.fs.k === sid) r[a.n] = { s: a.fs.s, e: a.fs.e } } return r }
   mhear() { const r = {}, rank = { ok: 4, buf: 3, pause: 2, need: 1 }; for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (!a.n || !a.mu) continue; if (!r[a.n] || (rank[a.mu] || 0) > (rank[r[a.n]] || 0)) r[a.n] = a.mu } return r }
   bcast() { this.all(this.msg()) }
   async webSocketMessage(ws, raw) {
@@ -1922,6 +1936,12 @@ export class Do {
       return;
     }
     if (T == 'mst') { const v = ['ok', 'buf', 'need', 'pause', 'off'].includes(m.s) ? m.s : 'off'; if (a.mu === v) return; a.mu = v; ws.serializeAttachment(a); return this.bcast() }
+    if (T == 'fst') {
+      const s = ['ok', 'load', 'err', 'tap'].includes(m.s) ? m.s : null; if (!s || !this.st || m.k !== this.st.sid) return;
+      const prev = a.fs || {}; if (prev.s === s && prev.k === m.k) return;
+      a.fs = { s, k: m.k, e: String(m.e || '').slice(0, 60), t: now }; if (s != 'load') a.b = 0; ws.serializeAttachment(a);
+      if (this.hold(now)) await S.put('st', this.st); return this.bcast();
+    }
     if (T == 'buf') { a.b = m.b ? 1 : 0; a.bt = now; ws.serializeAttachment(a); if (this.hold(now)) await S.put('st', this.st); return this.bcast() }
     if (T == 'chat') {
       const x = String(m.x || '').trim().slice(0, 500); if (!x) return;
@@ -2009,7 +2029,8 @@ export class Do {
       let ref = String(m.ref || '').trim().slice(0, 500); if (ref && !/^https?:\/\//i.test(ref)) ref = '';
       await this.wlSave(); this.fd = null;
       ns = { url, ref, playing: false, held: false, pos: Math.max(0, Math.min(1e6, +m.pos || 0)), at: now, by: n };
-      this.socks().forEach(w => { const q = w.deserializeAttachment() || {}; q.b = 0; w.serializeAttachment(q) });
+      this.socks().forEach(w => { const q = w.deserializeAttachment() || {}; q.b = 0; delete q.fs; w.serializeAttachment(q) });
+      ns.sid = now.toString(36) + Math.random().toString(36).slice(2, 6);
       this.all(JSON.stringify({ t: 'sys', x: n + ' yeni bir video yükledi' }));
     }
     else if (T == 'play') { ns = { ...st, playing: true, pos, at: now, by: n } }
