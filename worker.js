@@ -107,6 +107,7 @@ details summary{color:var(--mu);font-size:.82rem;cursor:pointer;margin-bottom:8p
 .bc.ship.sel{box-shadow:none!important}.bc.ship.sel::before{filter:brightness(1.3) drop-shadow(0 0 4px #9fd3ff)}
 .bc.ship.sunk::before{background:linear-gradient(180deg,#9a3a2a,#5a1a10)}.bc.ship.sunk::after{background:#2a0c07}.bc.ship.hitship::before{background:linear-gradient(180deg,#e7a092,#b2513f)}
 .bc.ship.ghost::before{opacity:.45}
+.bgrid.place.live{touch-action:none;user-select:none;-webkit-user-select:none}.bgrid.place .bc{cursor:pointer}.bgrid.place .bc.ship{cursor:grab}.bc.drag::before{opacity:.3}.bc.pv{background:#2fa66acc!important;box-shadow:inset 0 0 0 2px #9ff5c4}.bc.pvbad{background:#c0392bcc!important}
 #tt{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translate(-50%,30px);opacity:0;pointer-events:none;background:#232838;border:1px solid var(--bd);color:var(--tx);padding:11px 18px;border-radius:14px;font-weight:600;font-size:.9rem;z-index:90;max-width:92vw;text-align:center;transition:.25s;box-shadow:0 10px 30px #000a}
 #tt.on{opacity:1;transform:translate(-50%,0)}#tt.bad{background:#3a1b22;border-color:#7a2a38}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tile{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:14px}.tile b{display:block;font-size:1.8rem;letter-spacing:-.02em}
@@ -482,7 +483,7 @@ const best={};for(const x of rows)[...tU(x.w)].forEach((c,i)=>{best[c]=Math.max(
 U.kb.querySelectorAll('.dk').forEach(b=>{const k=b.dataset.k,v=best[k];b.className='dk'+(k=='⏎'||k=='⌫'?' wide':'')+(v!=null?' c'+v:'')})}
 // ---------- Amiral Battı ----------
 const BF=[5,4,3,3,2],BNM=['Uçak gemisi','Muharebe gemisi','Kruvazör','Denizaltı','Muhrip'];
-let BS=null,BSI='',BL=null,BSEL=0,BV=0,BU={};
+let BS=null,BSI='',BL=null,BSEL=0,BV=0,BU={},BSHOT=-1,BRT=0,BDR=null;
 function bCellsC(i,v,len){const r=i/10|0,c=i%10,o=[];for(let k=0;k<len;k++){const rr=r+(v?k:0),cc=c+(v?0:k);if(rr>9||cc>9)return null;o.push(rr*10+cc)}return o}
 function bRandom(){const nb=x=>{const r=x/10|0,c=x%10,o=[];for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const rr=r+a,cc=c+b;if(rr>=0&&rr<10&&cc>=0&&cc<10)o.push(rr*10+cc)}return o};
 for(let t=0;t<300;t++){const used=new Set(),L=[];let ok=true;for(const len of BF){let p=false;for(let a=0;a<300&&!p;a++){const v=Math.random()<.5?1:0,i=Math.random()*100|0,c=bCellsC(i,v,len);if(!c||c.some(x=>nb(x).some(y=>used.has(y))))continue;c.forEach(x=>used.add(x));L.push({i,v});p=true}if(!p){ok=false;break}}if(ok)return L}return null}
@@ -491,13 +492,33 @@ function bsCard(){const st=h('div',{class:'lbl',style:'margin:0;text-align:cente
 const root=h('div',{class:'card',id:'bp'},h('div',{class:'row',style:'justify-content:space-between;flex-wrap:wrap'},h('h3',{text:'🚢 Amiral Battı'}),sc),st,area,acts,log,
 h('small',{class:'mu',text:'Gemilerini yerleştir ve “Hazırım”a bas. Sırayla rakibin denizine ateş edin; vurursan bir kez daha atarsın. Rakibin bütün gemilerini ilk batıran kazanır.'}));
 BU={root,st,sc,area,acts,log};bRender();return root}
-function bSet(g){BS=g;if(!g||g.id!==BSI){BSI=g?g.id:'';BL=null;BSEL=0}
+function bSet(g){BS=g;BSHOT=-1;if(!g||g.id!==BSI){BSI=g?g.id:'';BL=null;BSEL=0}
 // yerleştirme aşamasına girildiğinde (yeni oyun ya da rakip bekleme bitince) gemi düzenini hazırla
 if(g&&g.me>=0&&g.ph=='place'&&!BL)BL=g.my?g.my.map(s=>({i:s.i,v:s.v})):bRandom();bRender()}
 function bGrid(cls,cellFn,onTap){const g=h('div',{class:'bgrid '+cls});for(let i=0;i<100;i++){const [c,t,en]=cellFn(i);g.append(h('button',{type:'button',class:'bc '+c,disabled:!(onTap&&en),'aria-label':'ABCDEFGHIJ'[i/10|0]+(i%10+1),onclick:onTap&&en?()=>onTap(i):null},t?h('span',{text:t}):null))}return g}
 // Gemi parçası sınıfları: yön (sh-h / sh-v) ve konum (baş sh-s / gövde sh-m / kıç sh-e)
 function bSeg(list){const m={};for(const cells of list){if(!cells||!cells.length)continue;const v=cells.length>1&&cells[1]-cells[0]==10;cells.forEach((c,k)=>m[c]='ship '+(v?'sh-v':'sh-h')+' '+(k==0?'sh-s':k==cells.length-1?'sh-e':'sh-m'))}return m}
 const bShipsL=L=>(L||[]).map((s,k)=>s?bCellsC(s.i,s.v,BF[k]):null);
+// Gemiyi döndür: önce kendi başında, sonra dokunulan karede, gerekirse geriye kaydırarak yer arar
+function bRot(k,pivot){const s=BL&&BL[k];if(!s)return false;const nv=1-s.v,len=BF[k],occ=bOcc(BL,k),st=nv?10:1,seen=new Set();
+for(const base of [s.i,pivot==null?s.i:pivot])for(let dd=0;dd<len;dd++){const p0=base-dd*st;if(p0<0||(!nv&&(base%10)-dd<0)||seen.has(p0))continue;seen.add(p0);const c=bCellsC(p0,nv,len);if(c&&!c.some(x=>occ[x]!=null)){BL[k]={i:p0,v:nv};return true}}
+toast('Bu gemiyi döndürmeye yer yok; önce biraz kenara sürükle',1);return false}
+// Sürüklenen geminin yeni başlangıç karesi (tahtanın kenarına yaslanır)
+function bDropAt(k,off,t){const s=BL[k],len=BF[k];let r=t/10|0,c=t%10;if(s.v)r=Math.max(0,Math.min(10-len,r-off));else c=Math.max(0,Math.min(10-len,c-off));const i=r*10+c,cells=bCellsC(i,s.v,len),occ=bOcc(BL,k);return {i,cells,ok:!!cells&&!cells.some(x=>occ[x]!=null)}}
+function bPlaceGrid(rd){const occ=bOcc(BL),selC=BL&&BL[BSEL]?bCellsC(BL[BSEL].i,BL[BSEL].v,BF[BSEL]):[],seg=bSeg(bShipsL(BL)),g=h('div',{class:'bgrid place'+(rd?'':' live')});
+for(let i=0;i<100;i++)g.append(h('button',{type:'button',class:'bc '+(occ[i]!=null?seg[i]+(selC&&selC.includes(i)&&!rd?' sel':''):''),'data-i':i,disabled:!!rd,'aria-label':'ABCDEFGHIJ'[i/10|0]+(i%10+1)}));
+if(rd)return g;const cellAt=(x,y)=>{const e=document.elementFromPoint(x,y),b=e&&e.closest&&e.closest('.bc');return b&&g.contains(b)?+b.getAttribute('data-i'):-1};
+const clr=()=>g.querySelectorAll('.pv,.pvbad,.drag').forEach(b=>b.classList.remove('pv','pvbad','drag'));
+g.onpointerdown=e=>{const i=cellAt(e.clientX,e.clientY);if(i<0)return;e.preventDefault();const k=bOcc(BL)[i];
+ BDR={i,k:k==null?-1:k,x:e.clientX,y:e.clientY,mv:0,off:k==null?0:bCellsC(BL[k].i,BL[k].v,BF[k]).indexOf(i),to:null};try{g.setPointerCapture(e.pointerId)}catch(x){}};
+g.onpointermove=e=>{const D=BDR;if(!D||D.k<0)return;if(!D.mv&&Math.hypot(e.clientX-D.x,e.clientY-D.y)<7)return;e.preventDefault();
+ if(!D.mv){D.mv=1;BSEL=D.k}const t=cellAt(e.clientX,e.clientY);if(t<0)return;const r=bDropAt(D.k,D.off,t);D.to=r;clr();
+ bCellsC(BL[D.k].i,BL[D.k].v,BF[D.k]).forEach(x=>g.children[x].classList.add('drag'));(r.cells||[]).forEach(x=>g.children[x].classList.add(r.ok?'pv':'pvbad'))};
+g.onpointerup=e=>{const D=BDR;BDR=null;if(!D)return;clr();
+ if(D.k<0){bPlace(D.i);return}
+ if(!D.mv){if(BSEL!==D.k){BSEL=D.k;bRender();return}if(bRot(D.k,D.i))bRender();return}
+ if(D.to&&D.to.ok){BL[D.k]={i:D.to.i,v:BL[D.k].v};if(navigator.vibrate)try{navigator.vibrate(10)}catch(x){}}else if(D.to)toast('Oraya sığmıyor ya da başka bir gemiye değiyor',1);bRender()};
+g.onpointercancel=()=>{BDR=null;clr()};return g}
 function bPlace(i){if(!BL)return;const len=BF[BSEL],c=bCellsC(i,BV,len);if(!c)return toast('Gemi tahtadan taşıyor; yönü değiştir ya da başka kare seç',1);const occ=bOcc(BL,BSEL);if(c.some(x=>occ[x]!=null))return toast('Başka bir geminin üstüne gelemez',1);
 BL[BSEL]={i,v:BV};const nx=BL.findIndex(s=>!s);if(nx>=0)BSEL=nx;bRender()}
 function bRender(){const U=BU;if(!U.root)return;const g=BS,bt=(t,fn,c)=>h('button',{type:'button',class:'btn '+(c||'sec')+' sm',onclick:fn},t);
@@ -512,21 +533,20 @@ else{U.st.textContent=g.pl[0]+' rakip bekliyor';U.area.replaceChildren();U.acts.
 if(g.ph=='place'){
  if(me<0){U.st.textContent=g.pl.join(' ve ')+' gemilerini yerleştiriyor…';U.area.replaceChildren();U.acts.replaceChildren();return}
  const rd=g.ready[me],ord=g.ready[1-me];U.st.textContent=rd?(ord?'Başlıyor…':opp+' gemilerini yerleştiriyor, bekleniyor…'):'Gemilerini yerleştir'+(ord?' · '+opp+' hazır ✓':'');
- const occ=bOcc(BL),selC=BL&&BL[BSEL]?bCellsC(BL[BSEL].i,BL[BSEL].v,BF[BSEL]):[],seg=bSeg(bShipsL(BL));
- const fleet=h('div',{class:'chips'},BF.map((len,k)=>h('button',{type:'button',class:(k==BSEL&&!rd?'on':''),disabled:!!rd,onclick:()=>{BSEL=k;bRender()}},BNM[k]+' ('+len+')'+(BL&&BL[k]?' ✓':''))));
- U.area.replaceChildren(rd?h('small',{class:'mu',text:'Hazırsın. Değiştirmek istersen “Değiştir”e bas.'}):h('small',{class:'mu',text:'Gemiyi seç, sonra başlayacağı kareye dokun. Yönü aşağıdaki düğmeyle değiştir.'}),fleet,
-  bGrid('',i=>[occ[i]!=null?seg[i]+(selC&&selC.includes(i)&&!rd?' sel':''):'','',!rd],rd?null:bPlace));
- U.acts.replaceChildren(...(rd?[bt('Değiştir',()=>send({t:'bready',v:0}))]:[bt(BV?'Yön: Dikey ↕':'Yön: Yatay ↔',()=>{BV=1-BV;bRender()}),bt('🎲 Rastgele',()=>{BL=bRandom();bRender()}),
+  const fleet=h('div',{class:'chips'},BF.map((len,k)=>h('button',{type:'button',class:(k==BSEL&&!rd?'on':''),disabled:!!rd,onclick:()=>{BSEL=k;bRender()}},BNM[k]+' ('+len+')'+(BL&&BL[k]?' ✓':''))));
+ U.area.replaceChildren(rd?h('small',{class:'mu',text:'Hazırsın. Değiştirmek istersen “Değiştir”e bas.'}):h('small',{class:'mu',text:'Gemiyi parmağınla sürükleyip istediğin yere bırak. Döndürmek için gemiye dokun (seçiliyse bir dokunuş döndürür). Boş kareye dokunursan seçili gemi oraya gider.'}),fleet,
+  bPlaceGrid(rd));
+ U.acts.replaceChildren(...(rd?[bt('Değiştir',()=>send({t:'bready',v:0}))]:[bt('↻ Seçili gemiyi döndür',()=>{if(BL&&BL[BSEL]&&bRot(BSEL))bRender()}),bt('🎲 Rastgele diz',()=>{const t=Date.now();if(t-BRT<600)return;BRT=t;const L=bRandom();if(L){BL=L;bRender()}}),
   bt('✓ Hazırım',()=>{if(!BL||BL.some(s=>!s))return toast('Önce bütün gemileri yerleştir',1);send({t:'bready',v:1,L:BL})},' ')]));return}
 if(me<0){U.st.textContent=g.ph=='over'?'🏆 '+g.win+' kazandı':'Sıra: '+g.pl[g.tn];
  U.area.replaceChildren(...g.boards.map(B=>{const sg=bSeg(B.sunk.map(s=>s.cells)),m={};B.shots.forEach(x=>m[x.i]=x.h);return h('div',{class:'stack',style:'gap:4px'},h('small',{class:'mu',text:B.n+' denizi'}),bGrid('sm',i=>[sg[i]?sg[i]+' sunk':m[i]===1?'hit':m[i]===0?'miss':'',sg[i]?'🔥':m[i]===0?'•':m[i]===1?'💥':''],null))}));
  U.acts.replaceChildren(g.ph=='over'?newBtn():'');return}
 const my=g.tn==me&&g.ph=='play',onOp={},onMe={};g.onOp.forEach(x=>onOp[x.i]=x.h);g.onMe.forEach(x=>onMe[x.i]=x.h);
 const opSeg=bSeg(g.opSunk.map(s=>s.cells)),mySeg=bSeg((g.my||[]).map(s=>s.cells)),revSeg=bSeg((g.opShips||[]).map(s=>s.cells)),mySunkC=new Set((g.my||[]).filter(s=>g.mySunk.includes(s.k)).flatMap(s=>s.cells));
-U.st.textContent=g.ph=='over'?(g.win==ME.name?'🏆 Kazandın! Rakibin bütün gemilerini batırdın.':'💥 '+g.win+' kazandı.'):my?'🎯 Sıra sende: rakibin denizine ateş et':'⏳ Sıra: '+opp;
+U.st.textContent=g.ph=='over'?(g.win==ME.name?'🏆 Kazandın! Rakibin bütün gemilerini batırdın.':'💥 '+g.win+' kazandı.'):my?(BSHOT>=0?'🎯 Ateş edildi…':(x=>x.indexOf(ME.name+' ')==0&&/isabet|BATIRDI/.test(x))(g.log[g.log.length-1]||'')?'💥 İsabet! Bir atış hakkın daha var':'🎯 Sıra sende: rakibin denizine ateş et'):'⏳ Sıra: '+opp;
 const left=BF.map((len,k)=>h('span',{class:'tag'+(g.opSunk.some(s=>s.k==k)?' sunk':''),text:BNM[k]+' '+len}));
 U.area.replaceChildren(h('small',{class:'mu',text:opp+' denizi'+(my?' — bir kareye dokun':'')}),
- bGrid('tgt',i=>[opSeg[i]?opSeg[i]+' sunk':onOp[i]===1?'hit':onOp[i]===0?'miss':revSeg[i]?revSeg[i]+' ghost':'',opSeg[i]?'🔥':onOp[i]===0?'•':onOp[i]===1?'💥':'',my&&onOp[i]==null],i=>{if(navigator.vibrate)try{navigator.vibrate(15)}catch(e){}send({t:'bshot',i})}),
+ bGrid('tgt',i=>[opSeg[i]?opSeg[i]+' sunk':onOp[i]===1?'hit':onOp[i]===0?'miss':revSeg[i]?revSeg[i]+' ghost':'',opSeg[i]?'🔥':onOp[i]===0?'•':onOp[i]===1?'💥':'',my&&onOp[i]==null&&BSHOT<0],i=>{if(BSHOT>=0)return;BSHOT=i;setTimeout(()=>{if(BSHOT===i){BSHOT=-1;bRender()}},4000);if(navigator.vibrate)try{navigator.vibrate(15)}catch(e){}send({t:'bshot',i});bRender()}),
  h('div',{class:'chips',style:'justify-content:center'},left),
  h('small',{class:'mu',text:'Senin denizin'}),bGrid('sm',i=>[mySeg[i]?mySeg[i]+(mySunkC.has(i)?' sunk':onMe[i]===1?' hitship':''):onMe[i]===0?'miss':'',mySeg[i]&&onMe[i]===1?(mySunkC.has(i)?'🔥':'💥'):onMe[i]===0?'•':''],null));
 U.acts.replaceChildren(g.ph=='over'?newBtn():bt('Teslim ol',()=>{if(confirm('Teslim olmak istiyor musun?'))send({t:'bquit'})},'dng'))}
@@ -672,7 +692,18 @@ $('#fro').replaceChildren(...(FR.out.length?[h('small',{class:'lbl',text:'Yanıt
 $('#frb').replaceChildren(...(FR.bl.length?[h('details',{},h('summary',{text:'Engellenenler ('+FR.bl.length+')'}),...FR.bl.map(n=>h('div',{class:'frr'},h('div',{class:'grow'},h('b',{text:n})),bt('Engeli kaldır',()=>frAct('unblock',n)))))]:[]))}
 
 function leaveRoom(){vLeave(1);clearInterval(LT);LT=0;RM='';clearTimeout(wsTm);wsTm=0;wsq=[];wsTry=0;if(ws){const w=ws;ws=null;w.onclose=null;clearInterval(w.p);try{w.close()}catch(e){}}teardown();mstop();MS=null;WG=null;WP=new Map();WS=-1;st=null;PZ=null;IM=null;PC=[];PP=[];PU=0;clearInterval(tk);tk=0;hb=[];V=null;yw=null;ov.classList.remove('on')}
-let wsq=[],wsTry=0,wsTm=0,wsLast=0;
+let wsq=[],wsTry=0,wsTm=0,wsLast=0,wsFail=0,RTP=(()=>{try{return +localStorage.rtp>Date.now()}catch(e){return false}})();
+// Yedek bağlantı: bazı ağlar/operatörler WebSocket'i engelliyor. O zaman aynı mesajlar normal HTTPS istekleriyle taşınır.
+class PollSock{constructor(qs){this.readyState=0;this.sid='';this.qs=qs;this.oq=[];this.busy=0;this.fails=0;this.done=0;this.onopen=this.onmessage=this.onclose=this.onerror=null;this.go()}
+async rq(path,body,ms){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const r=await fetch('/api/rt/'+path+'?'+this.qs,{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+T},body:JSON.stringify(body),signal:c.signal,cache:'no-store'});if(r.status==401)return {close:[4401,'giriş']};if(!r.ok)throw new Error('http '+r.status);return await r.json()}finally{clearTimeout(t)}}
+async go(){let r;try{r=await this.rq('join',{},15000)}catch(e){return this.fin(1006,'')}if(this.readyState==3)return;if(r.close)return this.fin(r.close[0],r.close[1]);this.sid=r.sid;this.readyState=1;if(this.onopen)this.onopen();this.emit(r.m);this.loop();this.flush()}
+emit(L){for(const d of L||[]){if(this.readyState!=1)break;try{if(this.onmessage)this.onmessage({data:d})}catch(e){console.error(e)}}}
+async loop(){while(this.readyState==1){let r;try{r=await this.rq('poll',{sid:this.sid},30000);this.fails=0}catch(e){if(this.readyState!=1)return;if(++this.fails>=3)return this.fin(1006,'');await new Promise(z=>setTimeout(z,700*this.fails));continue}
+if(this.readyState!=1)return;if(r.gone)return this.fin(4002,'oturum bitti');this.emit(r.m);if(r.close)return this.fin(r.close[0],r.close[1])}}
+send(s){if(this.readyState!=1)throw new Error('kapalı');this.oq.push(s);if(!this.busy)Promise.resolve().then(()=>this.flush())}
+async flush(){if(this.busy||!this.oq.length||this.readyState!=1)return;this.busy=1;const m=this.oq.splice(0,60);let r;try{r=await this.rq('send',{sid:this.sid,m},15000)}catch(e){this.oq.unshift(...m);this.busy=0;if(++this.fails>=3)return this.fin(1006,'');setTimeout(()=>this.flush(),600);return}this.busy=0;if(r&&r.gone)return this.fin(4002,'oturum bitti');if(this.oq.length)this.flush()}
+close(){if(this.readyState==3)return;const sid=this.sid;if(sid)this.rq('send',{sid,m:['{"t":"bye"}']},5000).catch(()=>{});this.fin(1000,'')}
+fin(code,reason){if(this.done)return;this.done=1;this.readyState=3;if(this.onclose)setTimeout(()=>this.onclose({code,reason:reason||''}),0)}}
 const send=m=>{const s=JSON.stringify(m);if(ws&&ws.readyState==1){try{ws.send(s);return}catch(e){}}if(m.t!='ping'&&m.t!='pzm'&&wsq.length<30)wsq.push(s);if(RM&&(!ws||ws.readyState>1))reconnectNow()};
 function reconnectNow(){if(!RM)return;clearTimeout(wsTm);wsTm=0;if(ws&&ws.readyState==1&&Date.now()-wsLast<12000){try{ws.send(JSON.stringify({t:'ping',i:Date.now()}));return}catch(e){}}if(ws){const old=ws;ws=null;old.onclose=null;clearInterval(old.p);try{old.close()}catch(e){}}connect(RM)}
 if(!window._netBind){window._netBind=1;document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'&&RM)reconnectNow()});window.addEventListener('pageshow',()=>{if(RM)reconnectNow()});window.addEventListener('online',()=>{if(RM){wsTry=0;reconnectNow()}})}
@@ -726,8 +757,8 @@ if(prevWho){for(const x of who)if(!prevWho.includes(x)&&x!=ME.name)toast(x+' oda
 const key=st.url+'|'+st.ref+'|'+(st.sid||'');if(canUse('film')&&key!=loadedKey){loadedKey=key;FRY=0;load(st);const u=$('#vu');if(u&&document.activeElement!==u)u.value=st.url;const t=$('#vt');if(t&&document.activeElement!==t)t.value=st.title||''}
 if(FTT){FTT.style.display=st.url&&st.title?'':'none';FTT.textContent='🎬 '+(st.title||'')}
 holdUI();flsRender();tick()}
-function connect(k,mode){clearTimeout(wsTm);wsTm=0;const w=new WebSocket((location.protocol=='https:'?'wss://':'ws://')+location.host+'/ws?room='+encodeURIComponent(k)+'&mode='+encodeURIComponent(mode||ROOM_MODE||1)+(ROOM_NEW?'&new=1':'')+'&t='+encodeURIComponent(T));ws=w;wsLast=Date.now();const smp=[];
-w.onopen=()=>{PSL='';if(VC.on)setTimeout(()=>send({t:'vjoin',id:VC.id,m:VC.mu}),50);wsTry=0;wsLast=Date.now();const d=$('#dot');if(d)d.className='dot on';const p=()=>{if(w.readyState!=1)return;if(Date.now()-wsLast>15000){reconnectNow();return}try{w.send(JSON.stringify({t:'ping',i:Date.now()}))}catch(e){}};p();setTimeout(p,600);setTimeout(p,1500);w.p=setInterval(p,5000);while(wsq.length&&w.readyState==1){try{w.send(wsq.shift())}catch(e){break}}};
+function connect(k,mode){clearTimeout(wsTm);wsTm=0;const qs='room='+encodeURIComponent(k)+'&mode='+encodeURIComponent(mode||ROOM_MODE||1)+(ROOM_NEW?'&new=1':'');const w=RTP?new PollSock(qs):new WebSocket((location.protocol=='https:'?'wss://':'ws://')+location.host+'/ws?'+qs+'&t='+encodeURIComponent(T));ws=w;if(!RTP)w.tmo=setTimeout(()=>{if(w.readyState==0){w.tmoHit=1;try{w.close()}catch(e){}}},8000);wsLast=Date.now();const smp=[];
+w.onopen=()=>{clearTimeout(w.tmo);w.opened=1;wsFail=0;PSL='';if(VC.on)setTimeout(()=>send({t:'vjoin',id:VC.id,m:VC.mu}),50);wsTry=0;wsLast=Date.now();const d=$('#dot');if(d)d.className='dot on';const p=()=>{if(w.readyState!=1)return;if(Date.now()-wsLast>15000){reconnectNow();return}try{w.send(JSON.stringify({t:'ping',i:Date.now()}))}catch(e){}};p();setTimeout(p,600);setTimeout(p,1500);w.p=setInterval(p,5000);while(wsq.length&&w.readyState==1){try{w.send(wsq.shift())}catch(e){break}}};
 w.onmessage=e=>{wsLast=Date.now();let m;try{m=JSON.parse(e.data)}catch(x){return}
 if(m.t=='roomMode'){ROOM_NEW=0;const nm=[1,2,3].includes(+m.mode)?+m.mode:ROOM_MODE;if(nm!==ROOM_MODE){viewRoom(RM,nm,false);return}}
 else if(m.t=='st'){if(m.i){const rtt=Date.now()-m.i;smp.push([rtt,m.now+rtt/2-Date.now()]);if(smp.length>8)smp.shift();off=smp.reduce((a,b)=>b[0]<a[0]?b:a)[1]}else if(!smp.length)off=m.now-Date.now();onState(m)}
@@ -735,9 +766,11 @@ else if(m.t=='pz')pzSet(m.pz);else if(m.t=='pzm')pzMove(m);else if(m.t=='chat')c
 else if(m.t=='sys'){chatSys(m.x);toast(m.x)}else if(m.t=='react')fly(m.e,m.n);else if(m.t=='wlchg'){clearTimeout(WLT);WLT=setTimeout(wlLoad,400)}else if(m.t=='vr')vRoster(m.r);else if(m.t=='vsig')vSig(m);else if(m.t=='vbye'){if(m.id!==VC.id){vDrop(m.id);vui()}}else if(m.t=='verr'){toast(m.e,1);vLeave(1)}
 else if(m.t=='locks'){LK=m.lk;lockUI()}else if(m.t=='wpend'){if(wpSeq(m)){WPO=m.p&&m.p.length&&m.by!=ME.name?{mv:m.mv,p:new Map(m.p.map(x=>[x.i,x]))}:null;wgRender()}}else if(m.t=='wq')wqSet(m);else if(m.t=='wrej')wrej(m);else if(m.t=='wg')wgSet(m.g);else if(m.t=='dg')dSet(m.g);else if(m.t=='derr')dErr(m.e);else if(m.t=='bs')bSet(m.g);else if(m.t=='berr')toast(m.e,1);else if(m.t=='cs')cSet(m.g);else if(m.t=='cerr')toast(m.e,1);else if(m.t=='werr'){wbusy(0);toast(m.e,1)}else if(m.t=='wprev')wprevSet(m);else if(m.t=='wchk')wgChk(m)};
 w.onerror=()=>{if(ws===w){const p=$('#pres');if(p)p.textContent='WebSocket bağlantı hatası; yeniden deneniyor…'}};
-w.onclose=ev=>{clearInterval(w.p);if(ws!==w)return;const d=$('#dot');if(d)d.className='dot';
+w.onclose=ev=>{clearInterval(w.p);clearTimeout(w.tmo);if(ws!==w)return;
+if(!w.opened&&!RTP&&ev.code<4000&&(w.tmoHit||++wsFail>=2)){RTP=true;wsFail=0;try{localStorage.rtp=Date.now()+864e5}catch(e){}toast('Bu ağ doğrudan bağlantıyı engelliyor; yedek bağlantıya geçildi.');wsTry=0;wsTm=setTimeout(()=>{if(ws===w&&RM)connect(RM,ROOM_MODE)},200);return}const d=$('#dot');if(d)d.className='dot';
 if(ev.code==4000){toast('Oda yönetici tarafından kapatıldı',1);return viewLobby()}
 if(ev.code==4404){toast('Bu kodla açık bir oda yok',1);return viewLobby()}
+if(ev.code==4401){toast('Oturumun sona ermiş, yeniden giriş yap',1);return viewLobby()}
 if(ev.code==4429){toast(ev.reason||'Oda dolu',1);return viewLobby()}
 if(ev.code==4409){toast('Bu oda kodu başka türde bir odada kullanılıyor, yeniden dene',1);return viewLobby()}
 const s=$('#pres');if(ev.code==4001){if(s)s.textContent='Bu cihazın eski bağlantısı kapatıldı; yeniden bağlanılıyor…'}else if(s)s.textContent='Bağlantı koptu ('+ev.code+'); yeniden bağlanılıyor…';api('me').catch(()=>{});const dl=Math.min(6000,800+wsTry*700);wsTry++;wsTm=setTimeout(()=>{if(ws===w&&RM)connect(RM,ROOM_MODE)},dl)}}
@@ -1286,6 +1319,15 @@ function bView(b, n) {
   return v;
 }
 
+// WebSocket'in engellendiği ağlar için sanal soket: mesajlar kuyrukta bekler, istemci HTTPS ile çeker
+class VSock {
+  constructor(sid) { this.vs = 1; this.sid = sid; this.readyState = 1; this.att = null; this.q = []; this.w = null; this.last = Date.now(); this.cl = null }
+  send(d) { if (this.readyState !== 1) throw new Error('kapalı'); this.q.push(String(d)); if (this.q.length > 1000) this.q.splice(0, this.q.length - 1000); this.wake() }
+  close(c, r) { if (this.readyState === 3) return; this.readyState = 3; this.cl = [c || 1000, r || '']; this.wake() }
+  wake() { const w = this.w; if (w) { this.w = null; w() } }
+  serializeAttachment(a) { this.att = JSON.parse(JSON.stringify(a)) }
+  deserializeAttachment() { return this.att == null ? null : JSON.parse(JSON.stringify(this.att)) }
+}
 const ROOM_CAP = { 1: 6, 2: 2, 3: 4 };
 const GNAME = { word: 'Kelimelik', duel: 'Kelime Düellosu', bs: 'Amiral Battı', chess: 'Satranç' };
 
@@ -1435,6 +1477,11 @@ export default {
         if (r.ok) return J({ token: await sign(env, { n: r.name, v: r.v, e: Date.now() + 30 * 864e5 }), name: r.name, role: r.role, def: r.def });
         return J({ error: r.lock ? 'Çok fazla hatalı deneme. ' + r.lock + ' sn sonra tekrar dene.' : 'Kullanıcı adı veya şifre hatalı' }, r.lock ? 429 : 401);
       }
+      if (p == '/api/rt/send' || p == '/api/rt/poll') {
+        const room = clean(u.searchParams.get('room')); if (!room) return J({ gone: 1 });
+        const r = await roomStub(env, room).fetch('https://do/' + (p == '/api/rt/send' ? 'psend' : 'ppoll'), { method: 'POST', body: await req.text() });
+        return new Response(r.body, { headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
+      }
       const tok = (req.headers.get('authorization') || '').slice(7) || u.searchParams.get('t') || '';
       if (p == '/proxy') { if (!await ident(env, tok, 'p')) return new Response('yetkisiz', { status: 401 }); return proxy(req, u) }
       const me = await ident(env, tok);
@@ -1446,6 +1493,12 @@ export default {
         const lk = await getLocks(env);
         const mode = [1, 2, 3].includes(+u.searchParams.get('mode')) ? +u.searchParams.get('mode') : 1;
         return roomStub(env, room).fetch('https://do/ws?n=' + encodeURIComponent(me.n) + '&room=' + room + '&mode=' + mode + '&new=' + (u.searchParams.get('new') == '1' ? 1 : 0) + '&a=' + (adm ? 1 : 0) + '&lk=' + encodeURIComponent(JSON.stringify(lk)), req);
+      }
+      if (p == '/api/rt/join') {
+        const room = clean(u.searchParams.get('room')); if (!room) return J({ error: 'oda' }, 400);
+        const lk = await getLocks(env), mode = [1, 2, 3].includes(+u.searchParams.get('mode')) ? +u.searchParams.get('mode') : 1;
+        const r = await roomStub(env, room).fetch('https://do/ws?poll=1&n=' + encodeURIComponent(me.n) + '&room=' + room + '&mode=' + mode + '&new=' + (u.searchParams.get('new') == '1' ? 1 : 0) + '&a=' + (adm ? 1 : 0) + '&lk=' + encodeURIComponent(JSON.stringify(lk)), { method: 'POST' });
+        return new Response(r.body, { headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
       }
       if (p == '/api/roomq') {
         const code = clean(u.searchParams.get('code')); if (!code) return J({ exists: false, mode: 0 });
@@ -2015,21 +2068,25 @@ export class Do {
       this.mq = g.get('mq') || []; this.dg = g.get('dg') || null; this.bs = g.get('bs') || null; this.cs = g.get('cs') || null; this.gsel = GNAME[g.get('gsel')] ? g.get('gsel') : 'duel'; this.gprop = null; this.fd = null; this.wlT = 0; this.wpm = g.get('wpm') || null; this.wacc = new Set(g.get('wacc') || []); this.pq = null; this.lex = null; this.dmeta = null; this.dcfg = { tdk: 0 }; this.dver = 0; if (this.wpm) this.wpmArm();
     });
   }
-  socks() { return this.s.getWebSockets().filter(w => w.readyState === 1) }
+  socks() { return this.s.getWebSockets().filter(w => w.readyState === 1).concat([...this.vmap().values()].filter(v => v.readyState === 1)) }
+  vmap() { return this.vs || (this.vs = new Map()) }
+  tg(w) { return w && w.vs ? [] : this.s.getTags(w) }
+  // 40 sn'dir sorgu yapmayan yedek bağlantıları kapat
+  async vsweep() { const now = Date.now(); for (const [k, v] of [...this.vmap()]) { if (v.w) continue; if (v.readyState === 3) { if (now - v.last > 60000) this.vmap().delete(k); continue } if (now - v.last > 40000) { this.vmap().delete(k); await this.gone(v) } } }
   can(area, a) { const v = (this.lk && this.lk[area]) | 0; return v == 0 || (v == 1 && !!(a && a.a)) }
   async lkApply(nl) {
     nl = normLk(nl); if (JSON.stringify(nl) === JSON.stringify(this.lk)) return false;
     this.lk = nl; await this.s.storage.put('lk', nl); this.all(JSON.stringify({ t: 'locks', lk: nl }));
     let pzs = null;
     for (const w of this.socks()) {
-      if (this.s.getTags(w).includes('admin')) continue;
+      if (this.tg(w).includes('admin')) continue;
       const a = w.deserializeAttachment() || {};
       try { if (this.pzp && this.can('puzzle', a)) { if (pzs == null) pzs = JSON.stringify({ t: 'pz', pz: { ...this.pzp, img: await this.img() } }); w.send(pzs) } } catch (e) { }
     }
     this.wsend(); this.dSend(); this.bSend(); this.bcast(); return true;
   }
   deny(ws) { try { ws.send(JSON.stringify({ t: 'locks', lk: this.lk })) } catch (e) { } }
-  wsend() { for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; try { w.send(JSON.stringify({ t: 'wg', g: this.wg && this.can('word', a) ? wgView(this.wg, a.n) : null })) } catch (e) { } } }
+  wsend() { for (const w of this.socks()) { if (this.tg(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; try { w.send(JSON.stringify({ t: 'wg', g: this.wg && this.can('word', a) ? wgView(this.wg, a.n) : null })) } catch (e) { } } }
   all(str) { this.socks().forEach(w => { try { w.send(str) } catch (e) { } }) }
   async init() {
     if (this.ok) return; const S = this.s.storage, AP = this.env.ADMIN_PASS || '', ev = AP ? await sha(AP) : '';
@@ -2044,23 +2101,24 @@ export class Do {
     if (p == '/ws') {
       const wantNew = u.searchParams.get('new') == '1';
       const reqMode = [1, 2, 3].includes(+u.searchParams.get('mode')) ? +u.searchParams.get('mode') : 1;
-      const refuse = (c, why) => { const [cl, sv0] = Object.values(new WebSocketPair()); sv0.accept(); sv0.close(c, why); return new Response(null, { status: 101, webSocket: cl }) };
+      const poll = u.searchParams.get('poll') == '1';
+      const refuse = (c, why) => { if (poll) return Response.json({ close: [c, why] }); const [cl, sv0] = Object.values(new WebSocketPair()); sv0.accept(); sv0.close(c, why); return new Response(null, { status: 101, webSocket: cl }) };
       if (!this.roomModeSet && !wantNew && !this.code) return refuse(4404, 'oda yok');
       if (this.roomModeSet && wantNew && reqMode !== this.roomMode) return refuse(4409, 'kod dolu');
       const CAP = ROOM_CAP[this.roomModeSet ? this.roomMode : reqMode] || 6, nm = u.searchParams.get('n') || '';
       if (nm && !this.names().includes(nm) && this.names().length >= CAP) {
         // dolu görünüyorsa önce 90 sn'dir ses vermeyen (uykudaki/kopmuş) bağlantıları kapat, sonra yeniden say
-        const now0 = Date.now(); for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; if (now0 - ((w.deserializeAttachment() || {}).ls || 0) > 90000) { try { w.close(4001, 'eski') } catch (e) { } } }
+        const now0 = Date.now(); for (const w of this.socks()) { if (this.tg(w).includes('admin')) continue; if (now0 - ((w.deserializeAttachment() || {}).ls || 0) > 90000) { try { w.close(4001, 'eski') } catch (e) { } } }
         if (this.names().length >= CAP) return refuse(4429, 'Oda dolu (en fazla ' + CAP + ' kişi)');
       }
       let ss = this.socks();
       if (ss.length >= 8) { ss.sort((x, y) => ((x.deserializeAttachment() || {}).ls || 0) - ((y.deserializeAttachment() || {}).ls || 0)); while (ss.length >= 8) { const o = ss.shift(); try { o.close(4001, 'eski') } catch (e) { } } }
       const code = clean(u.searchParams.get('room')); if (code && !this.code) { this.code = code; await S.put('code', code) }
       if (!this.roomModeSet) { this.roomMode = reqMode; this.roomModeSet = true; await S.put('roomMode', this.roomMode) }
-      const [c, sv] = Object.values(new WebSocketPair()); let lkp = null; try { lkp = JSON.parse(u.searchParams.get('lk') || 'null') } catch (e) { }
+      const [c, sv] = poll ? [null, new VSock(crypto.randomUUID())] : Object.values(new WebSocketPair()); let lkp = null; try { lkp = JSON.parse(u.searchParams.get('lk') || 'null') } catch (e) { }
       if (lkp) await this.lkApply(lkp);
       const att = { n: u.searchParams.get('n'), a: u.searchParams.get('a') == '1' ? 1 : 0, ls: Date.now() };
-      this.s.acceptWebSocket(sv); sv.serializeAttachment(att);
+      if (poll) this.vmap().set(sv.sid, sv); else this.s.acceptWebSocket(sv); sv.serializeAttachment(att);
       await S.deleteAlarm(); this.bcast();
       sv.send(JSON.stringify({ t: 'roomMode', mode: this.roomMode }));
       sv.send(JSON.stringify({ t: 'hist', c: this.chat.slice(-40) }));
@@ -2072,7 +2130,19 @@ export class Do {
       if (this.wg && this.can('word', att)) { sv.send(JSON.stringify({ t: 'wg', g: wgView(this.wg, att.n) })); if (!this.wg.over) this.dwarm() }
       if (this.pend && this.pend.by !== att.n && this.can('word', att)) sv.send(this.pendMsg());
       if (this.wpm && this.can('word', att)) sv.send(this.wqMsg(att.n));
-      await this.report(); return new Response(null, { status: 101, webSocket: c });
+      await this.report(); return poll ? Response.json({ sid: sv.sid, m: sv.q.splice(0) }) : new Response(null, { status: 101, webSocket: c });
+    }
+    if (p == '/ppoll' || p == '/psend') {
+      const b = await req.json().catch(() => ({})), v = this.vmap().get(String(b.sid || ''));
+      if (!v) return Response.json({ gone: 1 });
+      v.last = Date.now();
+      if (p == '/psend') {
+        for (const x of (Array.isArray(b.m) ? b.m.slice(0, 80) : [])) { if (v.readyState !== 1) break; if (x === '{"t":"bye"}') { this.vmap().delete(v.sid); await this.gone(v); break } await this.webSocketMessage(v, String(x)) }
+        await this.vsweep(); return Response.json({ ok: 1 });
+      }
+      if (!v.q.length && v.readyState === 1) { v.wake(); let mine; await new Promise(r => { const t = setTimeout(r, 20000); mine = () => { clearTimeout(t); r() }; v.w = mine }); if (v.w === mine) v.w = null; if (v.q.length) await new Promise(r => setTimeout(r, 30)) }
+      v.last = Date.now(); const out = { m: v.q.splice(0) }; if (v.readyState === 3) { out.close = v.cl || [1000, '']; this.vmap().delete(v.sid) }
+      return Response.json(out);
     }
     if (p == '/adminws') { const [c, sv] = Object.values(new WebSocketPair()); this.s.acceptWebSocket(sv, ['admin']); sv.send(this.snap()); return new Response(null, { status: 101, webSocket: c }) }
     if (p == '/kill') {
@@ -2258,7 +2328,7 @@ export class Do {
   }
   exp(now) { return this.st.pos + (this.st.playing && !this.st.held ? (now - this.st.at) / 1000 : 0) }
   hold(now) {
-    const hb = [], sid = this.st && this.st.sid; for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {};
+    const hb = [], sid = this.st && this.st.sid; for (const w of this.socks()) { if (this.tg(w).includes('admin')) continue; const a = w.deserializeAttachment() || {};
       const loading = a.fs && a.fs.k === sid && a.fs.s === 'load' && now - a.fs.t < 20000, failed = a.fs && a.fs.k === sid && a.fs.s === 'err';
       if (a.b && !failed) { if (now - a.bt > 20000) { a.b = 0; w.serializeAttachment(a) } else hb.push(a.n) } else if (loading && !hb.includes(a.n)) hb.push(a.n) }
     this.hb = hb; const held = this.st.playing && hb.length > 0;
@@ -2267,7 +2337,7 @@ export class Do {
   }
   msg(i) { return JSON.stringify({ t: 'st', st: this.st, now: Date.now(), who: [...new Set(this.socks().map(w => (w.deserializeAttachment() || {}).n))], hb: this.hb, gs: this.gsView(), fh: this.fhear(), ms: this.ms, mq: this.mq, mh: this.mhear(), i }) }
   // Müzik dinleme durumu (yalnız bellekte/soket ekinde, kalıcı yazılmaz): ok=duyuyor, buf=yükleniyor, need=dokunması gerekiyor, pause=durdu
-  names(extra) { return [...new Set([...this.socks().filter(w => !this.s.getTags(w).includes('admin')).map(w => (w.deserializeAttachment() || {}).n), ...(extra || [])].filter(Boolean))] }
+  names(extra) { return [...new Set([...this.socks().filter(w => !this.tg(w).includes('admin')).map(w => (w.deserializeAttachment() || {}).n), ...(extra || [])].filter(Boolean))] }
   // Birlikte izlenen videonun konumunu, odadakilerin izleme listelerine kaydet (kalıcı: kaldığınız yer)
   async wlSave(extra) {
     const st = this.st; if (!st || !st.url) return; const now = Date.now(); this.wlT = now;
@@ -2283,7 +2353,7 @@ export class Do {
   }
 
   // ---------- oyunlar: Kelime Düellosu ----------
-  dSend() { for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (!this.can('games', a)) continue; try { w.send(JSON.stringify({ t: 'dg', g: dView(this.dg, a.n) })) } catch (e) { } } }
+  dSend() { for (const w of this.socks()) { if (this.tg(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (!this.can('games', a)) continue; try { w.send(JSON.stringify({ t: 'dg', g: dView(this.dg, a.n) })) } catch (e) { } } }
   async dMsg(ws, a, n, T, m) {
     const S = this.s.storage, err = e => ws.send(JSON.stringify({ t: 'derr', e }));
     if (T == 'dnew') {
@@ -2310,7 +2380,7 @@ export class Do {
     }
   }
   // ---------- oyunlar: Amiral Battı ----------
-  bSend() { for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (!this.can('games', a)) continue; try { w.send(JSON.stringify({ t: 'bs', g: bView(this.bs, a.n) })) } catch (e) { } } }
+  bSend() { for (const w of this.socks()) { if (this.tg(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (!this.can('games', a)) continue; try { w.send(JSON.stringify({ t: 'bs', g: bView(this.bs, a.n) })) } catch (e) { } } }
   async bMsg(ws, a, n, T, m) {
     const S = this.s.storage, err = e => ws.send(JSON.stringify({ t: 'berr', e })), b = this.bs, log = x => { b.log.push(x); if (b.log.length > 30) b.log.splice(0, b.log.length - 30) };
     if (T == 'bnew') {
@@ -2369,7 +2439,7 @@ export class Do {
   }
 
   // ---------- oyunlar: Satranç ----------
-  cSend() { for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (!this.can('games', a)) continue; try { w.send(JSON.stringify({ t: 'cs', g: cView(this.cs, a.n) })) } catch (e) { } } }
+  cSend() { for (const w of this.socks()) { if (this.tg(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (!this.can('games', a)) continue; try { w.send(JSON.stringify({ t: 'cs', g: cView(this.cs, a.n) })) } catch (e) { } } }
   async cStart(c) { c.ph = 'play'; c.s = chNew(); c.keys = [chKey(c.s)]; c.hist = []; c.last = null; c.cap = { w: [], b: [] }; c.res = null; c.draw = ''; c.ts = Date.now();
     const tc = CTC[c.tcn]; c.tc = tc; c.clk = tc ? { w: tc.base, b: tc.base } : null;
     await this.s.storage.put('cs', c); this.all(JSON.stringify({ t: 'sys', x: '♟ Satranç başladı: ' + c.pl[0] + ' (beyaz) – ' + c.pl[1] + ' (siyah)' })); this.cSend() }
@@ -2415,14 +2485,14 @@ export class Do {
       await S.put('cs', c); return this.cSend();
     }
   }
-  vroster() { const r = []; for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (a.v) r.push({ id: a.v, n: a.n, m: a.vm ? 1 : 0 }) } return r }
+  vroster() { const r = []; for (const w of this.socks()) { if (this.tg(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (a.v) r.push({ id: a.v, n: a.n, m: a.vm ? 1 : 0 }) } return r }
   vrSend() { this.all(JSON.stringify({ t: 'vr', r: this.vroster() })) }
-  fhear() { const r = {}, sid = this.st && this.st.sid; if (!sid) return r; for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (a.n && a.fs && a.fs.k === sid) r[a.n] = { s: a.fs.s, e: a.fs.e } } return r }
-  mhear() { const r = {}, rank = { ok: 4, buf: 3, pause: 2, need: 1 }; for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (!a.n || !a.mu) continue; if (!r[a.n] || (rank[a.mu] || 0) > (rank[r[a.n]] || 0)) r[a.n] = a.mu } return r }
+  fhear() { const r = {}, sid = this.st && this.st.sid; if (!sid) return r; for (const w of this.socks()) { if (this.tg(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (a.n && a.fs && a.fs.k === sid) r[a.n] = { s: a.fs.s, e: a.fs.e } } return r }
+  mhear() { const r = {}, rank = { ok: 4, buf: 3, pause: 2, need: 1 }; for (const w of this.socks()) { if (this.tg(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (!a.n || !a.mu) continue; if (!r[a.n] || (rank[a.mu] || 0) > (rank[r[a.n]] || 0)) r[a.n] = a.mu } return r }
   bcast() { this.all(this.msg()) }
   async webSocketMessage(ws, raw) {
     if (typeof raw != 'string' || raw.length > 980000) return;
-    if (this.s.getTags(ws).includes('admin')) return;
+    if (this.tg(ws).includes('admin')) return;
     let m; try { m = JSON.parse(raw) } catch (e) { return }
     if (!m || typeof m != 'object') return;
     const now = Date.now(), a = ws.deserializeAttachment() || {}, n = a.n, S = this.s.storage, T = m.t;
@@ -2513,7 +2583,7 @@ export class Do {
       if (T == 'wnew') {
         if (this.gsel !== 'word') return ws.send(JSON.stringify({ t: 'werr', e: 'Oda şu an ' + (GNAME[this.gsel] || 'başka bir oyun') + ' oyununda. Önce oyunu değiştirin.' }));
         if (g && !g.over) return ws.send(JSON.stringify({ t: 'werr', e: 'Önce mevcut oyunu bitir (teslim ol)' }));
-        const names = [...new Set(this.socks().filter(w => !this.s.getTags(w).includes('admin') && this.can('word', w.deserializeAttachment() || {})).map(w => (w.deserializeAttachment() || {}).n))].filter(Boolean);
+        const names = [...new Set(this.socks().filter(w => !this.tg(w).includes('admin') && this.can('word', w.deserializeAttachment() || {})).map(w => (w.deserializeAttachment() || {}).n))].filter(Boolean);
         if (names.length < 2 || names.indexOf(n) < 0) return ws.send(JSON.stringify({ t: 'werr', e: 'Oyun için odada en az iki kişi olmalı' }));
         const pls = [n, ...shuf(names.filter(x => x !== n))].slice(0, 4);
         this.wg = wgNew(pls); this.dwarm(); this.all(JSON.stringify({ t: 'sys', x: '🔤 Kelimelik başladı: ' + this.wg.pl.join(', ') })); r = { ok: 1 };
@@ -2699,18 +2769,18 @@ export class Do {
   dwarm() { const t = Date.now(); if (t - (this.dw || 0) < 60000) return; this.dw = t; this.s.waitUntil(dictf(this.env, '/dictcheck', { w: ['ev'] }).then(r => r.text()).catch(() => { })) }
   oppOf(g, n) { return g.pl.find(x => x !== n) || '' }
   approvers(g, by) { return g ? wgAct(g).filter(x => x !== by && this.hasSock(x)) : [] }
-  hasSock(nm) { return this.socks().some(w => !this.s.getTags(w).includes('admin') && (w.deserializeAttachment() || {}).n === nm) }
+  hasSock(nm) { return this.socks().some(w => !this.tg(w).includes('admin') && (w.deserializeAttachment() || {}).n === nm) }
   wqMsg(forName) {
     const q = this.wpm; if (!q) return JSON.stringify({ t: 'wq', id: null });
     const g = this.wg, ok = g ? this.approvers(g, q.by).includes(forName) : false;
     return JSON.stringify({ t: 'wq', id: ok ? q.id : '', n: g ? this.approvers(g, q.by).length : 0, by: q.by, mv: q.mv, words: q.words, left: Math.max(0, q.dl - Date.now()) });
   }
-  wqSend() { for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (!this.can('word', a)) continue; try { w.send(this.wqMsg(a.n)) } catch (e) { } } }
+  wqSend() { for (const w of this.socks()) { if (this.tg(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (!this.can('word', a)) continue; try { w.send(this.wqMsg(a.n)) } catch (e) { } } }
   wpmArm() { clearTimeout(this.wpmT); if (!this.wpm) return; this.wpmT = setTimeout(() => { this.wpmExpire().catch(() => { }) }, Math.max(0, this.wpm.dl - Date.now()) + 250) }
   async wpmExpire() { if (this.wpm && Date.now() >= this.wpm.dl) await this.wpmCancel((this.wg && wgAct(this.wg).length > 2 ? 'Rakiplerden hiçbiri ' : 'Rakip ') + (WPM_MS / 1000) + ' saniye içinde yanıt vermedi. Hamle iptal edildi, harfler sende; tekrar deneyebilirsin.') }
   async wpmCancel(reason) {
     const q = this.wpm; if (!q) return; this.wpm = null; clearTimeout(this.wpmT); await this.s.storage.delete('wpm'); this.wqSend();
-    if (reason) for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (a.n === q.by) try { w.send(JSON.stringify({ t: 'wrej', mv: q.mv, e: reason })) } catch (e) { } }
+    if (reason) for (const w of this.socks()) { if (this.tg(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (a.n === q.by) try { w.send(JSON.stringify({ t: 'wrej', mv: q.mv, e: reason })) } catch (e) { } }
   }
   async wpmStart(g, n, p, unk) {
     if (!this.approvers(g, n).length) return { e: '“' + unk.join(', ') + '” sözlükte bulunamadı ve ' + (wgAct(g).length > 2 ? 'rakiplerin' : 'rakip') + ' odada olmadığı için onay alınamadı. Rakip gelince tekrar dene.' };
@@ -2736,7 +2806,7 @@ export class Do {
   }
   // Sırası olan oyuncunun henüz oynanmamış taslak harfleri: yalnız bellekte, puana/tahtaya etkisi yok. Sıra numarası (s) eski taslağın yenisini ezmesini önler.
   pendMsg() { const p = this.pend; return JSON.stringify({ t: 'wpend', by: p ? p.by : '', mv: p ? p.mv : 0, p: p ? p.p : [], s: p && this.pq && this.pq.n === p.by && this.pq.mv === p.mv ? this.pq.s : 0 }) }
-  pendSend(except) { const m = this.pendMsg(); for (const w of this.socks()) { if (this.s.getTags(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (except && a.n === except) continue; if (!this.can('word', a)) continue; try { w.send(m) } catch (e) { } } }
+  pendSend(except) { const m = this.pendMsg(); for (const w of this.socks()) { if (this.tg(w).includes('admin')) continue; const a = w.deserializeAttachment() || {}; if (except && a.n === except) continue; if (!this.can('word', a)) continue; try { w.send(m) } catch (e) { } } }
   pendClear() { if (!this.pend) return; this.pend = null; this.pendSend() }
   pendSet(n, raw, s) {
     const g = this.wg; if (!g || g.over || g.pl[g.tn] !== n || this.wpm) return;
@@ -2754,7 +2824,7 @@ export class Do {
   }
   async gone(ws) {
     const leaver = (ws.deserializeAttachment() || {}).n;
-    try { ws.close(1000) } catch (e) { } this.rl.delete(ws); if (this.s.getTags(ws).includes('admin')) return;
+    try { ws.close(1000) } catch (e) { } this.rl.delete(ws); if (this.tg(ws).includes('admin')) return;
     if (this.pend && !this.socks().some(w => (w.deserializeAttachment() || {}).n === this.pend.by)) this.pendClear();
     if (this.st && this.st.url && leaver) await this.wlSave([leaver]);
     if (this.gprop) { if (this.gprop.by === leaver) { this.gprop = null } else await this.gsCheck() }
@@ -2765,7 +2835,7 @@ export class Do {
   async webSocketClose(ws) { await this.gone(ws) }
   async webSocketError(ws) { await this.gone(ws) }
   async alarm() {
-    if (this.socks().length) return;
+    await this.vsweep(); if (this.socks().length) return;
     await this.s.storage.deleteAll(); this.st = fresh(); this.pzp = null; this.pzi = null; this.chat = []; this.code = ''; this.roomMode = 1; this.roomModeSet = false; this.ms = null; this.mq = []; this.dg = null; this.bs = null; this.cs = null; this.gsel = 'duel'; this.gprop = null; this.wg = null; this.wpm = null; this.wacc = new Set(); clearTimeout(this.wpmT);
   }
 }
