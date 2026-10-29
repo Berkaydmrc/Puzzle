@@ -19,7 +19,10 @@ small,.mu{color:var(--mu);font-size:.8rem}b{font-weight:650}
 .brand{display:flex;align-items:center;gap:10px;font-size:1.05rem;letter-spacing:-.01em}
 .logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--ac),var(--ac2));display:grid;place-items:center;color:#fff;box-shadow:0 8px 22px #6d7cff55;flex:none}
 .logo.lg{width:46px;height:46px;border-radius:14px}
-.chip{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bd);border-radius:99px;padding:4px 12px 4px 4px;font-size:.85rem}
+.chip{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bd);border-radius:99px;padding:4px 12px 4px 4px;font-size:.85rem;color:var(--tx);font:inherit;font-size:.85rem;cursor:pointer}button.chip:active{transform:scale(.97)}
+.pf-av{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--ac),var(--ac2));display:grid;place-items:center;font-weight:800;font-size:2rem;color:#fff;margin:0 auto}
+.pf-code{font:800 1.7rem/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.02em;text-align:center;background:var(--s2);border:1px dashed var(--ac);border-radius:14px;padding:14px 10px;user-select:all;-webkit-user-select:all;word-break:break-all}
+.pf-st{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.pf-st div{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:10px 6px;text-align:center}.pf-st b{display:block;font-size:1.3rem}.pf-st small{font-size:.72rem}
 .av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--ac),var(--ac2));display:grid;place-items:center;font-weight:700;font-size:.8rem;color:#fff;flex:none}
 .ic{display:inline-grid;place-items:center;flex:none}
 .in{width:100%;min-width:0;min-height:46px;padding:0 14px;border-radius:12px;border:1px solid var(--bd);background:var(--s2);color:var(--tx);caret-color:var(--ac);font:inherit;font-size:16px;outline:0;-webkit-user-select:text;user-select:text;pointer-events:auto}
@@ -153,7 +156,7 @@ const enter=()=>{if(SPC){const c=SPC;SPC='';spExchange(c)}if(PEND&&AUTO){const k
 const canUse=a=>{const v=LK[a]|0;return v==0||(v==1&&ME&&ME.role=='admin')};
 const LVN=['Açık','Yöneticiler','Kilitli'];
 function modal(title,body,acts){const m=h('div',{class:'mo',onclick:e=>{if(e.target==m)m.remove()}},h('div',{class:'card md'},h('h2',{text:title}),body,acts?h('div',{class:'row end'},acts):null));document.body.append(m);return m}
-const userChip=()=>h('div',{class:'chip'},h('span',{class:'av',text:ME.name[0].toUpperCase()}),h('span',{text:ME.name}));
+const userChip=()=>h('button',{type:'button',class:'chip','aria-label':'Profilim',onclick:()=>viewProfile()},h('span',{class:'av',text:ME.name[0].toUpperCase()}),h('span',{text:ME.name}),h('span',{class:'mu',style:'font-size:.7rem',text:'▾'}));
 const brand=r=>h('header',{class:'bar'},h('div',{class:'brand'},h('div',{class:'logo'},ic('film',20)),h('b',{text:'Bizim Sinema'})),r||null);
 // ---------- giriş ----------
 function viewLogin(msg){leaveRoom();closeLive();
@@ -351,6 +354,32 @@ let L=[];try{L=(await api('friends')).f}catch(x){list.replaceChildren(h('small',
 const here=new Set(prevWho||[]);
 list.replaceChildren(...(L.length?L.map(x=>{const inR=here.has(x.n),dis=!x.push||inR;return h('label',{class:'chk',style:dis?'opacity:.55':''},h('input',{type:'checkbox',disabled:dis,onchange:e=>{e.target.checked?pick.add(x.n):pick.delete(x.n);go.disabled=!pick.size}}),h('span',{text:x.n+(inR?' · odada':x.push?'':' · bildirimleri kapalı')}))}):[h('small',{class:'mu',text:'Henüz arkadaşın yok. Lobideki “Arkadaşlar” kartından kullanıcı adıyla ekleyebilirsin.'})]))}
 
+// ---------- profil ----------
+async function myCode(){if(FR&&FR.me&&FR.me.tag)return FR.me.n+'#'+FR.me.tag;try{const j=await api('me');if(j.tag){if(FR)FR.me={n:j.name,tag:j.tag};return j.name+'#'+j.tag}}catch(e){}return ''}
+function codeBox(c){const url=location.origin+'/?ekle='+encodeURIComponent(c),txt='Bizim Sinema’da beni arkadaş olarak ekle: '+c;
+const m=modal('Arkadaş kodun',h('div',{class:'stack',style:'gap:10px'},h('div',{class:'pf-code',text:c}),h('small',{class:'mu',text:'Arkadaşın bu kodu Arkadaşlar kartına yazarak seni ekleyebilir. Linki gönderirsen tek dokunuşla ekler.'})),
+[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Kapat'),h('button',{type:'button',class:'btn sec',onclick:async()=>{try{await navigator.clipboard.writeText(c);toast('Kod kopyalandı: '+c)}catch(e){toast('Kodu basılı tutup kopyalayabilirsin',1)}}},'Kodu kopyala'),
+h('button',{type:'button',class:'btn',onclick:async()=>{try{if(navigator.share){await navigator.share({title:'Bizim Sinema',text:txt,url});return}await navigator.clipboard.writeText(txt+'\n'+url);toast('Davet metni kopyalandı')}catch(e){if(!e||e.name!='AbortError')toast('Paylaşılamadı; kodu kopyalayıp gönderebilirsin',1)}}},'Paylaş')])}
+async function viewProfile(){leaveRoom();closeLive();clearInterval(LT);LT=0;
+const code=h('div',{class:'pf-code',text:'…'}),st=h('div',{class:'pf-st'}),
+cp=h('button',{type:'button',class:'btn sec'},'Kodu kopyala'),sh=h('button',{type:'button',class:'btn'},'Paylaş');
+mount(h('div',{class:'narrow stack'},brand(h('button',{type:'button',class:'btn sec sm',onclick:()=>viewLobby()},ic('back',16),'Geri')),
+h('div',{class:'card',style:'text-align:center'},h('div',{class:'pf-av',text:ME.name[0].toUpperCase()}),h('h1',{text:ME.name,style:'margin:6px 0 0'}),h('small',{class:'mu',text:ME.role=='admin'?'Yönetici':'Üye'})),
+h('div',{class:'card'},h('h2',{text:'🔑 Arkadaş kodun'}),code,h('small',{class:'mu',text:'Bu kod sana otomatik verildi ve değişmez. Arkadaşların seni bu kodla ekler; kodu bilmeyen kimse sana istek gönderemez.'}),h('div',{class:'row'},cp,sh)),
+st,pwaCard(),
+h('div',{class:'card'},h('h2',{text:'Hesap'}),h('button',{class:'btn sec full',onclick:passModal},ic('key'),'Şifremi değiştir'),
+h('button',{class:'btn sec full',onclick:async()=>{if(!confirm('Tüm cihazlardaki oturumların kapatılsın mı?'))return;try{await api('me/revoke','POST');logout()}catch(x){toast(x,1)}}},'Tüm cihazlarda oturumu kapat'),
+h('button',{class:'btn sec full',onclick:()=>logout()},ic('out'),'Çıkış yap'),
+ME.name!='admin'?h('button',{class:'btn dng full',onclick:delModal},'Hesabımı sil'):null)));
+let c='';try{const j=await api('me');c=j.tag?j.name+'#'+j.tag:'';
+st.replaceChildren(h('div',{},h('b',{text:String(j.fr||0)}),h('small',{class:'mu',text:'arkadaş'})),h('div',{},h('b',{text:FR?String(FR.f.filter(x=>x.on).length):'–'}),h('small',{class:'mu',text:'çevrimiçi'})),h('div',{},h('b',{text:j.ts?new Date(j.ts).toLocaleDateString('tr-TR',{month:'short',year:'numeric'}):'–'}),h('small',{class:'mu',text:'üyelik'})))}catch(e){}
+code.textContent=c||'Kod alınamadı, sayfayı yenile';
+cp.onclick=async()=>{if(!c)return;try{await navigator.clipboard.writeText(c);toast('Kod kopyalandı: '+c)}catch(e){toast('Kodu basılı tutup kopyalayabilirsin',1)}};
+sh.onclick=async()=>{if(!c)return;const url=location.origin+'/?ekle='+encodeURIComponent(c),txt='Bizim Sinema’da beni arkadaş olarak ekle: '+c;try{if(navigator.share){await navigator.share({title:'Bizim Sinema',text:txt,url});return}await navigator.clipboard.writeText(txt+'\n'+url);toast('Davet metni kopyalandı')}catch(e){if(!e||e.name!='AbortError')codeBox(c)}}}
+function delModal(){const pw=h('input',{class:'in',type:'password',placeholder:'Şifren',autocomplete:'current-password'}),er=h('div',{class:'err'});
+const m=modal('Hesabını sil',h('div',{class:'stack'},h('small',{text:'Hesabın, arkadaş listen ve bildirim ayarların kalıcı olarak silinir. Bu işlem geri alınamaz.'}),pw,er),[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),
+h('button',{type:'button',class:'btn dng',onclick:async()=>{if(!pw.value){er.textContent='Şifreni yaz';return}try{await api('me/delete','POST',{pass:pw.value});m.remove();toast('Hesabın silindi');logout()}catch(x){er.textContent=String(x)}}},'Kalıcı olarak sil')])}
+
 // ---------- arkadaşlar ----------
 let FR=null,FRT=0,FRBUSY=0,FRC=null;
 function frCards(){const inp=h('input',{class:'in',placeholder:'kod, örn. ad#1234',maxlength:24,autocapitalize:'none',autocorrect:'off',autocomplete:'off',spellcheck:'false',enterkeyhint:'send','aria-label':'Eklenecek kullanıcı adı'});
@@ -364,9 +393,10 @@ function frCards_c(){return FRC}
 async function frLoad(){try{FR=await api('friends')}catch(e){return}frRender()}
 async function frAct(a,n){if(FRBUSY)return;FRBUSY=1;try{const r=await api('friends','POST',{a,n});if(r.msg)toast(r.msg);await frLoad();return r}catch(x){toast(x,1)}finally{FRBUSY=0}}
 const frCode=()=>FR&&FR.me?FR.me.n+'#'+FR.me.tag:'';
-async function frShare(){const c=frCode();if(!c)return;const url=location.origin+'/?ekle='+encodeURIComponent(c),txt='Bizim Sinema’da beni arkadaş olarak ekle: '+c;
+async function frShare(){const now=frCode();if(!now){const c=await myCode();if(!c)return toast('Kodun alınamadı. İnternetini kontrol edip tekrar dene.',1);frRender();return codeBox(c)}
+const url=location.origin+'/?ekle='+encodeURIComponent(now),txt='Bizim Sinema’da beni arkadaş olarak ekle: '+now;
 try{if(navigator.share){await navigator.share({title:'Bizim Sinema',text:txt,url});return}}catch(e){if(e&&e.name=='AbortError')return}
-try{await navigator.clipboard.writeText(txt+'\n'+url);toast('Kodun ve linkin kopyalandı: '+c)}catch(e){toast('Kodun: '+c)}}
+codeBox(now)}
 const frTagEl=t=>t?h('span',{class:'mu',style:'font-weight:500',text:'#'+t}):null;
 function frAgo(t){if(!t)return 'henüz giriş yapmadı';const s=(Date.now()-t)/1000;return 'son görülme: '+(s<3600?Math.max(1,Math.round(s/60))+' dk önce':s<86400?Math.round(s/3600)+' saat önce':Math.round(s/86400)+' gün önce')}
 function frMenu(n){const m=modal(n,h('small',{class:'mu',text:'Engellediğin kişi sana arkadaşlık isteği ve davet gönderemez; arkadaşlığınız da sona erer.'}),[
@@ -376,7 +406,7 @@ h('button',{type:'button',class:'btn dng',onclick:()=>{if(confirm(n+' engellensi
 function frRender(){const q=$('#frq'),l=$('#frl');if(!l||!FR)return;const bt=(t,fn,c)=>h('button',{type:'button',class:'btn sm '+(c||'sec'),onclick:fn},t);
 q.replaceChildren(FR.in.length?h('div',{class:'card frq'},h('h2',{text:'🔔 Arkadaşlık isteği'+(FR.in.length>1?' ('+FR.in.length+')':'')}),
 ...FR.in.map(n=>h('div',{class:'frr'},h('div',{class:'grow'},h('b',{},n,frTagEl(FR.tags&&FR.tags[n])),h('small',{class:'mu',text:'seni arkadaş olarak eklemek istiyor'})),bt('Kabul et',()=>frAct('acc',n),' '),bt('Reddet',()=>frAct('dec',n)),bt('⋯',()=>{const m=modal(n,h('small',{class:'mu',text:'Bu kişiden istek almak istemiyorsan engelleyebilirsin.'}),[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),h('button',{type:'button',class:'btn dng',onclick:()=>{m.remove();frAct('block',n)}},'Engelle')])})))):'');
-const me=$('#frme');if(me&&FR.me)me.textContent='Senin kodun: '+frCode();
+const me=$('#frme');if(me&&FR.me&&FR.me.tag)me.textContent='Senin kodun: '+frCode();else if(!window._frRetry){window._frRetry=1;setTimeout(async()=>{window._frRetry=0;await myCode();frRender()},2500)}
 if(PADD&&FR.me){const c=PADD;PADD='';if(c.toLowerCase()!=frCode()){const m=modal('Arkadaş ekle',h('small',{text:c+' kişisine arkadaşlık isteği gönderilsin mi?'}),[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),h('button',{type:'button',class:'btn',onclick:()=>{m.remove();frAct('req',c)}},'İstek gönder')])}}
 const on=FR.f.filter(x=>x.on).length;$('#frn').textContent=FR.f.length?on+' / '+FR.f.length+' çevrimiçi':'';
 l.replaceChildren(...(FR.f.length?FR.f.map(x=>h('div',{class:'frr'},h('i',{class:'dot'+(x.on?' on':'')}),h('div',{class:'grow'},h('b',{},x.n,frTagEl(x.tag)),h('small',{class:'mu',text:x.room?'🎬 '+x.room+' odasında'+(x.room==RM?' (seninle)':''):x.on?'çevrimiçi':frAgo(x.last)})),
@@ -1001,7 +1031,11 @@ export default {
         const r = await (await roomStub(env, code).fetch('https://do/info', { method: 'POST', body: '{}' })).json();
         return J({ exists: !!r.exists, mode: r.mode | 0 });
       }
-      if (p == '/api/me') return J({ name: me.n, role: me.r });
+      if (p == '/api/me') { const x = await (await dbf(env, '/meinfo', { name: me.n })).json(); return J({ name: me.n, role: me.r, tag: x.tag || '', ts: x.ts || 0, fr: x.fr || 0 }) }
+      if (p == '/api/me/delete' && req.method == 'POST') {
+        const b = await req.json().catch(() => ({})), r = await dbf(env, '/selfdel', { name: me.n, pass: String(b.pass || '').slice(0, 200) }), j = await r.json();
+        if (r.ok) UC.delete(me.n); return J(j, r.status);
+      }
       if (p == '/api/turn') return J(await iceServers(env));
       // ---- bildirimler ----
       if (p == '/api/push/key') return J({ k: (await vapid(env)).pub });
@@ -1607,6 +1641,15 @@ export class Do {
       await S.put('u:' + nm, x); return Response.json({ ok: 1 });
     }
     if (p == '/del') { if (nm == 'admin' || nm == String(b.by || '').toLowerCase()) return bad('Bu hesap silinemez'); await S.delete('u:' + nm); await S.delete('ps:' + nm); await S.delete('fr:' + nm); return Response.json({ ok: 1 }) }
+    if (p == '/meinfo') { const x = await S.get('u:' + nm); if (!x) return bad('Kullanıcı yok', 404); if (!x.tag) { x.tag = newTag(); await S.put('u:' + nm, x) } const fr = await S.get('fr:' + nm); return Response.json({ tag: x.tag, ts: x.ts || 0, fr: fr && fr.f ? fr.f.length : 0 }) }
+    if (p == '/selfdel') {
+      const x = await S.get('u:' + nm); if (!x) return bad('Kullanıcı yok', 404);
+      if (nm == 'admin') return bad('Ana yönetici hesabı silinemez');
+      if (!same(x.h, await hash(String(b.pass || ''), x.salt))) return bad('Şifre yanlış', 403);
+      const fr = await S.get('fr:' + nm);
+      if (fr) for (const o of new Set([...(fr.f || []), ...(fr.in || []), ...(fr.out || [])])) { const y = await S.get('fr:' + o); if (!y) continue; for (const k of ['f', 'in', 'out']) y[k] = (y[k] || []).filter(z => z !== nm); await S.put('fr:' + o, y) }
+      await S.delete(['u:' + nm, 'ps:' + nm, 'fr:' + nm]); return Response.json({ ok: 1 });
+    }
     if (p == '/setpass') {
       const x = await S.get('u:' + nm); if (!x || !same(x.h, await hash(String(b.old || '').slice(0, 200), x.salt))) return bad('Mevcut şifre yanlış');
       if (!pwOk(b.pass)) return bad('Yeni şifre en az 6 karakter olmalı'); if (b.pass == b.old) return bad('Yeni şifre eskisiyle aynı olamaz');
