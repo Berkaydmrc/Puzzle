@@ -418,7 +418,16 @@ small,.mu{color:var(--mu)}
 .mu-art{width:58px;height:58px;border-radius:12px;object-fit:cover;background:var(--s3);flex:none;display:grid;place-items:center;font-size:1.6rem}
 .mu-t{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mu-res{display:grid;gap:6px}
-.wlb{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;border-top:1px solid var(--bd);padding-top:12px;min-width:0}.wll{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;max-height:440px;overflow-y:auto;overflow-x:hidden;min-width:0}.wli,.mqi{min-width:0}.wli>button,.mqi>button{flex:none}.wli{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;background:var(--s2);border:1px solid var(--bd)}.wli.on{border-color:var(--ac)}.wli img,.wlth{width:72px;height:40px;object-fit:cover;border-radius:8px;flex:none;background:#000;display:grid;place-items:center;color:var(--mu)}.wli .grow,.mqi .grow{min-width:0}.wli b,.mqi b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem}.wli small,.mqi small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wlpb{height:4px;background:var(--bd);border-radius:2px;margin-top:5px;overflow:hidden}.wlpb i{display:block;height:100%;background:var(--ac)}
+.wlb{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;border-top:1px solid var(--bd);padding-top:12px;min-width:0}.wll{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;max-height:440px;overflow-y:auto;overflow-x:hidden;min-width:0}.wli,.mqi{min-width:0}
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+input,select,textarea{font-size:16px!important}
+html,body{overflow-x:clip;max-width:100%}
+.stack>*,.card,.card>*{min-width:0}
+.seg{min-width:0}.seg>button{min-width:0}
+#pres{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.pill{min-width:0;max-width:100%}
+.mqbox{position:static;display:grid;gap:8px;margin-top:12px;padding:12px;border:1px solid var(--bd);border-radius:12px;background:var(--s1);text-align:left}
+.mqbox>.row>b{font-size:1rem;font-weight:800;letter-spacing:0;color:var(--tx)}.wli>button,.mqi>button{flex:none}.wli{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;background:var(--s2);border:1px solid var(--bd)}.wli.on{border-color:var(--ac)}.wli img,.wlth{width:72px;height:40px;object-fit:cover;border-radius:8px;flex:none;background:#000;display:grid;place-items:center;color:var(--mu)}.wli .grow,.mqi .grow{min-width:0}.wli b,.mqi b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem}.wli small,.mqi small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wlpb{height:4px;background:var(--bd);border-radius:2px;margin-top:5px;overflow:hidden}.wlpb i{display:block;height:100%;background:var(--ac)}
 .mq{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;border-top:1px solid var(--bd);padding-top:10px;min-width:0}.mqi{display:flex;gap:8px;align-items:center;padding:6px;border-radius:10px;background:var(--s2)}.mqi img,.mqi .mu-art{width:36px;height:36px;border-radius:6px;object-fit:cover;flex:none;font-size:1rem}.mu-rw{display:flex;gap:6px;align-items:stretch}.mu-rw .mu-r{flex:1;min-width:0}.mu-rw>button.btn{flex:none}
 .mu-r{display:flex;gap:10px;align-items:center;background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:6px;cursor:pointer;text-align:left;color:var(--tx);font:inherit;width:100%}
 .mu-r img{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none}
@@ -2424,6 +2433,7 @@ else{w.classList.remove('rot');try{if(document.fullscreenElement&&document.exitF
 function gameRot(){const de=document.documentElement,W=de.clientWidth||innerWidth,H=de.clientHeight||innerHeight;for(const w of document.querySelectorAll('.fwwrap'))w.classList.toggle('rot',w.classList.contains('full')&&H>W)}
 // çift dokunma / iki parmak yakınlaştırmasını oyunlarda engelle; yakınlaşma olduysa geri al
 const GVP='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';
+if(!window._noZoom){window._noZoom=1;const pv=e=>{try{e.preventDefault()}catch(x){}};['gesturestart','gesturechange','gestureend'].forEach(k=>document.addEventListener(k,pv,{passive:false}));document.addEventListener('touchmove',e=>{if(e.touches&&e.touches.length>1||e.scale&&e.scale!==1)pv(e)},{passive:false});document.addEventListener('focusout',e=>{if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))setTimeout(()=>{try{gameUnzoom()}catch(x){}},120)})}
 function gameUnzoom(){const m=document.querySelector('meta[name=viewport]');if(!m)return;m.setAttribute('content',GVP+',minimum-scale=1');setTimeout(()=>m.setAttribute('content',GVP),80)}
 function gameWake(){try{if(typeof BRIN!='undefined'){BRIN.x=0;BRIN.y=0;BRIN.l=0;BRIN.aim=0;BRIN.ax=0;BRIN.ay=0;BRIN.q=[];if(typeof BRU!='undefined')BRU.joyOn=0;for(const k of document.querySelectorAll('.brknob'))k.style.transform='';for(const b of document.querySelectorAll('.brb.on'))b.classList.remove('on')}}catch(e){}
  try{if(typeof BRRAF!='undefined'&&typeof BRG!='undefined'&&BRG){cancelAnimationFrame(BRRAF);BRRAF=0;brLoop()}}catch(e){}
@@ -4434,7 +4444,7 @@ bp=act('play',()=>{if(!MS||!MS.tr)return toast('Önce bir şarkı ara ve seç');
 b1=act('back10',()=>{if(MS&&MS.tr)send({t:'mseek',pos:Math.max(0,mexp()-10)})},1,'10 saniye geri'),
 b2=act('fwd10',()=>{if(MS&&MS.tr)send({t:'mseek',pos:mexp()+10})},1,'10 saniye ileri'),
 rg=h('input',{type:'range',min:0,max:100,value:0,style:'width:100%;display:none;accent-color:var(--ac)',onchange:e=>send({t:'mseek',pos:+e.target.value})}),
-msg=h('small',{class:'err'}),need=h('button',{type:'button',class:'btn full',style:'display:none',onclick:()=>mjoin()},'▶ Dinlemeye katıl'),hint=h('div',{class:'mu-hint',style:'display:none'}),ls=h('div',{class:'mu-ls'}),yt=h('div',{class:'mu-yt'}),mqb=h('div',{class:'mq'});
+msg=h('small',{class:'err'}),need=h('button',{type:'button',class:'btn full',style:'display:none',onclick:()=>mjoin()},'▶ Dinlemeye katıl'),hint=h('div',{class:'mu-hint',style:'display:none'}),ls=h('div',{class:'mu-ls'}),yt=h('div',{class:'mu-yt'}),mqb=h('div',{class:'mqbox'});
 q.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();msearch()}};
 const root=h('div',{class:'card',id:'mp'},h('div',{class:'row'},ic('music',18),h('h3',{text:'Birlikte müzik'})),
 h('small',{text:'Hesap bağlamadan doğrudan şarkı arayıp tam senkron dinleyebilirsiniz. İsterseniz Spotify veya Apple Music de seçebilirsiniz.'}),
