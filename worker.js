@@ -51,6 +51,27 @@ input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:d
 .dot{width:8px;height:8px;border-radius:50%;background:#555;flex:none}.dot.on{background:var(--ok);box-shadow:0 0 8px var(--ok)}
 .room{display:grid;gap:14px;grid-template-columns:minmax(0,1fr);align-items:start}
 @media(min-width:980px){.room{grid-template-columns:minmax(0,1fr) 340px}.chat{position:sticky;top:14px;height:calc(100dvh - 28px)!important}}
+.fpl{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;justify-content:flex-end;opacity:0;transition:opacity .25s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.fpl.on{opacity:1}.fpl:not(.on){cursor:none}.fpl:not(.on) .fplbot,.fpl:not(.on) .fplbig{pointer-events:none}
+.fplbig{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:74px;height:74px;border-radius:50%;border:0;background:var(--ac);color:var(--ink,#fff);display:grid;place-items:center;box-shadow:0 10px 30px #0008,0 0 0 8px #ffffff1f;cursor:pointer;padding-left:4px}
+.fplbig:active{transform:translate(-50%,-50%) scale(.94)}
+.fplbot{padding:28px 10px 6px;background:linear-gradient(transparent,#000c 70%);display:grid;gap:2px}
+.fplbar{position:relative;height:22px;cursor:pointer;touch-action:none}
+.fplbar>i{position:absolute;left:0;top:50%;height:4px;margin-top:-2px;border-radius:4px}.fpltrack{right:0;background:#ffffff33}.fplbuf{background:#ffffff55}.fplfill{background:var(--ac)}
+.fpl.drag .fplbar>i,.fplbar:hover>i{height:6px;margin-top:-3px}
+.fplknob{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px #0003}
+.fpl.drag .fplknob{transform:scale(1.3)}
+.fpltip{position:absolute;bottom:22px;transform:translateX(-50%);background:#000d;color:#fff;font-size:.75rem;padding:2px 7px;border-radius:6px;pointer-events:none}.fpltip:empty{display:none}
+.fplrow{display:flex;align-items:center;gap:2px}
+.fplb{min-width:40px;height:40px;border:0;background:none;color:#fff;display:grid;place-items:center;border-radius:10px;cursor:pointer;font:inherit;font-weight:800;font-size:.8rem}
+.fplb:active{background:#ffffff22}.fplb.on{color:var(--ac)}
+.fpltm{color:#fff;font-size:.78rem;font-variant-numeric:tabular-nums;margin-left:4px;white-space:nowrap}
+.fplflash{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);background:#000b;color:#fff;font-weight:800;padding:8px 14px;border-radius:12px;opacity:0;pointer-events:none}
+.fplflash.go{animation:fplfl .9s ease-out}
+@keyframes fplfl{0%{opacity:0}15%{opacity:1}70%{opacity:1}100%{opacity:0}}
+.stage.isfs{border-radius:0;border:0;aspect-ratio:auto;width:100%;height:100%}.stage.isfs video{width:100%;height:100%}
+.subbar.pulse{box-shadow:0 0 0 3px var(--ac)}
+@media (max-width:420px){.fplt{display:none}.fplb{min-width:36px}}
 .subbar{display:grid;gap:8px;padding:10px 12px;border:1px solid var(--bd);border-radius:12px;background:var(--s1)}
 .subbar .btn.on{border-color:var(--ac);color:var(--ac)}
 .subo{min-width:52px;text-align:center;font-variant-numeric:tabular-nums}
@@ -651,12 +672,32 @@ tap=h('button',{type:'button',class:'btn sm',style:'display:none',onclick:()=>vT
 leave=h('button',{type:'button',class:'btn dng sm',onclick:()=>vLeave()},'Ayrıl'),
 ctl=h('div',{class:'row wrap'},mute,tap,leave);
 VC.ui={st,ls,join,mute,tap,ctl};const box=h('div',{class:'vc'},h('div',{class:'row',style:'justify-content:space-between'},h('b',{text:'Sesli sohbet',style:'font-size:.9rem'}),st),ls,join,ctl);vui();return box}
+// ---------- yedek ses hattı: iki telefon doğrudan bağlanamazsa (mobil veri, bazı modemler) ses sunucu üzerinden gider ----------
+const VFB={on:0,cap:null,seq:0,play:{},rx:{}};
+const vP2P=id=>{const P=VC.peers.get(id);return !!(P&&P.pc.connectionState=='connected')};
+function vMuE(v){let s=Math.round(Math.max(-1,Math.min(1,v))*32767);const sg=s<0?0x80:0;if(s<0)s=-s;s=Math.min(32635,s+132);let e=7;for(let m=0x4000;(s&m)==0&&e>0;e--,m>>=1);return ~(sg|(e<<4)|((s>>(e+3))&0x0f))&0xff}
+function vMuD(u){u=~u&0xff;const e=(u>>4)&7;let s=((((u&0x0f)<<3)+132)<<e)-132;return ((u&0x80)?-s:s)/32768}
+function vfbNeed(){if(!VC.on)return false;const now=Date.now();for(const P of VC.peers.values()){const cs=P.pc.connectionState;if(cs=='connected')continue;if(cs=='failed'||now-(P.t0||now)>7000)return true}return false}
+function vfbCap(on){if(on&&!VFB.cap&&VC.stream&&VC.ac){try{const ac=VC.ac,src=ac.createMediaStreamSource(VC.stream),sp=ac.createScriptProcessor(2048,1,1),g=ac.createGain();g.gain.value=0;src.connect(sp);sp.connect(g);g.connect(ac.destination);
+  const ratio=ac.sampleRate/16000;let acc=[],sum=0,cnt=0,ph=0;
+  sp.onaudioprocess=e=>{if(!VC.on||!VFB.on)return;const x=e.inputBuffer.getChannelData(0),mu=VC.mu;for(let i=0;i<x.length;i++){sum+=mu?0:x[i];cnt++;ph+=1;if(ph>=ratio){ph-=ratio;acc.push(sum/cnt);sum=0;cnt=0}}
+   if(acc.length>=1920){let s='';for(const v of acc)s+=String.fromCharCode(vMuE(v));acc=[];if(ws&&ws.readyState==1&&!mu){try{ws.send(JSON.stringify({t:'va',d:btoa(s),s:++VFB.seq}))}catch(er){}}}};
+  VFB.cap={src,sp,g}}catch(e){console.warn('yedek ses',e)}}
+ if(!on&&VFB.cap){try{VFB.cap.src.disconnect();VFB.cap.sp.disconnect();VFB.cap.g.disconnect()}catch(e){}VFB.cap=null}}
+function vfbRecv(m){if(!VC.on||!VC.ac||!m.d||m.from===VC.id||vP2P(m.from))return;const ac=VC.ac;let raw;try{raw=atob(m.d)}catch(e){return}const n=raw.length;if(!n)return;
+ let buf;try{buf=ac.createBuffer(1,n,16000)}catch(e){return}const ch=buf.getChannelData(0);for(let i=0;i<n;i++)ch[i]=vMuD(raw.charCodeAt(i));
+ let p=VFB.play[m.from];if(!p){const g=ac.createGain();g.connect(ac.destination);p=VFB.play[m.from]={g,t:0}}
+ if(ac.state=='suspended'){VC.need=1}const now=ac.currentTime;if(p.t<now+.04||p.t>now+1.2)p.t=now+.2;const s=ac.createBufferSource();s.buffer=buf;s.connect(p.g);s.start(p.t);p.t+=buf.duration;VFB.rx[m.from]=Date.now();
+ let lv=0;for(let i=0;i<n;i+=8)lv=Math.max(lv,Math.abs(ch[i]));if(lv>.06){const el=document.querySelector('.vcl span[data-v="'+m.from+'"]');if(el){el.classList.add('spk');clearTimeout(el._vt);el._vt=setTimeout(()=>el.classList.remove('spk'),400)}}}
+function vfbStop(){vfbCap(false);for(const id in VFB.play){try{VFB.play[id].g.disconnect()}catch(e){}}VFB.play={};VFB.rx={};VFB.on=0}
+if(!window._vfbIv){window._vfbIv=setInterval(()=>{if(!VC.on){if(VFB.on||VFB.cap)vfbStop();return}const need=vfbNeed();if(need&&!VFB.on){VFB.on=1;toast('Doğrudan ses bağlantısı kurulamadı; ses sunucu üzerinden gidiyor')}else if(!need&&VFB.on)VFB.on=0;vfbCap(!!VFB.on);vui()},1000)}
+
 function vui(){const U=VC.ui;if(!U.st)return;const r=VC.roster;
 U.join.style.display=VC.on?'none':'';U.join.disabled=!!VC.busy;U.join.textContent=VC.busy?'Bağlanıyor…':'🎙 Sesli sohbete katıl';U.ctl.style.display=VC.on?'':'none';
 U.mute.textContent=VC.mu?'🎙 Mikrofonu aç':'🔇 Sustur';U.tap.style.display=VC.need?'':'none';
 U.st.textContent=VC.err||(r.length?r.length+' kişi':'kimse yok');U.st.className=VC.err?'err':'mu';
-U.ls.replaceChildren(...r.map(x=>{const me=x.id===VC.id,P=VC.peers.get(x.id),cs=P&&P.pc.connectionState,bad=VC.on&&!me&&P&&(cs=='failed'||cs=='disconnected'),wait=VC.on&&!me&&P&&cs!='connected'&&!bad;
-return h('span',{'data-v':x.id,class:(x.m?'mu':'')+(bad?' bad':''),text:(me?'sen':x.n)+(x.m?' 🔇':' 🎙')+(bad?' · bağlantı yok':wait?' · bağlanıyor…':'')})}))}
+U.ls.replaceChildren(...r.map(x=>{const me=x.id===VC.id,P=VC.peers.get(x.id),cs=P&&P.pc.connectionState,fb=VC.on&&!me&&VFB.on&&cs!='connected',bad=!fb&&VC.on&&!me&&P&&(cs=='failed'||cs=='disconnected'),wait=!fb&&VC.on&&!me&&P&&cs!='connected'&&!bad;
+return h('span',{'data-v':x.id,class:(x.m?'mu':'')+(bad?' bad':''),text:(me?'sen':x.n)+(x.m?' 🔇':' 🎙')+(fb?' · sunucu hattı':bad?' · bağlantı yok':wait?' · bağlanıyor…':'')})}))}
 const vRid=()=>Array.from(crypto.getRandomValues(new Uint8Array(10)),b=>(b%36).toString(36)).join('');
 async function vIce(){if(VC.ice&&Date.now()-VC.iceT<36e5*3)return VC.ice;try{const j=await api('turn');VC.ice=j.iceServers;VC.relay=!!j.relay}catch(e){VC.ice=[{urls:['stun:stun.cloudflare.com:3478']}];VC.relay=false}VC.iceT=Date.now();return VC.ice}
 async function vJoin(){if(VC.on||VC.busy)return;if(!navigator.mediaDevices||!window.RTCPeerConnection){VC.err='Bu tarayıcı sesli sohbeti desteklemiyor';return vui()}
@@ -665,7 +706,7 @@ try{const AC=window.AudioContext||window.webkitAudioContext;if(AC){if(!VC.ac)VC.
 try{VC.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false})}
 catch(e){VC.busy=0;VC.err=e&&e.name=='NotAllowedError'?'Mikrofon izni verilmedi':'Mikrofon açılamadı';toast(VC.err+(e&&e.name=='NotAllowedError'?'. Tarayıcı ayarlarından bu siteye mikrofon izni ver.':''),1);return vui()}
 await vIce();VC.id=vRid();VC.mu=0;VC.on=1;VC.busy=0;VC.miss={};vMeter('me',VC.stream);send({t:'vjoin',id:VC.id,m:0});vui();if(!VC.relay)console.info('Sesli sohbet: TURN yok, yalnız doğrudan bağlantı')}
-function vLeave(silent){if(!VC.on&&!VC.busy)return;VC.on=0;VC.busy=0;for(const id of [...VC.peers.keys()])vDrop(id);
+function vLeave(silent){if(!VC.on&&!VC.busy)return;VC.on=0;try{vfbStop()}catch(e){}VC.busy=0;for(const id of [...VC.peers.keys()])vDrop(id);
 try{VC.stream&&VC.stream.getTracks().forEach(t=>t.stop())}catch(e){}VC.stream=null;delete VC.meters;if(!silent)send({t:'vleave'});VC.need=0;vui()}
 function vMute(m){VC.mu=m?1:0;try{VC.stream&&VC.stream.getAudioTracks().forEach(t=>t.enabled=!VC.mu)}catch(e){}send({t:'vmute',m:VC.mu});vui()}
 function vTap(){VC.need=0;for(const P of VC.peers.values())if(P.el)P.el.play().catch(()=>{VC.need=1});try{VC.ac&&VC.ac.resume()}catch(e){}vui()}
@@ -678,7 +719,7 @@ setInterval(()=>{if(!VC.on)return;const now=Date.now();for(const id in VC.miss)i
 function vDrop(id){const P=VC.peers.get(id);if(!P)return;VC.peers.delete(id);try{P.pc.close()}catch(e){}if(P.el){try{P.el.srcObject=null;P.el.remove()}catch(e){}}if(VC.meters)delete VC.meters[id]}
 // Her ikilide yalnız kimliği küçük olan teklif başlatır (çakışma olmaz); karşı taraf sesini teklife yanıt verirken ekler.
 function vAdd(P){if(P.added||!VC.stream)return;P.added=1;VC.stream.getTracks().forEach(t=>P.pc.addTrack(t,VC.stream))}
-function vPeer(id,n){const pc=new RTCPeerConnection({iceServers:VC.ice||[]}),init=VC.id<id,P={pc,n,init,polite:!init,mo:false,ign:false,el:null,cq:[],added:0,dT:0};VC.peers.set(id,P);
+function vPeer(id,n){const pc=new RTCPeerConnection({iceServers:VC.ice||[]}),init=VC.id<id,P={pc,n,init,polite:!init,mo:false,ign:false,el:null,cq:[],added:0,dT:0,t0:Date.now()};VC.peers.set(id,P);
 pc.onnegotiationneeded=async()=>{try{P.mo=true;await pc.setLocalDescription();send({t:'vsig',to:id,d:{desc:pc.localDescription}})}catch(e){}finally{P.mo=false}};
 pc.onicecandidate=e=>{if(e.candidate)send({t:'vsig',to:id,d:{cand:e.candidate}})};
 pc.ontrack=e=>{const s=e.streams&&e.streams[0]||new MediaStream([e.track]);if(!P.el){P.el=h('audio',{autoplay:'',playsinline:''});P.el.style.display='none';document.body.append(P.el)}
@@ -4195,6 +4236,46 @@ if(!window._subIv){window._subIv=setInterval(()=>{if(!SUBOV||!document.body.cont
 const bad=m=>{const s=st;
 if(!FRY&&s&&s.url){FRY=1;if(syncEl){syncEl.textContent='Yeniden deneniyor…';syncEl.className='sync'}fst('load');setTimeout(()=>{if(st===s||(st&&st.sid===s.sid)){teardown();loadVid(st,true)}},2500);return}
 if(syncEl){syncEl.textContent='Açılamadı';syncEl.className='sync'}fst('err',m);toast('Video açılamadı ('+m+'). “Yeniden dene”ye bas; olmazsa başka link, Referer ya da YouTube/mp4 dene.',1)};
+// ---------- film oynatıcısı: kendi kontrollerimiz (oynat/durdur, sarma, ses, altyazı, tam ekran) ----------
+let PCT=null;
+const pfmt=t=>{t=Math.max(0,isFinite(t)?t|0:0);const h=t/3600|0,m=(t%3600)/60|0,s=t%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s).padStart(2,'0')};
+const PIC={play:'<path d="M8 5.5v13l10.5-6.5z"/>',pause:'<path d="M6.5 5h4v14h-4zM13.5 5h4v14h-4z"/>',vol:'<path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/>',mute:'<path d="M4 9v6h4l5 4V5L8 9H4zm15.6 3 2.1-2.1-1.4-1.4-2.1 2.1-2.1-2.1-1.4 1.4 2.1 2.1-2.1 2.1 1.4 1.4 2.1-2.1 2.1 2.1 1.4-1.4z"/>',fs:'<path d="M4 4h6v2H6v4H4zm10 0h6v6h-2V6h-4zM4 14h2v4h4v2H4zm14 4v-4h2v6h-6v-2z"/>',fsx:'<path d="M8 4h2v6H4V8h4zm6 0h2v4h4v2h-6zM4 14h6v6H8v-4H4zm10 0h6v2h-4v4h-2z"/>',cc:'<path d="M4 5h16a1.5 1.5 0 0 1 1.5 1.5v11A1.5 1.5 0 0 1 20 19H4a1.5 1.5 0 0 1-1.5-1.5v-11A1.5 1.5 0 0 1 4 5zm3.5 4.5A1.5 1.5 0 0 0 6 11v2a1.5 1.5 0 0 0 1.5 1.5h2.5V13H7.5v-2h2.5V9.5zm7 0A1.5 1.5 0 0 0 13 11v2a1.5 1.5 0 0 0 1.5 1.5H17V13h-2.5v-2H17V9.5z"/>'};
+const pic=(k,s)=>'<svg viewBox="0 0 24 24" width="'+(s||22)+'" height="'+(s||22)+'" fill="currentColor" aria-hidden="true">'+PIC[k]+'</svg>';
+function plCtl(){const B=(cl,l,html)=>h('button',{type:'button',class:cl,'aria-label':l,html:html||''});
+ const big=B('fplbig','Oynat',pic('play',34)),play=B('fplb','Oynat',pic('play')),rw=B('fplb fplt','10 saniye geri','−10'),fw=B('fplb fplt','10 saniye ileri','+10'),tm=h('span',{class:'fpltm',text:'0:00 / 0:00'}),
+  buf=h('i',{class:'fplbuf'}),fill=h('i',{class:'fplfill'}),knob=h('b',{class:'fplknob'}),tip=h('span',{class:'fpltip'}),bar=h('div',{class:'fplbar'},h('i',{class:'fpltrack'}),buf,fill,knob,tip),
+  vol=B('fplb','Sesi kapat/aç',pic('vol')),cc=B('fplb','Altyazı',pic('cc')),fs=B('fplb','Tam ekran',pic('fs')),flash=h('div',{class:'fplflash'});
+ const root=h('div',{class:'fpl on'},flash,big,h('div',{class:'fplbot'},bar,h('div',{class:'fplrow'},play,rw,fw,tm,h('span',{class:'grow'}),cc,vol,fs)));
+ PCT={root,big,play,tm,buf,fill,knob,tip,bar,vol,cc,fs,flash,hideT:0,drag:null};
+ const dur=()=>V&&isFinite(V.duration)?V.duration:0,show=()=>{root.classList.add('on');clearTimeout(PCT.hideT);if(V&&!V.paused)PCT.hideT=setTimeout(()=>{if(V&&!V.paused&&!PCT.drag)root.classList.remove('on')},2800)};
+ const toggle=()=>{if(!V)return;if(V.paused){const p=V.play();if(p&&p.catch)p.catch(()=>{})}else V.pause();show()},jump=d=>{if(!V||!dur())return;V.currentTime=Math.max(0,Math.min(dur()-.5,V.currentTime+d));fl(d>0?'+'+d+' sn':'−'+(-d)+' sn');show()};
+ const fl=t=>{flash.textContent=t;flash.classList.remove('go');void flash.offsetWidth;flash.classList.add('go')};
+ big.onclick=e=>{e.stopPropagation();toggle()};play.onclick=e=>{e.stopPropagation();toggle()};rw.onclick=e=>{e.stopPropagation();jump(-10)};fw.onclick=e=>{e.stopPropagation();jump(10)};
+ vol.onclick=e=>{e.stopPropagation();if(V){V.muted=!V.muted;fl(V.muted?'Ses kapalı':'Ses açık')}show()};
+ cc.onclick=e=>{e.stopPropagation();if(typeof subMine=='function'&&subMine()){SUB.on=!SUB.on;subPaint();fl(SUB.on?'Altyazı açık':'Altyazı kapalı')}else{const E=typeof embList=='function'?embList():[];const k=st&&SUBESID===st.sid?SUBE:'';if(E.length){send({t:'subemb',k:k?'':E[0].k});fl(k?'Altyazı kapalı':E[0].nm)}else{const b=$('.subbar');if(b){b.scrollIntoView({block:'center',behavior:'smooth'});b.classList.add('pulse');setTimeout(()=>b.classList.remove('pulse'),1400)}toast('Altyazı eklemek için aşağıdaki “Altyazı ekle”ye bas')}}show()};
+ fs.onclick=e=>{e.stopPropagation();const g=$('#stg');const fe=document.fullscreenElement||document.webkitFullscreenElement;try{if(fe){(document.exitFullscreen||document.webkitExitFullscreen).call(document)}else if(g&&g.requestFullscreen){g.requestFullscreen().catch(()=>{if(V&&V.webkitEnterFullscreen)V.webkitEnterFullscreen()})}else if(g&&g.webkitRequestFullscreen)g.webkitRequestFullscreen();else if(V&&V.webkitEnterFullscreen)V.webkitEnterFullscreen()}catch(x){try{V.webkitEnterFullscreen()}catch(y){}}show()};
+ const frac=e=>{const r=bar.getBoundingClientRect();return Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))};
+ bar.addEventListener('pointerdown',e=>{e.stopPropagation();if(!dur())return;try{bar.setPointerCapture(e.pointerId)}catch(x){}PCT.drag={f:frac(e)};root.classList.add('drag');plRender();show()});
+ bar.addEventListener('pointermove',e=>{if(PCT.drag){PCT.drag.f=frac(e);plRender()}});
+ const up=e=>{if(!PCT.drag)return;const f=PCT.drag.f;PCT.drag=null;root.classList.remove('drag');if(V&&dur())V.currentTime=f*dur();plRender();show()};bar.addEventListener('pointerup',up);bar.addEventListener('pointercancel',()=>{PCT.drag=null;root.classList.remove('drag');plRender()});
+ // boş yere dokununca kontrolleri göster/gizle, çift dokununca 10 sn sar
+ let lastTap=0;root.addEventListener('click',e=>{if(e.target.closest('.fplbot,.fplbig'))return;const n=Date.now(),r=root.getBoundingClientRect(),x=(e.clientX-r.left)/r.width;if(n-lastTap<320&&(x<.33||x>.67)){lastTap=0;jump(x<.33?-10:10);return}lastTap=n;
+  if(!root.classList.contains('on'))show();else if(V&&!V.paused)root.classList.remove('on')});
+ root.addEventListener('pointermove',e=>{if(e.pointerType=='mouse')show()});
+ if(!window._pcKeys){window._pcKeys=1;document.addEventListener('keydown',e=>{const a=document.activeElement;if(!V||!PCT||!document.body.contains(PCT.root)||PCT.root.style.display=='none'||(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||e.metaKey||e.ctrlKey||e.altKey)return;const r=PCT.root.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight)return;
+  const k=e.key.toLowerCase();if(k==' '||k=='k'){e.preventDefault();PCT.big.click()}else if(k=='arrowleft'){e.preventDefault();V.currentTime=Math.max(0,V.currentTime-5);show()}else if(k=='arrowright'){e.preventDefault();V.currentTime=Math.min((V.duration||0)-.5,V.currentTime+5);show()}else if(k=='f'){PCT.fs.click()}else if(k=='m'){PCT.vol.click()}})}
+ setTimeout(plBind,0);return root}
+function plBind(){if(!V||!PCT||V._pcb)return;V._pcb=1;V.controls=false;V.removeAttribute('controls');for(const ev of ['timeupdate','progress','durationchange','loadedmetadata','play','pause','playing','waiting','volumechange','seeked','emptied'])V.addEventListener(ev,plRender);
+ V.addEventListener('play',()=>{const r=PCT&&PCT.root;if(r){clearTimeout(PCT.hideT);PCT.hideT=setTimeout(()=>{if(V&&!V.paused&&!PCT.drag)r.classList.remove('on')},2200)}});V.addEventListener('pause',()=>{if(PCT)PCT.root.classList.add('on')});
+ const fsc=()=>{if(!PCT)return;const fe=document.fullscreenElement||document.webkitFullscreenElement;PCT.fs.innerHTML=pic(fe?'fsx':'fs');const g=$('#stg');if(g)g.classList.toggle('isfs',!!fe)};document.addEventListener('fullscreenchange',fsc);document.addEventListener('webkitfullscreenchange',fsc)}
+function plRender(){const P=PCT;if(!P||!V)return;const vis=!Y&&st&&st.url&&V.style.display!='none';P.root.style.display=vis?'':'none';if(!vis)return;
+ const d=isFinite(V.duration)?V.duration:0,c=P.drag?P.drag.f*d:V.currentTime,f=d?c/d:0;P.fill.style.width=(f*100).toFixed(2)+'%';P.knob.style.left=(f*100).toFixed(2)+'%';
+ let be=0;try{for(let i=0;i<V.buffered.length;i++)if(V.buffered.start(i)<=V.currentTime+1)be=Math.max(be,V.buffered.end(i))}catch(e){}P.buf.style.width=(d?Math.min(100,be/d*100):0).toFixed(2)+'%';
+ P.tm.textContent=pfmt(c)+' / '+(d?pfmt(d):'--:--');P.tip.textContent=P.drag?pfmt(c):'';P.tip.style.left=(f*100).toFixed(2)+'%';
+ const pz=V.paused;P.play.innerHTML=pic(pz?'play':'pause');P.play.setAttribute('aria-label',pz?'Oynat':'Durdur');P.big.style.display=pz?'':'none';P.vol.innerHTML=pic(V.muted?'mute':'vol');
+ const ccOn=(typeof subMine=='function'&&subMine()&&SUB.on&&!SUBE)||(st&&SUBESID===st.sid&&SUBE);P.cc.classList.toggle('on',!!ccOn)}
+if(!window._pcIv){window._pcIv=setInterval(()=>{try{plRender()}catch(e){}},500)}
+
 function load(s){teardown();try{subOnLoad(s)}catch(e){}ov.classList.remove('on');ytNeed(0);YSK=null;if(s.url&&s.sid){FS={s:'',k:''};fst('load')}if(EMPTY)EMPTY.style.display=s.url?'none':'';if(!s.url){if(syncEl)syncEl.textContent='';return}const id=ytId(s.url);if(id)return loadYT(id);loadVid(s,false)}
 function loadVid(s,vp){const my=lt,isH=/\.m3u8/i.test(s.url),src=vp?px(s.url,s.ref):s.url;let nr=0;
 const fail=w=>{if(my!=lt)return;if(vp)return bad(w);getPT().then(()=>{if(my!=lt)return;teardown();loadVid(s,true)}).catch(()=>bad(w))};
@@ -4230,7 +4311,7 @@ function netProbe(){if(!RTP||!RM||!ws||ws.readyState!=1||document.visibilityStat
  pw.onerror=()=>{done=1;clearTimeout(tm)}}
 if(!window._netPr){window._netPr=1;setInterval(netProbe,45000);setInterval(netShow,3000)}
 // mp4/m3u8 videoda ilk dokunuşta oynatma iznini önceden al (telefonun "dokun ve başlat" engeline takılmamak için)
-if(!window._vPrime){window._vPrime=1;document.addEventListener('pointerdown',()=>{try{if(!RM||!V||Y||!st||!st.url||st.playing||!V.paused||V.dataset.pr===String(st.sid))return;V.dataset.pr=String(st.sid);lk();V.muted=true;const p=V.play();const back=()=>{lk();try{V.pause()}catch(e){}V.muted=false};if(p&&p.then)p.then(back,()=>{V.muted=false});else back()}catch(e){}},true)}
+if(!window._vPrime){window._vPrime=1;document.addEventListener('pointerdown',e=>{try{if((e&&e.target&&e.target.closest&&e.target.closest('.fpl'))||!RM||!V||Y||!st||!st.url||st.playing||!V.paused||V.dataset.pr===String(st.sid))return;V.dataset.pr=String(st.sid);lk();V.muted=true;const p=V.play();const back=()=>{lk();try{V.pause()}catch(e){}V.muted=false};if(p&&p.then)p.then(back,()=>{V.muted=false});else back()}catch(e){}},true)}
 function setPres(who){setTimeout(advStrip,0);const s=$('#pres');if(s)s.textContent=(who.length>2?who.join(', '):who.join(' & '))+(who.length>1?' · '+(who.length>2?who.length+' kişi ':'')+'birlikte':' · diğer kişi bekleniyor')}
 function onState(m){LASTM=m;gsState(m.gs);FSH=m.fh||{};const pu=st&&st.url;st=m.st;if(pu!==st.url&&WLU.list)setTimeout(wlRender,0);mqSet(m.mq);hb=m.hb||[];HR=m.hr||{};const who=m.who||[];MSH=m.mh||{};musicState(m.ms||null);
 if(prevWho){for(const x of who)if(!prevWho.includes(x)&&x!=ME.name)toast(x+' odaya katıldı');for(const x of prevWho)if(!who.includes(x))toast(x+' ayrıldı')}prevWho=who;setPres(who);
@@ -4243,7 +4324,7 @@ w.onmessage=e=>{wsLast=Date.now();let m;try{m=JSON.parse(e.data)}catch(x){return
 if(m.t=='roomMode'){ROOM_NEW=0;const nm=[1,2,3].includes(+m.mode)?+m.mode:ROOM_MODE;if(nm!==ROOM_MODE){viewRoom(RM,nm,false);return}}
 else if(m.t=='st'){if(m.i){const rtt=Date.now()-m.i;NETMS=NETMS?Math.round(NETMS*.6+rtt*.4):rtt;netShow();smp.push([rtt,m.now+rtt/2-Date.now()]);if(smp.length>8)smp.shift();off=smp.reduce((a,b)=>b[0]<a[0]?b:a)[1]}else if(!smp.length)off=m.now-Date.now();onState(m)}
 else if(m.t=='pz')pzSet(m.pz);else if(m.t=='pzm')pzMove(m);else if(m.t=='chat')chatAdd(m);else if(m.t=='hist')m.c.forEach(chatAdd);
-else if(m.t=='sys'){chatSys(m.x);toast(m.x)}else if(m.t=='react')fly(m.e,m.n);else if(m.t=='sub')subOn(m);else if(m.t=='suboff'){if(SUB&&SUB.sid===m.sid){SUB.off=+m.off||0;subPaint()}}else if(m.t=='sube')subEmbOn(m);else if(m.t=='wlchg'){clearTimeout(WLT);WLT=setTimeout(wlLoad,400)}else if(m.t=='vr')vRoster(m.r);else if(m.t=='vsig')vSig(m);else if(m.t=='vbye'){if(m.id!==VC.id){vDrop(m.id);vui()}}else if(m.t=='verr'){toast(m.e,1);vLeave(1)}
+else if(m.t=='sys'){chatSys(m.x);toast(m.x)}else if(m.t=='va')vfbRecv(m);else if(m.t=='react')fly(m.e,m.n);else if(m.t=='sub')subOn(m);else if(m.t=='suboff'){if(SUB&&SUB.sid===m.sid){SUB.off=+m.off||0;subPaint()}}else if(m.t=='sube')subEmbOn(m);else if(m.t=='wlchg'){clearTimeout(WLT);WLT=setTimeout(wlLoad,400)}else if(m.t=='vr')vRoster(m.r);else if(m.t=='vsig')vSig(m);else if(m.t=='vbye'){if(m.id!==VC.id){vDrop(m.id);vui()}}else if(m.t=='verr'){toast(m.e,1);vLeave(1)}
 else if(m.t=='locks'){LK=m.lk;lockUI()}else if(m.t=='wpend'){if(wpSeq(m)){WPO=m.p&&m.p.length&&m.by!=ME.name?{mv:m.mv,p:new Map(m.p.map(x=>[x.i,x]))}:null;wgRender()}}else if(m.t=='wq')wqSet(m);else if(m.t=='wrej')wrej(m);else if(m.t=='wg')wgSet(m.g);else if(m.t=='dg')dSet(m.g);else if(m.t=='derr')dErr(m.e);else if(m.t=='bs')bSet(m.g);else if(m.t=='berr')toast(m.e,1);else if(m.t=='cs')cSet(m.g);else if(m.t=='fw')fwSet(m.g);else if(m.t=='fwp')fwPos(m);else if(m.t=='fwerr')toast(m.e,1);else if(m.t=='kt')ktSet(m.g);else if(m.t=='ktp')ktPos(m);else if(m.t=='kterr')toast(m.e,1);else if(m.t=='br')brSet(m.g);else if(m.t=='brp')brOnP(m);else if(m.t=='brh')brOnH(m);else if(m.t=='brk')brOnK(m);else if(m.t=='brx')brOnX(m);else if(m.t=='brd')brOnD(m);else if(m.t=='brg')brOnG(m);else if(m.t=='brpj')brOnPj(m);else if(m.t=='brb')brOnB(m);else if(m.t=='bri')brOnI(m);else if(m.t=='brerr')toast(m.e,1);else if(m.t=='yk')ykSet(m.g);else if(m.t=='ykerr')toast(m.e,1);else if(m.t=='adv')advOn(m);else if(m.t=='cerr')toast(m.e,1);else if(m.t=='werr'){wbusy(0);toast(m.e,1)}else if(m.t=='wprev')wprevSet(m);else if(m.t=='wchk')wgChk(m)};
 w.onerror=()=>{if(ws===w){const p=$('#pres');if(p)p.textContent='WebSocket bağlantı hatası; yeniden deneniyor…'}};
 w.onclose=ev=>{clearInterval(w.p);clearTimeout(w.tmo);if(ws!==w)return;
@@ -4286,7 +4367,7 @@ const u=h('input',{class:'in',id:'vu',type:'url',placeholder:'YouTube, .mp4 veya
 const rf=h('input',{class:'in',type:'url',placeholder:'https://kaynak-site.com/',inputmode:'url',autocapitalize:'none',autocorrect:'off'});
 const vt=h('input',{class:'in',id:'vt',placeholder:'Film adı (isteğe bağlı), örn. Spider-Man',maxlength:100,enterkeyhint:'go'});vt.onkeydown=e=>{if(e.key=='Enter')ld()};FTT=h('div',{class:'ftt',style:'display:none'});
 const ld=()=>{let v=fixLink(u.value.trim());if(v!==u.value.trim())u.value=v;if(!/^https?:\/\//i.test(v))return toast('Link http:// veya https:// ile başlamalı',1);send({t:'set',url:v,ref:rf.value.trim(),title:vt.value.trim()});toast('Yükleniyor…')};u.onkeydown=e=>{if(e.key=='Enter')ld()};
-const fp=h('div',{class:'card',id:'fp'},FTT,YTH,h('div',{class:'stage',id:'stg'},V,yw,EMPTY,syncEl,holdEl,subOv()),FLS,subBox(),h('div',{class:'row'},u,h('button',{class:'btn',onclick:ld},ic('play',16),'Yükle')),vt,h('details',{},h('summary',{text:'Gelişmiş: Referer (link açılmazsa)'}),rf),h('small',{text:'Oynat, durdur ve ileri sarma ikinizde de anında uygulanır. Biri takılırsa diğeri bekler.'}),wlBox());
+const fp=h('div',{class:'card',id:'fp'},FTT,YTH,h('div',{class:'stage',id:'stg'},V,yw,EMPTY,syncEl,holdEl,subOv(),plCtl()),FLS,subBox(),h('div',{class:'row'},u,h('button',{class:'btn',onclick:ld},ic('play',16),'Yükle')),vt,h('details',{},h('summary',{text:'Gelişmiş: Referer (link açılmazsa)'}),rf),h('small',{text:'Oynat, durdur ve ileri sarma ikinizde de anında uygulanır. Biri takılırsa diğeri bekler.'}),wlBox());
 const cnt=h('div',{class:'chips'},[100,250,500,1000].map(n=>h('button',{class:n==PN?'on':'','data-n':n,onclick:e=>{PN=n;cnt.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x==e.currentTarget))}},n+' parça')));
 const pf=h('input',{type:'file',accept:'image/*',style:'display:none',onchange:e=>{if(e.target.files[0])pnew(e.target.files[0]);e.target.value=''}});
 const cv=h('canvas',{id:'pcv'});
@@ -6491,6 +6572,7 @@ export class Do {
     if (!m || typeof m != 'object') return;
     const now = Date.now(), a = ws.deserializeAttachment() || {}, n = a.n, S = this.s.storage, T = m.t;
     const rl = this.rl.get(ws) || { t: now, c: 0 }; if (now - rl.t > 1000) { rl.t = now; rl.c = 0 } rl.c++; this.rl.set(ws, rl); if (rl.c > 90) return;
+    if (T == 'va') { if (!a.v || typeof m.d != 'string' || m.d.length > 12000) return; const o = JSON.stringify({ t: 'va', from: a.v, d: m.d, s: m.s | 0 }); for (const w of this.socks()) { if (w === ws) continue; const b = w.deserializeAttachment() || {}; if (b.v) try { w.send(o) } catch (e) { } } return }
     if (this.st && this.st.url && this.st.playing && !this.st.held) { if (this.advFT) this.advFA = (this.advFA || 0) + Math.min(30, (now - this.advFT) / 1000); this.advFT = now; if (this.advFA >= 60) { const s = Math.round(this.advFA); this.advFA = 0; await this.advEv('film', s) } } else this.advFT = 0;
     if (T == 'ping') {
       if (this.st && this.hold(now)) { await S.put('st', this.st); this.bcast() } else ws.send(this.msg(+m.i || 0));
