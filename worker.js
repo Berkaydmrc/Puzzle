@@ -71,6 +71,12 @@ input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:d
 @keyframes fplfl{0%{opacity:0}15%{opacity:1}70%{opacity:1}100%{opacity:0}}
 .stage.isfs{border-radius:0;border:0;aspect-ratio:auto;width:100%;height:100%}.stage.isfs video{width:100%;height:100%}
 .subbar.pulse{box-shadow:0 0 0 3px var(--ac)}
+.fplmic.live{color:#fff;background:#e5484d;border-radius:50%}.fplmic.wait{opacity:.6}
+.stage.pfs{position:fixed;inset:0;z-index:300;border-radius:0;border:0;aspect-ratio:auto;width:100vw;height:100vh;height:100dvh;background:#000}.stage.pfs video{width:100%;height:100%;object-fit:contain}
+.stage.pfs .fplbot{padding-bottom:max(6px,env(safe-area-inset-bottom));padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+body.pfsb{overflow:hidden}
+.vopts{display:grid;gap:6px;margin-top:4px}.vopt{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--bd);border-radius:10px;background:var(--s2);cursor:pointer}.vopt input{margin-top:3px;width:18px;height:18px;accent-color:var(--ac);flex:none}.vopt b{display:block;font-size:.85rem}.vopt small{display:block;font-size:.75rem;line-height:1.35}
+.btn.vlive{border-color:#e5484d;color:#e5484d}
 @media (max-width:420px){.fplt{display:none}.fplb{min-width:36px}}
 .subbar{display:grid;gap:8px;padding:10px 12px;border:1px solid var(--bd);border-radius:12px;background:var(--s1)}
 .subbar .btn.on{border-color:var(--ac);color:var(--ac)}
@@ -665,13 +671,34 @@ h('div',{class:'card'},h('h3',{text:'Güvenlik notları'}),h('small',{text:'Otur
 // ---------- oda ----------
 // ---------- sesli sohbet (WebRTC, eşler arası; sinyal oda bağlantısından) ----------
 const VC={on:0,busy:0,id:'',mu:0,stream:null,peers:new Map(),roster:[],ice:null,iceT:0,relay:false,ac:null,need:0,err:'',ui:{},miss:{}};
+// ---------- film sesi öncelikli mod + yüksek kalite (deneysel) ----------
+try{VC.fp=+localStorage.vc_fp||0;VC.hq=+localStorage.vc_hq||0}catch(e){}
+VC.fpT=10000;
+function vCons(){return {audio:VC.hq?{echoCancellation:false,noiseSuppression:false,autoGainControl:false}:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false}}
+const vSnd=P=>{try{const t=P.pc.getTransceivers().find(t=>t.receiver&&t.receiver.track&&t.receiver.track.kind=='audio');return t?t.sender:null}catch(e){return null}};
+async function vMicOff(){if(!VC.on||!VC.live)return;VC.live=0;for(const P of VC.peers.values()){const s=vSnd(P);if(s){try{await s.replaceTrack(null)}catch(e){}}}
+ try{VC.stream&&VC.stream.getTracks().forEach(t=>t.stop())}catch(e){}try{vfbCap(false)}catch(e){}if(VC.meters)delete VC.meters.me;VC.mu=1;send({t:'vmute',m:1});vui();try{plRender()}catch(e){}}
+async function vMicOn(){if(!VC.on||VC.live||VC.mon)return;VC.mon=1;vui();
+ try{const s=await navigator.mediaDevices.getUserMedia(vCons()),tr=s.getAudioTracks()[0];if(!VC.on){s.getTracks().forEach(t=>t.stop());return}
+  for(const P of VC.peers.values()){const sd=vSnd(P);if(sd){try{await sd.replaceTrack(tr)}catch(e){}}else{try{P.pc.addTrack(tr,s)}catch(e){}}}
+  VC.stream=s;VC.live=1;VC.lastV=Date.now();VC.mu=0;send({t:'vmute',m:0});vMeter('me',s);try{vfbCap(false)}catch(e){}
+ }catch(e){toast('Mikrofon açılamadı',1)}finally{VC.mon=0;vui();try{plRender()}catch(e){}}}
+// sessizlik bekçisi: film sesi öncelikliyken 10 sn konuşma olmazsa mikrofon tamamen kapanır
+setInterval(()=>{if(!VC.on||!VC.fp||!VC.live)return;const M=VC.meters&&VC.meters.me;let lv=0;if(M){try{M.an.getByteTimeDomainData(M.buf);let s=0;for(const v of M.buf){const x=(v-128)/128;s+=x*x}lv=Math.sqrt(s/M.buf.length)}catch(e){}}
+ if(lv>.03)VC.lastV=Date.now();if(Date.now()-(VC.lastV||0)>VC.fpT)vMicOff()},250);
+function vOpts(){const mk=(k,l,d)=>{const i=h('input',{type:'checkbox'});i.checked=!!VC[k];i.onchange=()=>{VC[k]=i.checked?1:0;try{localStorage['vc_'+k]=VC[k]}catch(e){}
+  if(k=='fp'&&VC.on){if(VC.fp){VC.lastV=Date.now();VC.live=VC.stream&&VC.stream.getAudioTracks().some(t=>t.readyState=='live')&&!VC.mu?1:0}else if(!VC.live)vMicOn();else if(VC.mu)vMute(false)}
+  if(k=='hq'&&VC.on)toast('Yüksek kalite ayarı mikrofon bir sonraki açılışında uygulanır');vui()};
+  return h('label',{class:'vopt'},i,h('span',{},h('b',{text:l}),h('small',{class:'mu',text:d})))};
+ return h('div',{class:'vopts'},mk('fp','Film sesi öncelikli','Sustuğunda mikrofon 10 sn sonra tamamen kapanır, film sesi tam kaliteye döner. Konuşmak için 🎙 düğmesine bir kez dokun (film ekranında da var).'),mk('hq','Yüksek kalite (deneysel)','iPhone’un görüşme ses işlemesini kapatmayı dener; film sesi daha iyi gelebilir. Yankı olursa kapat.'))}
+
 function voiceBox(){const st=h('small',{class:'mu'}),ls=h('div',{class:'vcl'}),
 join=h('button',{type:'button',class:'btn full',onclick:()=>vJoin()},'🎙 Sesli sohbete katıl'),
 mute=h('button',{type:'button',class:'btn sec sm',onclick:()=>vMute(!VC.mu)}),
 tap=h('button',{type:'button',class:'btn sm',style:'display:none',onclick:()=>vTap()},'🔊 Sesi aç'),
 leave=h('button',{type:'button',class:'btn dng sm',onclick:()=>vLeave()},'Ayrıl'),
 ctl=h('div',{class:'row wrap'},mute,tap,leave);
-VC.ui={st,ls,join,mute,tap,ctl};const box=h('div',{class:'vc'},h('div',{class:'row',style:'justify-content:space-between'},h('b',{text:'Sesli sohbet',style:'font-size:.9rem'}),st),ls,join,ctl);vui();return box}
+VC.ui={st,ls,join,mute,tap,ctl};const box=h('div',{class:'vc'},h('div',{class:'row',style:'justify-content:space-between'},h('b',{text:'Sesli sohbet',style:'font-size:.9rem'}),st),ls,join,ctl,vOpts());vui();return box}
 // ---------- yedek ses hattı: iki telefon doğrudan bağlanamazsa (mobil veri, bazı modemler) ses sunucu üzerinden gider ----------
 const VFB={on:0,cap:null,seq:0,play:{},rx:{}};
 const vP2P=id=>{const P=VC.peers.get(id);return !!(P&&P.pc.connectionState=='connected')};
@@ -694,7 +721,7 @@ if(!window._vfbIv){window._vfbIv=setInterval(()=>{if(!VC.on){if(VFB.on||VFB.cap)
 
 function vui(){const U=VC.ui;if(!U.st)return;const r=VC.roster;
 U.join.style.display=VC.on?'none':'';U.join.disabled=!!VC.busy;U.join.textContent=VC.busy?'Bağlanıyor…':'🎙 Sesli sohbete katıl';U.ctl.style.display=VC.on?'':'none';
-U.mute.textContent=VC.mu?'🎙 Mikrofonu aç':'🔇 Sustur';U.tap.style.display=VC.need?'':'none';
+U.mute.textContent=VC.fp?(VC.mon?'🎙 Açılıyor…':VC.live?'🟢 Mikrofon açık · susunca kapanır':'🎙 Konuşmak için dokun'):(VC.mu?'🎙 Mikrofonu aç':'🔇 Sustur');U.mute.classList.toggle('vlive',!!(VC.fp&&VC.live));setTimeout(()=>{try{plRender()}catch(e){}},0);U.tap.style.display=VC.need?'':'none';
 U.st.textContent=VC.err||(r.length?r.length+' kişi':'kimse yok');U.st.className=VC.err?'err':'mu';
 U.ls.replaceChildren(...r.map(x=>{const me=x.id===VC.id,P=VC.peers.get(x.id),cs=P&&P.pc.connectionState,fb=VC.on&&!me&&VFB.on&&cs!='connected',bad=!fb&&VC.on&&!me&&P&&(cs=='failed'||cs=='disconnected'),wait=!fb&&VC.on&&!me&&P&&cs!='connected'&&!bad;
 return h('span',{'data-v':x.id,class:(x.m?'mu':'')+(bad?' bad':''),text:(me?'sen':x.n)+(x.m?' 🔇':' 🎙')+(fb?' · sunucu hattı':bad?' · bağlantı yok':wait?' · bağlanıyor…':'')})}))}
@@ -703,12 +730,12 @@ async function vIce(){if(VC.ice&&Date.now()-VC.iceT<36e5*3)return VC.ice;try{con
 async function vJoin(){if(VC.on||VC.busy)return;if(!navigator.mediaDevices||!window.RTCPeerConnection){VC.err='Bu tarayıcı sesli sohbeti desteklemiyor';return vui()}
 VC.busy=1;VC.err='';vui();
 try{const AC=window.AudioContext||window.webkitAudioContext;if(AC){if(!VC.ac)VC.ac=new AC();VC.ac.resume&&VC.ac.resume()}}catch(e){}
-try{VC.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false})}
+try{VC.stream=await navigator.mediaDevices.getUserMedia(vCons())}
 catch(e){VC.busy=0;VC.err=e&&e.name=='NotAllowedError'?'Mikrofon izni verilmedi':'Mikrofon açılamadı';toast(VC.err+(e&&e.name=='NotAllowedError'?'. Tarayıcı ayarlarından bu siteye mikrofon izni ver.':''),1);return vui()}
-await vIce();VC.id=vRid();VC.mu=0;VC.on=1;VC.busy=0;VC.miss={};vMeter('me',VC.stream);send({t:'vjoin',id:VC.id,m:0});vui();if(!VC.relay)console.info('Sesli sohbet: TURN yok, yalnız doğrudan bağlantı')}
-function vLeave(silent){if(!VC.on&&!VC.busy)return;VC.on=0;try{vfbStop()}catch(e){}VC.busy=0;for(const id of [...VC.peers.keys()])vDrop(id);
+await vIce();VC.id=vRid();VC.mu=0;VC.on=1;VC.busy=0;VC.live=1;VC.lastV=Date.now();VC.miss={};vMeter('me',VC.stream);send({t:'vjoin',id:VC.id,m:0});vui();if(!VC.relay)console.info('Sesli sohbet: TURN yok, yalnız doğrudan bağlantı')}
+function vLeave(silent){if(!VC.on&&!VC.busy)return;VC.on=0;VC.live=0;try{vfbStop()}catch(e){}VC.busy=0;for(const id of [...VC.peers.keys()])vDrop(id);
 try{VC.stream&&VC.stream.getTracks().forEach(t=>t.stop())}catch(e){}VC.stream=null;delete VC.meters;if(!silent)send({t:'vleave'});VC.need=0;vui()}
-function vMute(m){VC.mu=m?1:0;try{VC.stream&&VC.stream.getAudioTracks().forEach(t=>t.enabled=!VC.mu)}catch(e){}send({t:'vmute',m:VC.mu});vui()}
+function vMute(m){if(VC.fp&&VC.on){return m?vMicOff():vMicOn()}VC.mu=m?1:0;try{VC.stream&&VC.stream.getAudioTracks().forEach(t=>t.enabled=!VC.mu)}catch(e){}send({t:'vmute',m:VC.mu});vui()}
 function vTap(){VC.need=0;for(const P of VC.peers.values())if(P.el)P.el.play().catch(()=>{VC.need=1});try{VC.ac&&VC.ac.resume()}catch(e){}vui()}
 function vRoster(r){VC.roster=r||[];if(VC.on){const ids=new Set(VC.roster.map(x=>x.id));
 if(!ids.has(VC.id)&&ws&&ws.readyState==1)send({t:'vjoin',id:VC.id,m:VC.mu});
@@ -4239,21 +4266,22 @@ if(syncEl){syncEl.textContent='Açılamadı';syncEl.className='sync'}fst('err',m
 // ---------- film oynatıcısı: kendi kontrollerimiz (oynat/durdur, sarma, ses, altyazı, tam ekran) ----------
 let PCT=null;
 const pfmt=t=>{t=Math.max(0,isFinite(t)?t|0:0);const h=t/3600|0,m=(t%3600)/60|0,s=t%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s).padStart(2,'0')};
-const PIC={play:'<path d="M8 5.5v13l10.5-6.5z"/>',pause:'<path d="M6.5 5h4v14h-4zM13.5 5h4v14h-4z"/>',vol:'<path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/>',mute:'<path d="M4 9v6h4l5 4V5L8 9H4zm15.6 3 2.1-2.1-1.4-1.4-2.1 2.1-2.1-2.1-1.4 1.4 2.1 2.1-2.1 2.1 1.4 1.4 2.1-2.1 2.1 2.1 1.4-1.4z"/>',fs:'<path d="M4 4h6v2H6v4H4zm10 0h6v6h-2V6h-4zM4 14h2v4h4v2H4zm14 4v-4h2v6h-6v-2z"/>',fsx:'<path d="M8 4h2v6H4V8h4zm6 0h2v4h4v2h-6zM4 14h6v6H8v-4H4zm10 0h6v2h-4v4h-2z"/>',cc:'<path d="M4 5h16a1.5 1.5 0 0 1 1.5 1.5v11A1.5 1.5 0 0 1 20 19H4a1.5 1.5 0 0 1-1.5-1.5v-11A1.5 1.5 0 0 1 4 5zm3.5 4.5A1.5 1.5 0 0 0 6 11v2a1.5 1.5 0 0 0 1.5 1.5h2.5V13H7.5v-2h2.5V9.5zm7 0A1.5 1.5 0 0 0 13 11v2a1.5 1.5 0 0 0 1.5 1.5H17V13h-2.5v-2H17V9.5z"/>'};
+const PIC={play:'<path d="M8 5.5v13l10.5-6.5z"/>',pause:'<path d="M6.5 5h4v14h-4zM13.5 5h4v14h-4z"/>',vol:'<path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/>',mute:'<path d="M4 9v6h4l5 4V5L8 9H4zm15.6 3 2.1-2.1-1.4-1.4-2.1 2.1-2.1-2.1-1.4 1.4 2.1 2.1-2.1 2.1 1.4 1.4 2.1-2.1 2.1 2.1 1.4-1.4z"/>',fs:'<path d="M4 4h6v2H6v4H4zm10 0h6v6h-2V6h-4zM4 14h2v4h4v2H4zm14 4v-4h2v6h-6v-2z"/>',fsx:'<path d="M8 4h2v6H4V8h4zm6 0h2v4h4v2h-6zM4 14h6v6H8v-4H4zm10 0h6v2h-4v4h-2z"/>',mic:'<path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1a7 7 0 0 0 6-6.9z"/>',micoff:'<path d="M15 10.6V5a3 3 0 0 0-5.9-.8zM19 11h-2a5 5 0 0 1-.7 2.5l1.5 1.5A7 7 0 0 0 19 11zM4.3 3 3 4.3l6 6V11a3 3 0 0 0 4.5 2.6l1.6 1.6A5 5 0 0 1 7 11H5a7 7 0 0 0 6 6.9V21h2v-3.1a7 7 0 0 0 3.5-1.4l3.2 3.2 1.3-1.3z"/>',cc:'<path d="M4 5h16a1.5 1.5 0 0 1 1.5 1.5v11A1.5 1.5 0 0 1 20 19H4a1.5 1.5 0 0 1-1.5-1.5v-11A1.5 1.5 0 0 1 4 5zm3.5 4.5A1.5 1.5 0 0 0 6 11v2a1.5 1.5 0 0 0 1.5 1.5h2.5V13H7.5v-2h2.5V9.5zm7 0A1.5 1.5 0 0 0 13 11v2a1.5 1.5 0 0 0 1.5 1.5H17V13h-2.5v-2H17V9.5z"/>'};
 const pic=(k,s)=>'<svg viewBox="0 0 24 24" width="'+(s||22)+'" height="'+(s||22)+'" fill="currentColor" aria-hidden="true">'+PIC[k]+'</svg>';
 function plCtl(){const B=(cl,l,html)=>h('button',{type:'button',class:cl,'aria-label':l,html:html||''});
  const big=B('fplbig','Oynat',pic('play',34)),play=B('fplb','Oynat',pic('play')),rw=B('fplb fplt','10 saniye geri','−10'),fw=B('fplb fplt','10 saniye ileri','+10'),tm=h('span',{class:'fpltm',text:'0:00 / 0:00'}),
   buf=h('i',{class:'fplbuf'}),fill=h('i',{class:'fplfill'}),knob=h('b',{class:'fplknob'}),tip=h('span',{class:'fpltip'}),bar=h('div',{class:'fplbar'},h('i',{class:'fpltrack'}),buf,fill,knob,tip),
-  vol=B('fplb','Sesi kapat/aç',pic('vol')),cc=B('fplb','Altyazı',pic('cc')),fs=B('fplb','Tam ekran',pic('fs')),flash=h('div',{class:'fplflash'});
- const root=h('div',{class:'fpl on'},flash,big,h('div',{class:'fplbot'},bar,h('div',{class:'fplrow'},play,rw,fw,tm,h('span',{class:'grow'}),cc,vol,fs)));
- PCT={root,big,play,tm,buf,fill,knob,tip,bar,vol,cc,fs,flash,hideT:0,drag:null};
+  vol=B('fplb','Sesi kapat/aç',pic('vol')),mic=B('fplb fplmic','Mikrofon',pic('mic')),cc=B('fplb','Altyazı',pic('cc')),fs=B('fplb','Tam ekran',pic('fs')),flash=h('div',{class:'fplflash'});
+ const root=h('div',{class:'fpl on'},flash,big,h('div',{class:'fplbot'},bar,h('div',{class:'fplrow'},play,rw,fw,tm,h('span',{class:'grow'}),mic,cc,vol,fs)));
+ PCT={root,big,play,tm,buf,fill,knob,tip,bar,vol,cc,fs,flash,mic,hideT:0,drag:null};
  const dur=()=>V&&isFinite(V.duration)?V.duration:0,show=()=>{root.classList.add('on');clearTimeout(PCT.hideT);if(V&&!V.paused)PCT.hideT=setTimeout(()=>{if(V&&!V.paused&&!PCT.drag)root.classList.remove('on')},2800)};
  const toggle=()=>{if(!V)return;if(V.paused){const p=V.play();if(p&&p.catch)p.catch(()=>{})}else V.pause();show()},jump=d=>{if(!V||!dur())return;V.currentTime=Math.max(0,Math.min(dur()-.5,V.currentTime+d));fl(d>0?'+'+d+' sn':'−'+(-d)+' sn');show()};
  const fl=t=>{flash.textContent=t;flash.classList.remove('go');void flash.offsetWidth;flash.classList.add('go')};
  big.onclick=e=>{e.stopPropagation();toggle()};play.onclick=e=>{e.stopPropagation();toggle()};rw.onclick=e=>{e.stopPropagation();jump(-10)};fw.onclick=e=>{e.stopPropagation();jump(10)};
+ mic.onclick=e=>{e.stopPropagation();if(!VC.on)return;if(VC.fp){if(VC.live)vMicOff();else{vMicOn();fl('🎙 Konuşabilirsin')}}else{vMute(!VC.mu);fl(VC.mu?'Mikrofon kapalı':'Mikrofon açık')}show()};
  vol.onclick=e=>{e.stopPropagation();if(V){V.muted=!V.muted;fl(V.muted?'Ses kapalı':'Ses açık')}show()};
  cc.onclick=e=>{e.stopPropagation();if(typeof subMine=='function'&&subMine()){SUB.on=!SUB.on;subPaint();fl(SUB.on?'Altyazı açık':'Altyazı kapalı')}else{const E=typeof embList=='function'?embList():[];const k=st&&SUBESID===st.sid?SUBE:'';if(E.length){send({t:'subemb',k:k?'':E[0].k});fl(k?'Altyazı kapalı':E[0].nm)}else{const b=$('.subbar');if(b){b.scrollIntoView({block:'center',behavior:'smooth'});b.classList.add('pulse');setTimeout(()=>b.classList.remove('pulse'),1400)}toast('Altyazı eklemek için aşağıdaki “Altyazı ekle”ye bas')}}show()};
- fs.onclick=e=>{e.stopPropagation();const g=$('#stg');const fe=document.fullscreenElement||document.webkitFullscreenElement;try{if(fe){(document.exitFullscreen||document.webkitExitFullscreen).call(document)}else if(g&&g.requestFullscreen){g.requestFullscreen().catch(()=>{if(V&&V.webkitEnterFullscreen)V.webkitEnterFullscreen()})}else if(g&&g.webkitRequestFullscreen)g.webkitRequestFullscreen();else if(V&&V.webkitEnterFullscreen)V.webkitEnterFullscreen()}catch(x){try{V.webkitEnterFullscreen()}catch(y){}}show()};
+ fs.onclick=e=>{e.stopPropagation();const g=$('#stg');const fe=document.fullscreenElement||document.webkitFullscreenElement;if(g&&(g.classList.contains('pfs')||(!fe&&!g.requestFullscreen&&!g.webkitRequestFullscreen))){const on=!g.classList.contains('pfs');g.classList.toggle('pfs',on);document.body.classList.toggle('pfsb',on);fs.innerHTML=pic(on?'fsx':'fs');if(on)fl('Telefonu yan çevir');try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{})}catch(x){}show();return}try{if(fe){(document.exitFullscreen||document.webkitExitFullscreen).call(document)}else if(g&&g.requestFullscreen){g.requestFullscreen().catch(()=>{if(V&&V.webkitEnterFullscreen)V.webkitEnterFullscreen()})}else if(g&&g.webkitRequestFullscreen)g.webkitRequestFullscreen();else if(V&&V.webkitEnterFullscreen)V.webkitEnterFullscreen()}catch(x){try{V.webkitEnterFullscreen()}catch(y){}}show()};
  const frac=e=>{const r=bar.getBoundingClientRect();return Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))};
  bar.addEventListener('pointerdown',e=>{e.stopPropagation();if(!dur())return;try{bar.setPointerCapture(e.pointerId)}catch(x){}PCT.drag={f:frac(e)};root.classList.add('drag');plRender();show()});
  bar.addEventListener('pointermove',e=>{if(PCT.drag){PCT.drag.f=frac(e);plRender()}});
@@ -4273,6 +4301,7 @@ function plRender(){const P=PCT;if(!P||!V)return;const vis=!Y&&st&&st.url&&V.sty
  let be=0;try{for(let i=0;i<V.buffered.length;i++)if(V.buffered.start(i)<=V.currentTime+1)be=Math.max(be,V.buffered.end(i))}catch(e){}P.buf.style.width=(d?Math.min(100,be/d*100):0).toFixed(2)+'%';
  P.tm.textContent=pfmt(c)+' / '+(d?pfmt(d):'--:--');P.tip.textContent=P.drag?pfmt(c):'';P.tip.style.left=(f*100).toFixed(2)+'%';
  const pz=V.paused;P.play.innerHTML=pic(pz?'play':'pause');P.play.setAttribute('aria-label',pz?'Oynat':'Durdur');P.big.style.display=pz?'':'none';P.vol.innerHTML=pic(V.muted?'mute':'vol');
+ P.mic.style.display=VC.on?'':'none';if(VC.on){const live=VC.fp?!!VC.live:!VC.mu;P.mic.innerHTML=pic(live?'mic':'micoff');P.mic.classList.toggle('live',live);P.mic.classList.toggle('wait',!!VC.mon)}
  const ccOn=(typeof subMine=='function'&&subMine()&&SUB.on&&!SUBE)||(st&&SUBESID===st.sid&&SUBE);P.cc.classList.toggle('on',!!ccOn)}
 if(!window._pcIv){window._pcIv=setInterval(()=>{try{plRender()}catch(e){}},500)}
 
