@@ -51,6 +51,11 @@ input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:d
 .dot{width:8px;height:8px;border-radius:50%;background:#555;flex:none}.dot.on{background:var(--ok);box-shadow:0 0 8px var(--ok)}
 .room{display:grid;gap:14px;grid-template-columns:minmax(0,1fr);align-items:start}
 @media(min-width:980px){.room{grid-template-columns:minmax(0,1fr) 340px}.chat{position:sticky;top:14px;height:calc(100dvh - 28px)!important}}
+.subbar{display:grid;gap:8px;padding:10px 12px;border:1px solid var(--bd);border-radius:12px;background:var(--s1)}
+.subbar .btn.on{border-color:var(--ac);color:var(--ac)}
+.subo{min-width:52px;text-align:center;font-variant-numeric:tabular-nums}
+.subov{position:absolute;left:4%;right:4%;bottom:11%;text-align:center;pointer-events:none;z-index:3;font-weight:700;line-height:1.35;font-size:calc(var(--subfs,1) * clamp(14px,3.8vw,26px));color:#fff}
+.subov span{background:rgba(0,0,0,.62);padding:1px 8px;border-radius:4px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .stage{position:relative;aspect-ratio:16/9;background:#000;border-radius:16px;overflow:hidden;border:1px solid var(--bd)}
 .stage video,.stage .yt,.stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
 .stage .yt{display:none}
@@ -4132,14 +4137,69 @@ function flsRender(){if(!FLS)return;const on=st&&st.url,who=prevWho||[ME.name];i
 const kids=who.map(n=>{const x=n==ME.name?(FS.k===st.sid&&FS.s?{s:FS.s}:FSH[n]):FSH[n],d=FLM[x&&x.s]||['… bekleniyor',''];return h('span',{class:d[1],title:x&&x.e?x.e:'',text:(n==ME.name?'sen':n)+' '+d[0]})});
 if(FS.k===st.sid&&FS.s=='err')kids.push(h('button',{type:'button',class:'btn sec sm',onclick:()=>{FRY=0;loadedKey=null;onState({...LASTM})}},'↻ Yeniden dene'));
 FLS.replaceChildren(...kids)}
+// ---------- altyazı: .srt/.vtt yükleme, videodaki gömülü altyazılar, herkeste eşzamanlı ----------
+let EMBX=[],EMBC=null,EMBU='',SUB=null,SUBT=null,SUBEL=null,SUBOV=null,SUBE='',SUBESID='',SUBFS=(()=>{try{return +localStorage.subfs||1}catch(e){return 1}})();
+const SUBLBL='Bizim altyazı';
+function subTime(s){const m=String(s||'').trim().match(/^(?:(\d+):)?(\d{1,2}):(\d{1,2})[,.](\d{1,3})$/);if(!m)return NaN;return (+(m[1]||0))*3600+(+m[2])*60+(+m[3])+(+m[4].padEnd(3,'0'))/1000}
+function subParse(txt){txt=String(txt).replace(/^﻿/,'').replace(/\r\n?/g,'\n');const out=[];for(const b of txt.split(/\n[ \t]*\n/)){const L=b.split('\n'),i=L.findIndex(l=>l.includes('-->'));if(i<0)continue;const p=L[i].split('-->'),s=subTime(p[0]),e=subTime((p[1]||'').trim().split(/\s+/)[0]);if(!(s>=0)||!(e>s))continue;
+ const t=L.slice(i+1).join('\n').replace(/\{\\[^}]*\}/g,'').replace(/<(?!\/?[ibu]>)[^>]*>/gi,'').replace(/&nbsp;/g,' ').trim();if(t)out.push([s,e,t.slice(0,400)])}return out.sort((x,y)=>x[0]-y[0])}
+function subDecode(buf){const u=new Uint8Array(buf);try{return new TextDecoder('utf-8',{fatal:true}).decode(u)}catch(e){}try{return new TextDecoder('windows-1254').decode(u)}catch(e){}return new TextDecoder().decode(u)}
+function subPick(){if(!st||!st.url)return toast('Önce bir video yükle',1);const i=h('input',{type:'file',accept:'.srt,.vtt,.txt,.sub,text/vtt,application/x-subrip,text/plain',style:'position:fixed;left:-999px;top:0;opacity:0'});
+ i.onchange=async()=>{const f=i.files&&i.files[0];i.remove();if(!f)return;if(/\.(zip|rar|7z)$/i.test(f.name))return toast('Önce zip/rar dosyasını aç, içindeki .srt dosyasını seç',1);if(f.size>4e6)return toast('Dosya çok büyük',1);
+  let c=[];try{c=subParse(subDecode(await f.arrayBuffer()))}catch(e){}if(!c.length)return toast('Bu dosyada altyazı bulunamadı; .srt ya da .vtt dosyası seç',1);if(!st||!st.sid)return;
+  send({t:'subset',sid:st.sid,name:f.name.replace(/\.[^.]+$/,'').slice(0,80),c});toast('Altyazı ekleniyor ('+c.length+' satır)…')};document.body.append(i);i.click()}
+function subTrack(){if(!V)return null;if(SUBT&&SUBT._v===V)return SUBT;SUBT=null;try{for(const t of V.textTracks)if(t.label===SUBLBL){SUBT=t;break}if(!SUBT)SUBT=V.addTextTrack('subtitles',SUBLBL,'tr');SUBT._v=V}catch(e){SUBT=null}return SUBT}
+const subMine=()=>SUB&&st&&SUB.sid===st.sid;
+function subCss(){let s=$('#subcss');if(!s){s=h('style',{id:'subcss'});document.head.append(s)}s.textContent='video::cue{font-size:calc('+SUBFS+' * max(15px,3.4vw));line-height:1.3;color:#fff;background:rgba(0,0,0,.62);font-weight:600}';if(SUBOV)SUBOV.style.setProperty('--subfs',SUBFS)}
+function subPaint(){const t=subTrack();if(t){try{const c=t.cues;if(c)for(let i=c.length-1;i>=0;i--)t.removeCue(c[i])}catch(e){}
+  const ek=st&&SUBESID===st.sid?SUBE:'',useE=ek&&EMBC&&EMBU===ek;if(useE||(subMine()&&SUB.on&&!Y&&!ek)){const o=useE?0:(SUB.off||0),VC=window.VTTCue||window.TextTrackCue;for(const [s,e,x] of (useE?EMBC:SUB.c)){if(e+o<=0)continue;try{t.addCue(new VC(Math.max(0,s+o),e+o,x))}catch(er){}}t.mode='showing'}else t.mode='disabled'}
+ subCss();subUI()}
+function subLang(l,n){const L={tr:'Türkçe',tur:'Türkçe',en:'English',eng:'English',de:'Deutsch',ger:'Deutsch',fr:'Français',fre:'Français',es:'Español',spa:'Español',ar:'العربية',ara:'العربية',ru:'Русский',rus:'Русский',it:'Italiano',ita:'Italiano'};l=String(l||'').toLowerCase();return String(n||'').trim()||L[l]||L[l.split('-')[0]]||l||'Altyazı'}
+function embList(){const r=[];if(hls&&hls.subtitleTracks&&hls.subtitleTracks.length)hls.subtitleTracks.forEach(t=>r.push({k:(t.lang||'')+'|'+(t.name||''),nm:subLang(t.lang,t.name)}));
+ else if(!hls&&V&&V.textTracks)for(const t of V.textTracks){if(t.label===SUBLBL||(t.kind!='subtitles'&&t.kind!='captions'))continue;r.push({k:(t.language||'')+'|'+(t.label||''),nm:subLang(t.language,t.label)})}
+ if(!r.length)for(const x of EMBX)r.push({k:x.k,nm:x.nm,x:1});const sn=new Set();return r.filter(x=>!sn.has(x.k)&&sn.add(x.k))}
+// tarayıcı HLS'yi kendisi oynatıp altyazı kanallarını göstermiyorsa: listeyi biz okuruz
+async function subGet(u,s){try{const r=await fetch(u);if(r.ok)return await r.text()}catch(e){}await getPT();const r=await fetch(px(u,s&&s.ref));if(!r.ok)throw new Error('alınamadı');return await r.text()}
+async function embScan(s){EMBX=[];EMBC=null;EMBU='';if(!s||!s.url||!/\.m3u8/i.test(s.url))return;const sid=s.sid;let txt;try{txt=await subGet(s.url,s)}catch(e){return}if(!st||st.sid!==sid)return;
+ const at=l=>{const o={};l.replace(/([A-Z-]+)=("[^"]*"|[^,]*)/g,(_,k,v)=>{o[k]=v.replace(/^"|"$/g,'')});return o};
+ for(const l of txt.split(/\r?\n/)){if(!/^#EXT-X-MEDIA:/.test(l)||!/TYPE=SUBTITLES/.test(l))continue;const a=at(l.slice(13));if(!a.URI)continue;let u;try{u=new URL(a.URI,s.url).href}catch(e){continue}EMBX.push({k:(a.LANGUAGE||'')+'|'+(a.NAME||''),nm:subLang(a.LANGUAGE,a.NAME),u})}
+ subUI();embApply()}
+async function embLoad(x){if(EMBU===x.k&&EMBC)return;const sid=st&&st.sid;EMBU=x.k;EMBC=null;try{const pl0=await subGet(x.u,st);let segs=pl0.split(/\r?\n/).filter(l=>l&&l[0]!='#').slice(0,600).map(l=>new URL(l,x.u).href);if(/^WEBVTT/.test(pl0.trim()))segs=[];let c=segs.length?[]:subParse(pl0);
+  for(let i=0;i<segs.length;i+=6){const part=await Promise.all(segs.slice(i,i+6).map(u=>subGet(u,st).catch(()=>'')));for(const t of part)c=c.concat(subParse(t));if(!st||st.sid!==sid||EMBU!==x.k)return}
+  const sn=new Set();c=c.filter(q=>{const k=q[0]+'|'+q[2];return !sn.has(k)&&sn.add(k)}).sort((a,b)=>a[0]-b[0]);if(EMBU===x.k){EMBC=c;subPaint()}}catch(e){if(EMBU===x.k){EMBU='';toast('Gömülü altyazı yüklenemedi',1)}}}
+function embApply(){const k=st&&SUBESID===st.sid?SUBE:'';const sx=k&&!(hls&&hls.subtitleTracks&&hls.subtitleTracks.length)&&!(V&&[...V.textTracks].some(t=>t.label!==SUBLBL&&(t.kind=='subtitles'||t.kind=='captions')))?EMBX.find(x=>x.k===k):null;if(sx){embLoad(sx);subPaint();return}if(!k){EMBU='';EMBC=null}if(hls&&hls.subtitleTracks){const i=hls.subtitleTracks.findIndex(t=>(t.lang||'')+'|'+(t.name||'')===k);try{hls.subtitleDisplay=i>=0;hls.subtitleTrack=i}catch(e){}}
+ else if(V&&V.textTracks)for(const t of V.textTracks){if(t.label===SUBLBL)continue;const tk=(t.language||'')+'|'+(t.label||'');try{t.mode=k&&tk===k?'showing':'disabled'}catch(e){}}}
+function subHls(H){if(!H||!window.Hls)return;const f=()=>{embApply();subUI()};H.on(Hls.Events.SUBTITLE_TRACKS_UPDATED,f);H.on(Hls.Events.MANIFEST_PARSED,f)}
+function subOnLoad(s){if(SUB&&SUB.sid!==s.sid)SUB=null;if(SUBESID!==s.sid){SUBE='';SUBESID=s.sid||''}
+ if(V&&!V._subb){V._subb=1;try{V.textTracks.addEventListener('addtrack',()=>{embApply();subUI()})}catch(e){}V.addEventListener('loadedmetadata',()=>{embApply();subUI()});V.addEventListener('webkitbeginfullscreen',subPaint)}setTimeout(subPaint,0);if(!/youtu/i.test(s.url||''))embScan(s)}
+function subOn(m){if(!m.c){if(SUB&&m.by&&m.by!==ME.name)toast(m.by+' altyazıyı kaldırdı');SUB=null}else{const on=SUB&&SUB.sid===m.sid?SUB.on:true;SUB={sid:m.sid,name:m.name||'',by:m.by||'',off:+m.off||0,c:m.c,on};if(!m.j&&m.by===ME.name)toast('Altyazı eklendi, herkeste görünüyor')}subPaint()}
+function subEmbOn(m){SUBE=m.k||'';SUBESID=m.sid||'';if(!m.j&&m.by&&m.by!==ME.name)toast(m.by+(SUBE?' gömülü altyazıyı açtı':' gömülü altyazıyı kapattı'));embApply();subPaint()}
+function subOv(){SUBOV=h('div',{class:'subov',style:'display:none'});subCss();return SUBOV}
+function subBox(){SUBEL=h('div',{class:'subbar'});setTimeout(subUI,0);return SUBEL}
+function subUI(){if(!SUBEL)return;if(!st||!st.url){SUBEL.replaceChildren();SUBEL.style.display='none';return}SUBEL.style.display='';
+ const bt=(t,fn,l,cl)=>h('button',{type:'button',class:'btn sec sm'+(cl?' '+cl:''),'aria-label':l||t,onclick:fn},t),kids=[];
+ const mine=subMine();kids.push(h('div',{class:'row wrap',style:'gap:6px;align-items:center'},h('b',{text:'💬 Altyazı'}),bt(mine?'Değiştir':'＋ Altyazı ekle (.srt)',subPick,'Altyazı dosyası seç',mine?'':'on')));
+ if(mine){const o=SUB.off||0,sh=d=>{SUB.off=Math.round((o+d)*10)/10;subPaint();send({t:'suboff',sid:st.sid,off:SUB.off})};
+  kids.push(h('small',{class:'mu',text:(SUB.name||'Altyazı')+' · '+(SUB.by==ME.name?'sen':SUB.by)+' ekledi · '+SUB.c.length+' satır'+(SUBE?' (gömülü altyazı açıkken gizli)':'')}));
+  kids.push(h('div',{class:'row wrap',style:'gap:6px;align-items:center'},bt('−0,5 sn',()=>sh(-.5),'Altyazıyı yarım saniye erkene al'),h('small',{class:'subo',text:(o>0?'+':'')+o.toFixed(1).replace('.',',')+' sn'}),bt('+0,5 sn',()=>sh(.5),'Altyazıyı yarım saniye geciktir'),
+   bt('A−',()=>{SUBFS=Math.max(.6,Math.round((SUBFS-.15)*100)/100);try{localStorage.subfs=SUBFS}catch(e){}subCss()},'Yazıyı küçült'),bt('A+',()=>{SUBFS=Math.min(2.2,Math.round((SUBFS+.15)*100)/100);try{localStorage.subfs=SUBFS}catch(e){}subCss()},'Yazıyı büyüt'),
+   bt(SUB.on?'Gizle':'Göster',()=>{SUB.on=!SUB.on;subPaint()},'Altyazıyı bende gizle/göster'),bt('Kaldır',()=>send({t:'subrm'}),'Altyazıyı herkesten kaldır')));
+  kids.push(h('small',{class:'mu',text:'Yazılar erken geliyorsa “+0,5 sn”, geç geliyorsa “−0,5 sn”. Ayar ikinizde de uygulanır.'}))}
+ if(Y)kids.push(h('small',{class:'mu',text:'YouTube’un kendi altyazısı için videodaki CC düğmesini kullanabilirsin.'}));
+ else{const E=embList(),k=st&&SUBESID===st.sid?SUBE:'';if(E.length){kids.push(h('div',{class:'row wrap',style:'gap:6px;align-items:center'},h('small',{class:'mu',text:'Videoda gömülü:'}),...E.map(x=>bt(x.nm,()=>send({t:'subemb',k:x.k}),x.nm+' altyazısını aç',k===x.k?'on':'')),bt('Kapalı',()=>send({t:'subemb',k:''}),'Gömülü altyazıyı kapat',k?'':'on')))}
+  else if(pl.ready())kids.push(h('small',{class:'mu',text:'Bu videoda gömülü altyazı yok. Yazılar görüntünün üstüne basılıysa zaten görünür; değilse .srt ekleyebilirsin.'}))}
+ SUBEL.replaceChildren(...kids)}
+if(!window._subIv){window._subIv=setInterval(()=>{if(!SUBOV||!document.body.contains(SUBOV))return;let tx='';if(Y&&subMine()&&SUB.on&&st&&st.url){const t=pl.time()-(SUB.off||0),c=SUB.c;let lo=0,hi=c.length-1;while(lo<=hi){const m=(lo+hi)>>1;if(c[m][0]<=t)lo=m+1;else hi=m-1}for(let i=Math.max(0,hi-4);i<=hi;i++)if(i>=0&&c[i][0]<=t&&t<c[i][1])tx+=(tx?'\n':'')+c[i][2]}
+ if(SUBOV._t!==tx){SUBOV._t=tx;SUBOV.innerHTML=tx?tx.split('\n').map(l=>'<span>'+l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/&lt;(\/?[ibu])>/gi,'<$1>')+'</span>').join('<br>'):'';SUBOV.style.display=tx?'':'none'}},200)}
+
 const bad=m=>{const s=st;
 if(!FRY&&s&&s.url){FRY=1;if(syncEl){syncEl.textContent='Yeniden deneniyor…';syncEl.className='sync'}fst('load');setTimeout(()=>{if(st===s||(st&&st.sid===s.sid)){teardown();loadVid(st,true)}},2500);return}
 if(syncEl){syncEl.textContent='Açılamadı';syncEl.className='sync'}fst('err',m);toast('Video açılamadı ('+m+'). “Yeniden dene”ye bas; olmazsa başka link, Referer ya da YouTube/mp4 dene.',1)};
-function load(s){teardown();ov.classList.remove('on');ytNeed(0);YSK=null;if(s.url&&s.sid){FS={s:'',k:''};fst('load')}if(EMPTY)EMPTY.style.display=s.url?'none':'';if(!s.url){if(syncEl)syncEl.textContent='';return}const id=ytId(s.url);if(id)return loadYT(id);loadVid(s,false)}
+function load(s){teardown();try{subOnLoad(s)}catch(e){}ov.classList.remove('on');ytNeed(0);YSK=null;if(s.url&&s.sid){FS={s:'',k:''};fst('load')}if(EMPTY)EMPTY.style.display=s.url?'none':'';if(!s.url){if(syncEl)syncEl.textContent='';return}const id=ytId(s.url);if(id)return loadYT(id);loadVid(s,false)}
 function loadVid(s,vp){const my=lt,isH=/\.m3u8/i.test(s.url),src=vp?px(s.url,s.ref):s.url;let nr=0;
 const fail=w=>{if(my!=lt)return;if(vp)return bad(w);getPT().then(()=>{if(my!=lt)return;teardown();loadVid(s,true)}).catch(()=>bad(w))};
 if(isH&&!V.canPlayType('application/vnd.apple.mpegurl')){getHls().then(()=>{if(my!=lt)return;if(!window.Hls||!Hls.isSupported())return bad('tarayıcı HLS desteklemiyor');
-hls=new Hls({maxBufferLength:30,backBufferLength:30});hls.on(Hls.Events.ERROR,(_,d)=>{if(!d.fatal||my!=lt)return;if(!vp)return fail(d.details);if(d.type==Hls.ErrorTypes.NETWORK_ERROR&&nr++<3)hls.startLoad();else if(d.type==Hls.ErrorTypes.MEDIA_ERROR&&nr++<3)hls.recoverMediaError();else bad(d.details)});hls.loadSource(src);hls.attachMedia(V)}).catch(()=>bad('hls.js yüklenemedi'))}
+hls=new Hls({maxBufferLength:30,backBufferLength:30});hls.on(Hls.Events.ERROR,(_,d)=>{if(!d.fatal||my!=lt)return;if(!vp)return fail(d.details);if(d.type==Hls.ErrorTypes.NETWORK_ERROR&&nr++<3)hls.startLoad();else if(d.type==Hls.ErrorTypes.MEDIA_ERROR&&nr++<3)hls.recoverMediaError();else bad(d.details)});hls.loadSource(src);hls.attachMedia(V);try{subHls(hls)}catch(e){}}).catch(()=>bad('hls.js yüklenemedi'))}
 else{V.onerror=()=>fail('erişim/format');V.src=src;V.load()}}
 function withYT(cb){if(window.YT&&YT.Player)return cb();(window.ytq=window.ytq||[]).push(cb);if(!window.ytl){window.ytl=1;window.onYouTubeIframeAPIReady=()=>{(window.ytq||[]).forEach(f=>f());window.ytq=[]};const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';s.onerror=()=>{window.ytl=0;toast('YouTube yüklenemedi',1)};document.head.append(s)}}
 function loadYT(id){const my=lt;V.style.display='none';yw.style.display='block';yw.replaceChildren(h('div',{id:'ytp'}));yr=0;
@@ -4183,7 +4243,7 @@ w.onmessage=e=>{wsLast=Date.now();let m;try{m=JSON.parse(e.data)}catch(x){return
 if(m.t=='roomMode'){ROOM_NEW=0;const nm=[1,2,3].includes(+m.mode)?+m.mode:ROOM_MODE;if(nm!==ROOM_MODE){viewRoom(RM,nm,false);return}}
 else if(m.t=='st'){if(m.i){const rtt=Date.now()-m.i;NETMS=NETMS?Math.round(NETMS*.6+rtt*.4):rtt;netShow();smp.push([rtt,m.now+rtt/2-Date.now()]);if(smp.length>8)smp.shift();off=smp.reduce((a,b)=>b[0]<a[0]?b:a)[1]}else if(!smp.length)off=m.now-Date.now();onState(m)}
 else if(m.t=='pz')pzSet(m.pz);else if(m.t=='pzm')pzMove(m);else if(m.t=='chat')chatAdd(m);else if(m.t=='hist')m.c.forEach(chatAdd);
-else if(m.t=='sys'){chatSys(m.x);toast(m.x)}else if(m.t=='react')fly(m.e,m.n);else if(m.t=='wlchg'){clearTimeout(WLT);WLT=setTimeout(wlLoad,400)}else if(m.t=='vr')vRoster(m.r);else if(m.t=='vsig')vSig(m);else if(m.t=='vbye'){if(m.id!==VC.id){vDrop(m.id);vui()}}else if(m.t=='verr'){toast(m.e,1);vLeave(1)}
+else if(m.t=='sys'){chatSys(m.x);toast(m.x)}else if(m.t=='react')fly(m.e,m.n);else if(m.t=='sub')subOn(m);else if(m.t=='suboff'){if(SUB&&SUB.sid===m.sid){SUB.off=+m.off||0;subPaint()}}else if(m.t=='sube')subEmbOn(m);else if(m.t=='wlchg'){clearTimeout(WLT);WLT=setTimeout(wlLoad,400)}else if(m.t=='vr')vRoster(m.r);else if(m.t=='vsig')vSig(m);else if(m.t=='vbye'){if(m.id!==VC.id){vDrop(m.id);vui()}}else if(m.t=='verr'){toast(m.e,1);vLeave(1)}
 else if(m.t=='locks'){LK=m.lk;lockUI()}else if(m.t=='wpend'){if(wpSeq(m)){WPO=m.p&&m.p.length&&m.by!=ME.name?{mv:m.mv,p:new Map(m.p.map(x=>[x.i,x]))}:null;wgRender()}}else if(m.t=='wq')wqSet(m);else if(m.t=='wrej')wrej(m);else if(m.t=='wg')wgSet(m.g);else if(m.t=='dg')dSet(m.g);else if(m.t=='derr')dErr(m.e);else if(m.t=='bs')bSet(m.g);else if(m.t=='berr')toast(m.e,1);else if(m.t=='cs')cSet(m.g);else if(m.t=='fw')fwSet(m.g);else if(m.t=='fwp')fwPos(m);else if(m.t=='fwerr')toast(m.e,1);else if(m.t=='kt')ktSet(m.g);else if(m.t=='ktp')ktPos(m);else if(m.t=='kterr')toast(m.e,1);else if(m.t=='br')brSet(m.g);else if(m.t=='brp')brOnP(m);else if(m.t=='brh')brOnH(m);else if(m.t=='brk')brOnK(m);else if(m.t=='brx')brOnX(m);else if(m.t=='brd')brOnD(m);else if(m.t=='brg')brOnG(m);else if(m.t=='brpj')brOnPj(m);else if(m.t=='brb')brOnB(m);else if(m.t=='bri')brOnI(m);else if(m.t=='brerr')toast(m.e,1);else if(m.t=='yk')ykSet(m.g);else if(m.t=='ykerr')toast(m.e,1);else if(m.t=='adv')advOn(m);else if(m.t=='cerr')toast(m.e,1);else if(m.t=='werr'){wbusy(0);toast(m.e,1)}else if(m.t=='wprev')wprevSet(m);else if(m.t=='wchk')wgChk(m)};
 w.onerror=()=>{if(ws===w){const p=$('#pres');if(p)p.textContent='WebSocket bağlantı hatası; yeniden deneniyor…'}};
 w.onclose=ev=>{clearInterval(w.p);clearTimeout(w.tmo);if(ws!==w)return;
@@ -4226,7 +4286,7 @@ const u=h('input',{class:'in',id:'vu',type:'url',placeholder:'YouTube, .mp4 veya
 const rf=h('input',{class:'in',type:'url',placeholder:'https://kaynak-site.com/',inputmode:'url',autocapitalize:'none',autocorrect:'off'});
 const vt=h('input',{class:'in',id:'vt',placeholder:'Film adı (isteğe bağlı), örn. Spider-Man',maxlength:100,enterkeyhint:'go'});vt.onkeydown=e=>{if(e.key=='Enter')ld()};FTT=h('div',{class:'ftt',style:'display:none'});
 const ld=()=>{let v=fixLink(u.value.trim());if(v!==u.value.trim())u.value=v;if(!/^https?:\/\//i.test(v))return toast('Link http:// veya https:// ile başlamalı',1);send({t:'set',url:v,ref:rf.value.trim(),title:vt.value.trim()});toast('Yükleniyor…')};u.onkeydown=e=>{if(e.key=='Enter')ld()};
-const fp=h('div',{class:'card',id:'fp'},FTT,YTH,h('div',{class:'stage',id:'stg'},V,yw,EMPTY,syncEl,holdEl),FLS,h('div',{class:'row'},u,h('button',{class:'btn',onclick:ld},ic('play',16),'Yükle')),vt,h('details',{},h('summary',{text:'Gelişmiş: Referer (link açılmazsa)'}),rf),h('small',{text:'Oynat, durdur ve ileri sarma ikinizde de anında uygulanır. Biri takılırsa diğeri bekler.'}),wlBox());
+const fp=h('div',{class:'card',id:'fp'},FTT,YTH,h('div',{class:'stage',id:'stg'},V,yw,EMPTY,syncEl,holdEl,subOv()),FLS,subBox(),h('div',{class:'row'},u,h('button',{class:'btn',onclick:ld},ic('play',16),'Yükle')),vt,h('details',{},h('summary',{text:'Gelişmiş: Referer (link açılmazsa)'}),rf),h('small',{text:'Oynat, durdur ve ileri sarma ikinizde de anında uygulanır. Biri takılırsa diğeri bekler.'}),wlBox());
 const cnt=h('div',{class:'chips'},[100,250,500,1000].map(n=>h('button',{class:n==PN?'on':'','data-n':n,onclick:e=>{PN=n;cnt.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x==e.currentTarget))}},n+' parça')));
 const pf=h('input',{type:'file',accept:'image/*',style:'display:none',onchange:e=>{if(e.target.files[0])pnew(e.target.files[0]);e.target.value=''}});
 const cv=h('canvas',{id:'pcv'});
@@ -5691,6 +5751,7 @@ export class Do {
       sv.send(JSON.stringify({ t: 'hist', c: this.chat.slice(-40) }));
       sv.send(JSON.stringify({ t: 'vr', r: this.vroster() }));
       sv.send(JSON.stringify({ t: 'locks', lk: this.lk }));
+      if (this.can('film', att)) await this.subJoin(sv);
       if (this.pzp && this.can('puzzle', att)) sv.send(JSON.stringify({ t: 'pz', pz: { ...this.pzp, img: await this.img() } }));
       if (this.can('games', att)) await this.gameJoin(att.n);
       if (this.can('games', att)) { if (this.dg) sv.send(JSON.stringify({ t: 'dg', g: dView(this.dg, att.n) })); if (this.bs) sv.send(JSON.stringify({ t: 'bs', g: bView(this.bs, att.n) })); if (this.cs) sv.send(JSON.stringify({ t: 'cs', g: cView(this.cs, att.n) })); if (this.fw) sv.send(JSON.stringify({ t: 'fw', g: fwView(this.fw, att.n) })); if (this.kt) sv.send(JSON.stringify({ t: 'kt', g: this.ktView(att.n) })); if (this.br) sv.send(JSON.stringify({ t: 'br', g: this.brView() })); if (this.yk) sv.send(JSON.stringify({ t: 'yk', g: this.ykView(att.n) })) }
@@ -6010,6 +6071,32 @@ export class Do {
     return this.pzi;
   }
   exp(now) { return this.st.pos + (this.st.playing && !this.st.held ? (now - this.st.at) / 1000 : 0) }
+  // ---------- altyazı: odadaki herkese aynı altyazı (dosyadan) ve gömülü altyazı seçimi ----------
+  async subClear() { const S = this.s.storage, old = await S.get('subm'); const ks = ['subm', 'sube']; if (old) for (let i = 0; i < old.n; i++) ks.push('subc:' + i); await S.delete(ks) }
+  async subMsg(ws, a, n, T, m) {
+    const S = this.s.storage, st = this.st; if (!st || !st.url || !st.sid) return;
+    if (T == 'subset') {
+      if (m.sid !== st.sid) return; const cues = [];
+      for (const x of (Array.isArray(m.c) ? m.c : []).slice(0, 8000)) { if (!Array.isArray(x)) continue; const s = +x[0], e = +x[1], tx = String(x[2] || '').replace(/[\u0000-\u0008\u000b-\u001f]/g, '').slice(0, 400); if (!(s >= 0) || !(e > s) || e > 1e6 || !tx.trim()) continue; cues.push([Math.round(s * 1000) / 1000, Math.round(e * 1000) / 1000, tx]) }
+      if (!cues.length) return; const name = String(m.name || '').replace(/[\u0000-\u001f]/g, '').trim().slice(0, 80);
+      const txt = JSON.stringify(cues); if (txt.length > 900000) { try { ws.send(JSON.stringify({ t: 'sys', x: 'Altyazı dosyası çok büyük' })) } catch (e) { } return }
+      await this.subClear(); const put = {}, parts = []; for (let i = 0; i < txt.length; i += 50000) parts.push(txt.slice(i, i + 50000));
+      const meta = { sid: st.sid, name, by: n, n: parts.length, off: 0 }; put.subm = meta; parts.forEach((p, i) => put['subc:' + i] = p);
+      const ks = Object.keys(put); for (let i = 0; i < ks.length; i += 100) { const o = {}; for (const k of ks.slice(i, i + 100)) o[k] = put[k]; await S.put(o) }
+      this.all(JSON.stringify({ t: 'sub', sid: st.sid, name, by: n, off: 0, c: cues }));
+      this.all(JSON.stringify({ t: 'sube', sid: st.sid, k: '' }));
+      return this.all(JSON.stringify({ t: 'sys', x: '💬 ' + n + ' altyazı ekledi' + (name ? ': ' + name : '') }));
+    }
+    if (T == 'subrm') { await this.subClear(); return this.all(JSON.stringify({ t: 'sub', sid: st.sid, c: null, by: n })) }
+    if (T == 'suboff') { const meta = await S.get('subm'); if (!meta || meta.sid !== st.sid) return; meta.off = Math.max(-120, Math.min(120, Math.round((+m.off || 0) * 10) / 10)); await S.put('subm', meta); return this.all(JSON.stringify({ t: 'suboff', sid: st.sid, off: meta.off })) }
+    if (T == 'subemb') { const k = String(m.k || '').slice(0, 120); await S.put('sube', { sid: st.sid, k }); return this.all(JSON.stringify({ t: 'sube', sid: st.sid, k, by: n })) }
+  }
+  async subJoin(sv) {
+    try { const S = this.s.storage, st = this.st; if (!st || !st.sid) return; const meta = await S.get('subm');
+      if (meta && meta.sid === st.sid) { const ks = []; for (let i = 0; i < meta.n; i++) ks.push('subc:' + i); let txt = ''; for (let i = 0; i < ks.length; i += 100) { const g = await S.get(ks.slice(i, i + 100)); for (const k of ks.slice(i, i + 100)) txt += g.get(k) || '' } sv.send(JSON.stringify({ t: 'sub', sid: meta.sid, name: meta.name, by: meta.by, off: meta.off || 0, c: JSON.parse(txt), j: 1 })) }
+      const e = await S.get('sube'); if (e && e.sid === st.sid) sv.send(JSON.stringify({ t: 'sube', sid: e.sid, k: e.k, j: 1 }));
+    } catch (e) { }
+  }
   hold(now) {
     const hr = {}; const hb = [], sid = this.st && this.st.sid; for (const w of this.socks()) { if (this.tg(w).includes('admin')) continue; const a = w.deserializeAttachment() || {};
       const loading = a.fs && a.fs.k === sid && a.fs.s === 'load' && now - a.fs.t < 20000, tapw = a.fs && a.fs.k === sid && a.fs.s === 'tap' && now - a.fs.t < 45000, failed = a.fs && a.fs.k === sid && a.fs.s === 'err';
@@ -6440,6 +6527,7 @@ export class Do {
       a.fs = { s, k: m.k, e: String(m.e || '').slice(0, 60), t: now }; if (s != 'load') a.b = 0; ws.serializeAttachment(a);
       if (this.hold(now)) await S.put('st', this.st); return this.bcast();
     }
+    if (T == 'subset' || T == 'subrm' || T == 'suboff' || T == 'subemb') { if (!this.can('film', a)) return this.deny(ws); return this.subMsg(ws, a, n, T, m) }
     if (T == 'buf') { a.b = m.b ? 1 : 0; a.bt = now; if (a.b) { a.hc = (a.hc || []).filter(t => now - t < 180000); a.hc.push(now); if (a.hc.length > 3 && !(a.nh && now - a.nh < 300000)) { a.nh = now; try { ws.send(JSON.stringify({ t: 'sys', x: 'Bağlantın sık takılıyor; herkes durmasın diye film devam ediyor, video seni kendiliğinden yakalayacak.' })) } catch (e) { } } } ws.serializeAttachment(a); if (this.hold(now)) await S.put('st', this.st); return this.bcast() }
     if (T == 'chat') {
       const x = String(m.x || '').trim().slice(0, 500); if (!x) return; const cid = String(m.cid || '').slice(0, 24);
@@ -6539,7 +6627,7 @@ export class Do {
     if (T == 'set') {
       const url = String(m.url || '').trim().slice(0, 2000); if (!/^https?:\/\//i.test(url)) return;
       let ref = String(m.ref || '').trim().slice(0, 500); if (ref && !/^https?:\/\//i.test(ref)) ref = '';
-      await this.wlSave(); this.fd = null;
+      await this.wlSave(); this.fd = null; try { await this.subClear() } catch (e) { }
       const title = String(m.title || '').replace(/[\u0000-\u001f]/g, '').trim().slice(0, 100);
       ns = { url, ref, title, playing: false, held: false, pos: Math.max(0, Math.min(1e6, +m.pos || 0)), at: now, by: n };
       this.socks().forEach(w => { const q = w.deserializeAttachment() || {}; q.b = 0; delete q.fs; w.serializeAttachment(q) });
