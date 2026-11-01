@@ -4380,11 +4380,11 @@ let ytLast=0;function ytPoll(){if(!Y||!yr||!st)return;const t=Y.getCurrentTime()
 function bufStart(){if(!st||!st.playing||bufT||bs)return;bufT=setTimeout(()=>{bufT=0;if(!bs){bs=1;send({t:'buf',b:1})}},1300)}
 function bufEnd(){clearTimeout(bufT);bufT=0;if(bs){bs=0;send({t:'buf',b:0})}}
 function tick(){if(!RM||!st||!st.url||!pl.ready())return;
-if(syncEl&&st.playing&&!st.held){const d=pl.time()-exp(),ok=Math.abs(d)<(Y?.9:.6);syncEl.textContent=ok?'● Senkron':'Eşitleniyor…';syncEl.className='sync'+(ok?' ok':'')}else if(syncEl&&FS.s!='err')syncEl.textContent='';
+if(syncEl&&st.playing&&!st.held){const d=pl.time()-exp(),solo=(prevWho||[]).length<=1,ok=solo||Math.abs(d)<(Y?.9:1.2);syncEl.textContent=solo?'':ok?'● Senkron':'Eşitleniyor…';syncEl.className='sync'+(ok?' ok':'')}else if(syncEl&&FS.s!='err')syncEl.textContent='';
 if(Date.now()-uact<1200||pl.busy())return;
 const play=st.playing&&!st.held,e=exp(),d=pl.time()-e;
 if(!play){if(!pl.paused()){pl.pause()}if(Math.abs(d)>.7)pl.seek(e);pl.rate(1);return}
-if(Y){const n=Date.now(),ps=Y.getPlayerState();if(YSK&&!YSK.m&&ps==1){if(!YSK.r)YSK.r=n;else if(n-YSK.r>700){YSK.m=1;YLEAD=Math.max(0,Math.min(3,(YLEAD+(YLEAD-d))/2))}}if(ps!=3&&Math.abs(d)>.9&&(!YSK||(YSK.m&&n-YSK.t>2000)||n-YSK.t>6000)){YSK={t:n,m:0,r:0};pl.seek(e+YLEAD)}}else if(Math.abs(d)>1.0)pl.seek(e+.12);else pl.rate(Math.abs(d)<.05?1:Math.max(.92,Math.min(1.08,1-d*.4)));
+if(Y){const n=Date.now(),ps=Y.getPlayerState();if(YSK&&!YSK.m&&ps==1){if(!YSK.r)YSK.r=n;else if(n-YSK.r>700){YSK.m=1;YLEAD=Math.max(0,Math.min(3,(YLEAD+(YLEAD-d))/2))}}if(ps!=3&&Math.abs(d)>.9&&(!YSK||(YSK.m&&n-YSK.t>2000)||n-YSK.t>6000)){YSK={t:n,m:0,r:0};pl.seek(e+YLEAD)}}else{const n=Date.now(),ad=Math.abs(d),solo=(prevWho||[]).length<=1;if(solo){pl.rate(1);if(ad>3&&n-(window._soloRep||0)>8000){window._soloRep=n;uact=n;send({t:'seek',pos:pl.time()})}}else if(ad>4&&n-(window._lastSk||0)>10000){window._lastSk=n;pl.seek(e+.15)}else{const r=ad<.3?1:Math.max(.92,Math.min(1.08,1-d*.05));if(ad<.12||Math.abs(V.playbackRate-r)>.004)pl.rate(ad<.12?1:r)}}
 if(pl.paused())pl.play()}
 function holdUI(){if(!holdEl)return;const on=st&&st.held;holdEl.style.display=on?'flex':'none';if(!on)return;const nm=n=>n==ME.name?'Sen':n,tap=hb.filter(n=>HR[n]=='tap'),buf=hb.filter(n=>HR[n]=='buf'),ld=hb.filter(n=>!HR[n]||HR[n]=='load');
  const p=[];if(tap.length)p.push(tap.includes(ME.name)?'Videoya bir kez dokunman gerekiyor, herkes seni bekliyor':tap.map(nm).join(' & ')+' ekrana dokunacak, bekliyoruz');if(ld.length)p.push(ld.map(nm).join(' & ')+' yükleniyor');if(buf.length)p.push(buf.map(nm).join(' & ')+' takıldı, bekliyoruz');holdEl.lastChild.textContent=(p.join(' · ')||'Bekliyoruz')+'…'}
