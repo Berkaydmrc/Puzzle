@@ -71,6 +71,7 @@ input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:d
 @keyframes fplfl{0%{opacity:0}15%{opacity:1}70%{opacity:1}100%{opacity:0}}
 .stage.isfs{border-radius:0;border:0;aspect-ratio:auto;width:100%;height:100%}.stage.isfs video{width:100%;height:100%}
 .subbar.pulse{box-shadow:0 0 0 3px var(--ac)}
+body.pfsb .mo{z-index:400}.fplsyn{font-size:1.05rem}
 .fplmic.live{color:#fff;background:#e5484d;border-radius:50%}.fplmic.wait{opacity:.6}
 .stage.pfs{position:fixed;inset:0;z-index:300;border-radius:0;border:0;aspect-ratio:auto;width:100vw;height:100vh;height:100dvh;background:#000}.stage.pfs video{width:100%;height:100%;object-fit:contain}
 .stage.pfs .fplbot{padding-bottom:max(6px,env(safe-area-inset-bottom));padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
@@ -80,6 +81,7 @@ body.pfsb{overflow:hidden}
 @media (max-width:420px){.fplt{display:none}.fplb{min-width:36px}}
 .subbar{display:grid;gap:8px;padding:10px 12px;border:1px solid var(--bd);border-radius:12px;background:var(--s1)}
 .subbar .btn.on{border-color:var(--ac);color:var(--ac)}
+.subpick{text-align:left;justify-content:flex-start;white-space:normal;line-height:1.35;font-weight:600}
 .subo{min-width:52px;text-align:center;font-variant-numeric:tabular-nums}
 .subov{position:absolute;left:4%;right:4%;bottom:11%;text-align:center;pointer-events:none;z-index:3;font-weight:700;line-height:1.35;font-size:calc(var(--subfs,1) * clamp(14px,3.8vw,26px));color:#fff}
 .subov span{background:rgba(0,0,0,.62);padding:1px 8px;border-radius:4px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
@@ -4260,7 +4262,7 @@ function subTrack(){if(!V)return null;if(SUBT&&SUBT._v===V)return SUBT;SUBT=null
 const subMine=()=>SUB&&st&&SUB.sid===st.sid;
 function subCss(){let s=$('#subcss');if(!s){s=h('style',{id:'subcss'});document.head.append(s)}s.textContent='video::cue{font-size:calc('+SUBFS+' * max(15px,3.4vw));line-height:1.3;color:#fff;background:rgba(0,0,0,.62);font-weight:600}';if(SUBOV)SUBOV.style.setProperty('--subfs',SUBFS)}
 function subPaint(){const t=subTrack();if(t){try{const c=t.cues;if(c)for(let i=c.length-1;i>=0;i--)t.removeCue(c[i])}catch(e){}
-  const ek=st&&SUBESID===st.sid?SUBE:'',useE=ek&&EMBC&&EMBU===ek;if(useE||(subMine()&&SUB.on&&!Y&&!ek)){const o=useE?0:(SUB.off||0),VC=window.VTTCue||window.TextTrackCue;for(const [s,e,x] of (useE?EMBC:SUB.c)){if(e+o<=0)continue;try{t.addCue(new VC(Math.max(0,s+o),e+o,x))}catch(er){}}t.mode='showing'}else t.mode='disabled'}
+  const ek=st&&SUBESID===st.sid?SUBE:'',useE=ek&&EMBC&&EMBU===ek;if(useE||(subMine()&&SUB.on&&!Y&&!ek)){const o=useE?0:(SUB.off||0),kk=useE?1:(SUB.k||1),VC=window.VTTCue||window.TextTrackCue;for(const [s,e,x] of (useE?EMBC:SUB.c)){const ss=s*kk+o,ee=e*kk+o;if(ee<=0)continue;try{t.addCue(new VC(Math.max(0,ss),ee,x))}catch(er){}}t.mode='showing'}else t.mode='disabled'}
  subCss();subUI()}
 function subLang(l,n){const L={tr:'Türkçe',tur:'Türkçe',en:'English',eng:'English',de:'Deutsch',ger:'Deutsch',fr:'Français',fre:'Français',es:'Español',spa:'Español',ar:'العربية',ara:'العربية',ru:'Русский',rus:'Русский',it:'Italiano',ita:'Italiano'};l=String(l||'').toLowerCase();return String(n||'').trim()||L[l]||L[l.split('-')[0]]||l||'Altyazı'}
 function embList(){const r=[];if(hls&&hls.subtitleTracks&&hls.subtitleTracks.length)hls.subtitleTracks.forEach(t=>r.push({k:(t.lang||'')+'|'+(t.name||''),nm:subLang(t.lang,t.name)}));
@@ -4280,24 +4282,33 @@ function embApply(){const k=st&&SUBESID===st.sid?SUBE:'';const sx=k&&!(hls&&hls.
 function subHls(H){if(!H||!window.Hls)return;const f=()=>{embApply();subUI()};H.on(Hls.Events.SUBTITLE_TRACKS_UPDATED,f);H.on(Hls.Events.MANIFEST_PARSED,f)}
 function subOnLoad(s){if(SUB&&SUB.sid!==s.sid)SUB=null;if(SUBESID!==s.sid){SUBE='';SUBESID=s.sid||''}
  if(V&&!V._subb){V._subb=1;try{V.textTracks.addEventListener('addtrack',()=>{embApply();subUI()})}catch(e){}V.addEventListener('loadedmetadata',()=>{embApply();subUI()});V.addEventListener('webkitbeginfullscreen',subPaint)}setTimeout(subPaint,0);if(!/youtu/i.test(s.url||''))embScan(s)}
-function subOn(m){if(!m.c){if(SUB&&m.by&&m.by!==ME.name)toast(m.by+' altyazıyı kaldırdı');SUB=null}else{const on=SUB&&SUB.sid===m.sid?SUB.on:true;SUB={sid:m.sid,name:m.name||'',by:m.by||'',off:+m.off||0,c:m.c,on};if(!m.j&&m.by===ME.name)toast('Altyazı eklendi, herkeste görünüyor')}subPaint()}
+function subOn(m){if(!m.c){if(SUB&&m.by&&m.by!==ME.name)toast(m.by+' altyazıyı kaldırdı');SUB=null}else{const on=SUB&&SUB.sid===m.sid?SUB.on:true;SUB={sid:m.sid,name:m.name||'',by:m.by||'',off:+m.off||0,k:+m.k||1,c:m.c,on,anc:SUB&&SUB.sid===m.sid?SUB.anc:[]};if(!m.j&&m.by===ME.name)toast('Altyazı eklendi, herkeste görünüyor')}subPaint()}
 function subEmbOn(m){SUBE=m.k||'';SUBESID=m.sid||'';if(!m.j&&m.by&&m.by!==ME.name)toast(m.by+(SUBE?' gömülü altyazıyı açtı':' gömülü altyazıyı kapattı'));embApply();subPaint()}
+const SUBK1=25/23.976;
+function subSync(off,k){if(!subMine())return;SUB.off=Math.round(off*100)/100;SUB.k=Math.round((k||1)*1e5)/1e5;subPaint();send({t:'suboff',sid:st.sid,off:SUB.off,k:SUB.k})}
+function subNow(){if(!subMine()||!pl.ready())return toast('Önce filmi başlat',1);const T=pl.time()-.5,k=SUB.k||1,o=SUB.off||0,src=(T-o)/k,c=SUB.c;let i=c.findIndex(q=>q[0]>src);if(i<0)i=c.length;
+ const lo=Math.max(0,i-4),hi=Math.min(c.length,i+3),pick=[];for(let j=lo;j<hi;j++)pick.push(j);
+ const m=modal('Az önce hangi satır söylendi?',h('div',{class:'stack',style:'gap:6px'},h('small',{class:'mu',text:'Duyduğun satıra dokun, altyazı tam o ana oturtulur. Film durmaz.'}),...pick.map(j=>h('button',{type:'button',class:'btn sec subpick',onclick:()=>{m.remove();subAnchor(j,T)}},String(c[j][2]).replace(/<[^>]+>/g,'').replace(/\n/g,' ').slice(0,120)))),[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Vazgeç')])}
+function subAnchor(j,T){const s0=SUB.c[j][0];let A=(SUB.anc||[]).filter(a=>Math.abs(a.t-T)>90);A.push({s:s0,t:T});A.sort((a,b)=>a.t-b.t);if(A.length>2)A=[A[0],A[A.length-1]];SUB.anc=A;
+ if(A.length==2&&A[1].s>A[0].s){const k=(A[1].t-A[0].t)/(A[1].s-A[0].s);if(k>.85&&k<1.15){subSync(A[0].t-A[0].s*k,k);return toast('Altyazı oturtuldu, kayma hızı da düzeltildi ✓')}}
+ const k=SUB.k||1;subSync(T-s0*k,k);toast(A.length<2?'Altyazı bu ana oturtuldu ✓ Film ilerledikçe kayarsa ilerde bir kez daha yap.':'Altyazı oturtuldu ✓')}
 function subOv(){SUBOV=h('div',{class:'subov',style:'display:none'});subCss();return SUBOV}
 function subBox(){SUBEL=h('div',{class:'subbar'});setTimeout(subUI,0);return SUBEL}
 function subUI(){if(!SUBEL)return;if(!st||!st.url){SUBEL.replaceChildren();SUBEL.style.display='none';return}SUBEL.style.display='';
  const bt=(t,fn,l,cl)=>h('button',{type:'button',class:'btn sec sm'+(cl?' '+cl:''),'aria-label':l||t,onclick:fn},t),kids=[];
  const mine=subMine();kids.push(h('div',{class:'row wrap',style:'gap:6px;align-items:center'},h('b',{text:'💬 Altyazı'}),bt(mine?'Değiştir':'＋ Altyazı ekle (.srt)',subPick,'Altyazı dosyası seç',mine?'':'on')));
- if(mine){const o=SUB.off||0,sh=d=>{SUB.off=Math.round((o+d)*10)/10;subPaint();send({t:'suboff',sid:st.sid,off:SUB.off})};
+ if(mine){const o=SUB.off||0,kk=SUB.k||1,sh=d=>subSync(o+d,kk),kset=k2=>{const T=pl.ready()?pl.time():0,src=(T-o)/kk;k2=Math.max(.85,Math.min(1.15,k2));subSync(Math.abs(k2-1)<.0005?o+src*(kk-1):T-src*k2,Math.abs(k2-1)<.0005?1:k2)};
   kids.push(h('small',{class:'mu',text:(SUB.name||'Altyazı')+' · '+(SUB.by==ME.name?'sen':SUB.by)+' ekledi · '+SUB.c.length+' satır'+(SUBE?' (gömülü altyazı açıkken gizli)':'')}));
   kids.push(h('div',{class:'row wrap',style:'gap:6px;align-items:center'},bt('−0,5 sn',()=>sh(-.5),'Altyazıyı yarım saniye erkene al'),h('small',{class:'subo',text:(o>0?'+':'')+o.toFixed(1).replace('.',',')+' sn'}),bt('+0,5 sn',()=>sh(.5),'Altyazıyı yarım saniye geciktir'),
    bt('A−',()=>{SUBFS=Math.max(.6,Math.round((SUBFS-.15)*100)/100);try{localStorage.subfs=SUBFS}catch(e){}subCss()},'Yazıyı küçült'),bt('A+',()=>{SUBFS=Math.min(2.2,Math.round((SUBFS+.15)*100)/100);try{localStorage.subfs=SUBFS}catch(e){}subCss()},'Yazıyı büyüt'),
    bt(SUB.on?'Gizle':'Göster',()=>{SUB.on=!SUB.on;subPaint()},'Altyazıyı bende gizle/göster'),bt('Kaldır',()=>send({t:'subrm'}),'Altyazıyı herkesten kaldır')));
-  kids.push(h('small',{class:'mu',text:'Yazılar erken geliyorsa “+0,5 sn”, geç geliyorsa “−0,5 sn”. Ayar ikinizde de uygulanır.'}))}
+  kids.push(h('div',{class:'row wrap',style:'gap:6px;align-items:center'},bt('🎯 Şimdi konuştu',subNow,'Az önce söylenen satırı seçip altyazıyı oturt','on'),bt('Gittikçe erken geliyor',()=>kset(kk*SUBK1),'Altyazıyı film boyunca yavaşlat'),bt('Gittikçe geç geliyor',()=>kset(kk/SUBK1),'Altyazıyı film boyunca hızlandır'),Math.abs(kk-1)>.0005?bt('Kaymayı sıfırla',()=>kset(1),'Kayma düzeltmesini kaldır'):null));
+  kids.push(h('small',{class:'mu',text:(Math.abs(kk-1)>.0005?'Kayma düzeltmesi açık (×'+kk.toFixed(4).replace('.',',')+'). ':'')+'En kolayı: bir karakter konuşunca “🎯 Şimdi konuştu”ya bas ve duyduğun satırı seç. Film ilerledikçe kayarsa ilerde bir kez daha yap; hız farkı da kendiliğinden düzelir. Ayarlar ikinizde de uygulanır.'}))}
  if(Y)kids.push(h('small',{class:'mu',text:'YouTube’un kendi altyazısı için videodaki CC düğmesini kullanabilirsin.'}));
  else{const E=embList(),k=st&&SUBESID===st.sid?SUBE:'';if(E.length){kids.push(h('div',{class:'row wrap',style:'gap:6px;align-items:center'},h('small',{class:'mu',text:'Videoda gömülü:'}),...E.map(x=>bt(x.nm,()=>send({t:'subemb',k:x.k}),x.nm+' altyazısını aç',k===x.k?'on':'')),bt('Kapalı',()=>send({t:'subemb',k:''}),'Gömülü altyazıyı kapat',k?'':'on')))}
   else if(pl.ready())kids.push(h('small',{class:'mu',text:'Bu videoda gömülü altyazı yok. Yazılar görüntünün üstüne basılıysa zaten görünür; değilse .srt ekleyebilirsin.'}))}
  SUBEL.replaceChildren(...kids)}
-if(!window._subIv){window._subIv=setInterval(()=>{if(!SUBOV||!document.body.contains(SUBOV))return;let tx='';if(Y&&subMine()&&SUB.on&&st&&st.url){const t=pl.time()-(SUB.off||0),c=SUB.c;let lo=0,hi=c.length-1;while(lo<=hi){const m=(lo+hi)>>1;if(c[m][0]<=t)lo=m+1;else hi=m-1}for(let i=Math.max(0,hi-4);i<=hi;i++)if(i>=0&&c[i][0]<=t&&t<c[i][1])tx+=(tx?'\n':'')+c[i][2]}
+if(!window._subIv){window._subIv=setInterval(()=>{if(!SUBOV||!document.body.contains(SUBOV))return;let tx='';if(Y&&subMine()&&SUB.on&&st&&st.url){const t=(pl.time()-(SUB.off||0))/(SUB.k||1),c=SUB.c;let lo=0,hi=c.length-1;while(lo<=hi){const m=(lo+hi)>>1;if(c[m][0]<=t)lo=m+1;else hi=m-1}for(let i=Math.max(0,hi-4);i<=hi;i++)if(i>=0&&c[i][0]<=t&&t<c[i][1])tx+=(tx?'\n':'')+c[i][2]}
  if(SUBOV._t!==tx){SUBOV._t=tx;SUBOV.innerHTML=tx?tx.split('\n').map(l=>'<span>'+l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/&lt;(\/?[ibu])>/gi,'<$1>')+'</span>').join('<br>'):'';SUBOV.style.display=tx?'':'none'}},200)}
 
 const bad=m=>{const s=st;
@@ -4311,13 +4322,14 @@ const pic=(k,s)=>'<svg viewBox="0 0 24 24" width="'+(s||22)+'" height="'+(s||22)
 function plCtl(){const B=(cl,l,html)=>h('button',{type:'button',class:cl,'aria-label':l,html:html||''});
  const big=B('fplbig','Oynat',pic('play',34)),play=B('fplb','Oynat',pic('play')),rw=B('fplb fplt','10 saniye geri','−10'),fw=B('fplb fplt','10 saniye ileri','+10'),tm=h('span',{class:'fpltm',text:'0:00 / 0:00'}),
   buf=h('i',{class:'fplbuf'}),fill=h('i',{class:'fplfill'}),knob=h('b',{class:'fplknob'}),tip=h('span',{class:'fpltip'}),bar=h('div',{class:'fplbar'},h('i',{class:'fpltrack'}),buf,fill,knob,tip),
-  vol=B('fplb','Sesi kapat/aç',pic('vol')),mic=B('fplb fplmic','Mikrofon',pic('mic')),cc=B('fplb','Altyazı',pic('cc')),fs=B('fplb','Tam ekran',pic('fs')),flash=h('div',{class:'fplflash'});
- const root=h('div',{class:'fpl on'},flash,big,h('div',{class:'fplbot'},bar,h('div',{class:'fplrow'},play,rw,fw,tm,h('span',{class:'grow'}),mic,cc,vol,fs)));
- PCT={root,big,play,tm,buf,fill,knob,tip,bar,vol,cc,fs,flash,mic,hideT:0,drag:null};
+  vol=B('fplb','Sesi kapat/aç',pic('vol')),mic=B('fplb fplmic','Mikrofon',pic('mic')),syn=B('fplb fplsyn','Altyazıyı oturt: az önce söylenen satırı seç','🎯'),cc=B('fplb','Altyazı',pic('cc')),fs=B('fplb','Tam ekran',pic('fs')),flash=h('div',{class:'fplflash'});
+ const root=h('div',{class:'fpl on'},flash,big,h('div',{class:'fplbot'},bar,h('div',{class:'fplrow'},play,rw,fw,tm,h('span',{class:'grow'}),syn,mic,cc,vol,fs)));
+ PCT={root,big,play,tm,buf,fill,knob,tip,bar,vol,cc,fs,flash,mic,syn,hideT:0,drag:null};
  const dur=()=>V&&isFinite(V.duration)?V.duration:0,show=()=>{root.classList.add('on');clearTimeout(PCT.hideT);if(V&&!V.paused)PCT.hideT=setTimeout(()=>{if(V&&!V.paused&&!PCT.drag)root.classList.remove('on')},2800)};
  const toggle=()=>{if(!V)return;if(V.paused){const p=V.play();if(p&&p.catch)p.catch(()=>{})}else V.pause();show()},jump=d=>{if(!V||!dur())return;V.currentTime=Math.max(0,Math.min(dur()-.5,V.currentTime+d));fl(d>0?'+'+d+' sn':'−'+(-d)+' sn');show()};
  const fl=t=>{flash.textContent=t;flash.classList.remove('go');void flash.offsetWidth;flash.classList.add('go')};
  big.onclick=e=>{e.stopPropagation();toggle()};play.onclick=e=>{e.stopPropagation();toggle()};rw.onclick=e=>{e.stopPropagation();jump(-10)};fw.onclick=e=>{e.stopPropagation();jump(10)};
+ syn.onclick=e=>{e.stopPropagation();try{subNow()}catch(x){}show()};
  mic.onclick=e=>{e.stopPropagation();if(!VC.on)return;if(VC.fp){if(VC.live)vMicOff();else{vMicOn();fl('🎙 Konuşabilirsin')}}else{vMute(!VC.mu);fl(VC.mu?'Mikrofon kapalı':'Mikrofon açık')}show()};
  vol.onclick=e=>{e.stopPropagation();if(V){V.muted=!V.muted;fl(V.muted?'Ses kapalı':'Ses açık')}show()};
  cc.onclick=e=>{e.stopPropagation();if(typeof subMine=='function'&&subMine()){SUB.on=!SUB.on;subPaint();fl(SUB.on?'Altyazı açık':'Altyazı kapalı')}else{const E=typeof embList=='function'?embList():[];const k=st&&SUBESID===st.sid?SUBE:'';if(E.length){send({t:'subemb',k:k?'':E[0].k});fl(k?'Altyazı kapalı':E[0].nm)}else{const b=$('.subbar');if(b){b.scrollIntoView({block:'center',behavior:'smooth'});b.classList.add('pulse');setTimeout(()=>b.classList.remove('pulse'),1400)}toast('Altyazı eklemek için aşağıdaki “Altyazı ekle”ye bas')}}show()};
@@ -4342,6 +4354,7 @@ function plRender(){const P=PCT;if(!P||!V)return;const vis=!Y&&st&&st.url&&V.sty
  P.tm.textContent=pfmt(c)+' / '+(d?pfmt(d):'--:--');P.tip.textContent=P.drag?pfmt(c):'';P.tip.style.left=(f*100).toFixed(2)+'%';
  const pz=V.paused;P.play.innerHTML=pic(pz?'play':'pause');P.play.setAttribute('aria-label',pz?'Oynat':'Durdur');P.big.style.display=pz?'':'none';P.vol.innerHTML=pic(V.muted?'mute':'vol');
  P.mic.style.display=VC.on?'':'none';if(VC.on){const live=VC.fp?!!VC.live:!VC.mu;P.mic.innerHTML=pic(live?'mic':'micoff');P.mic.classList.toggle('live',live);P.mic.classList.toggle('wait',!!VC.mon)}
+ P.syn.style.display=typeof subMine=='function'&&subMine()&&SUB.on&&!SUBE?'':'none';
  const ccOn=(typeof subMine=='function'&&subMine()&&SUB.on&&!SUBE)||(st&&SUBESID===st.sid&&SUBE);P.cc.classList.toggle('on',!!ccOn)}
 if(!window._pcIv){window._pcIv=setInterval(()=>{try{plRender()}catch(e){}},500)}
 
@@ -4393,7 +4406,7 @@ w.onmessage=e=>{wsLast=Date.now();let m;try{m=JSON.parse(e.data)}catch(x){return
 if(m.t=='roomMode'){ROOM_NEW=0;const nm=[1,2,3].includes(+m.mode)?+m.mode:ROOM_MODE;if(nm!==ROOM_MODE){viewRoom(RM,nm,false);return}}
 else if(m.t=='st'){if(m.i){const rtt=Date.now()-m.i;NETMS=NETMS?Math.round(NETMS*.6+rtt*.4):rtt;netShow();smp.push([rtt,m.now+rtt/2-Date.now()]);if(smp.length>8)smp.shift();off=smp.reduce((a,b)=>b[0]<a[0]?b:a)[1]}else if(!smp.length)off=m.now-Date.now();onState(m)}
 else if(m.t=='pz')pzSet(m.pz);else if(m.t=='pzm')pzMove(m);else if(m.t=='chat')chatAdd(m);else if(m.t=='hist')m.c.forEach(chatAdd);
-else if(m.t=='sys'){chatSys(m.x);toast(m.x)}else if(m.t=='va')vfbRecv(m);else if(m.t=='react')fly(m.e,m.n);else if(m.t=='sub')subOn(m);else if(m.t=='suboff'){if(SUB&&SUB.sid===m.sid){SUB.off=+m.off||0;subPaint()}}else if(m.t=='sube')subEmbOn(m);else if(m.t=='wlchg'){clearTimeout(WLT);WLT=setTimeout(wlLoad,400)}else if(m.t=='vr')vRoster(m.r);else if(m.t=='vsig')vSig(m);else if(m.t=='vbye'){if(m.id!==VC.id){vDrop(m.id);vui()}}else if(m.t=='verr'){toast(m.e,1);vLeave(1)}
+else if(m.t=='sys'){chatSys(m.x);toast(m.x)}else if(m.t=='va')vfbRecv(m);else if(m.t=='react')fly(m.e,m.n);else if(m.t=='sub')subOn(m);else if(m.t=='suboff'){if(SUB&&SUB.sid===m.sid){SUB.off=+m.off||0;SUB.k=+m.k||1;subPaint()}}else if(m.t=='sube')subEmbOn(m);else if(m.t=='wlchg'){clearTimeout(WLT);WLT=setTimeout(wlLoad,400)}else if(m.t=='vr')vRoster(m.r);else if(m.t=='vsig')vSig(m);else if(m.t=='vbye'){if(m.id!==VC.id){vDrop(m.id);vui()}}else if(m.t=='verr'){toast(m.e,1);vLeave(1)}
 else if(m.t=='locks'){LK=m.lk;lockUI()}else if(m.t=='wpend'){if(wpSeq(m)){WPO=m.p&&m.p.length&&m.by!=ME.name?{mv:m.mv,p:new Map(m.p.map(x=>[x.i,x]))}:null;wgRender()}}else if(m.t=='wq')wqSet(m);else if(m.t=='wrej')wrej(m);else if(m.t=='wg')wgSet(m.g);else if(m.t=='dg')dSet(m.g);else if(m.t=='derr')dErr(m.e);else if(m.t=='bs')bSet(m.g);else if(m.t=='berr')toast(m.e,1);else if(m.t=='cs')cSet(m.g);else if(m.t=='fw')fwSet(m.g);else if(m.t=='fwp')fwPos(m);else if(m.t=='fwerr')toast(m.e,1);else if(m.t=='kt')ktSet(m.g);else if(m.t=='ktp')ktPos(m);else if(m.t=='kterr')toast(m.e,1);else if(m.t=='br')brSet(m.g);else if(m.t=='brp')brOnP(m);else if(m.t=='brh')brOnH(m);else if(m.t=='brk')brOnK(m);else if(m.t=='brx')brOnX(m);else if(m.t=='brd')brOnD(m);else if(m.t=='brg')brOnG(m);else if(m.t=='brpj')brOnPj(m);else if(m.t=='brb')brOnB(m);else if(m.t=='bri')brOnI(m);else if(m.t=='brerr')toast(m.e,1);else if(m.t=='yk')ykSet(m.g);else if(m.t=='ykerr')toast(m.e,1);else if(m.t=='adv')advOn(m);else if(m.t=='cerr')toast(m.e,1);else if(m.t=='werr'){wbusy(0);toast(m.e,1)}else if(m.t=='wprev')wprevSet(m);else if(m.t=='wchk')wgChk(m)};
 w.onerror=()=>{if(ws===w){const p=$('#pres');if(p)p.textContent='WebSocket bağlantı hatası; yeniden deneniyor…'}};
 w.onclose=ev=>{clearInterval(w.p);clearTimeout(w.tmo);if(ws!==w)return;
@@ -6242,12 +6255,12 @@ export class Do {
       return this.all(JSON.stringify({ t: 'sys', x: '💬 ' + n + ' altyazı ekledi' + (name ? ': ' + name : '') }));
     }
     if (T == 'subrm') { await this.subClear(); return this.all(JSON.stringify({ t: 'sub', sid: st.sid, c: null, by: n })) }
-    if (T == 'suboff') { const meta = await S.get('subm'); if (!meta || meta.sid !== st.sid) return; meta.off = Math.max(-120, Math.min(120, Math.round((+m.off || 0) * 10) / 10)); await S.put('subm', meta); return this.all(JSON.stringify({ t: 'suboff', sid: st.sid, off: meta.off })) }
+    if (T == 'suboff') { const meta = await S.get('subm'); if (!meta || meta.sid !== st.sid) return; meta.off = Math.max(-600, Math.min(600, Math.round((+m.off || 0) * 100) / 100)); meta.k = Math.max(.85, Math.min(1.15, +m.k || 1)); await S.put('subm', meta); return this.all(JSON.stringify({ t: 'suboff', sid: st.sid, off: meta.off, k: meta.k })) }
     if (T == 'subemb') { const k = String(m.k || '').slice(0, 120); await S.put('sube', { sid: st.sid, k }); return this.all(JSON.stringify({ t: 'sube', sid: st.sid, k, by: n })) }
   }
   async subJoin(sv) {
     try { const S = this.s.storage, st = this.st; if (!st || !st.sid) return; const meta = await S.get('subm');
-      if (meta && meta.sid === st.sid) { const ks = []; for (let i = 0; i < meta.n; i++) ks.push('subc:' + i); let txt = ''; for (let i = 0; i < ks.length; i += 100) { const g = await S.get(ks.slice(i, i + 100)); for (const k of ks.slice(i, i + 100)) txt += g.get(k) || '' } sv.send(JSON.stringify({ t: 'sub', sid: meta.sid, name: meta.name, by: meta.by, off: meta.off || 0, c: JSON.parse(txt), j: 1 })) }
+      if (meta && meta.sid === st.sid) { const ks = []; for (let i = 0; i < meta.n; i++) ks.push('subc:' + i); let txt = ''; for (let i = 0; i < ks.length; i += 100) { const g = await S.get(ks.slice(i, i + 100)); for (const k of ks.slice(i, i + 100)) txt += g.get(k) || '' } sv.send(JSON.stringify({ t: 'sub', sid: meta.sid, name: meta.name, by: meta.by, off: meta.off || 0, k: meta.k || 1, c: JSON.parse(txt), j: 1 })) }
       const e = await S.get('sube'); if (e && e.sid === st.sid) sv.send(JSON.stringify({ t: 'sube', sid: e.sid, k: e.k, j: 1 }));
     } catch (e) { }
   }
