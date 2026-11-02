@@ -4,7 +4,12 @@
 //   SECRET (oturum anahtarı), ADMIN_PASS (yönetici şifresi / kurtarma)
 //   SPOTIFY_CLIENT_ID  -> Spotify bağlama için
 //   APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY -> Apple Music bağlama için
-const CSS39 = String.raw`
+const CSS39 = String.raw`.xgrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--bd);padding-top:10px}.xgbtn{font-weight:650}
+.mo.xg{display:flex;flex-direction:column;padding:0;background:#000;place-items:initial;overflow:hidden;z-index:90;touch-action:none;overscroll-behavior:none;height:100dvh}
+.xgbar{display:flex;align-items:center;gap:10px;padding:max(8px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) 8px max(10px,env(safe-area-inset-left));background:var(--s1);border-bottom:1px solid var(--bd);color:var(--tx)}.xgbar b{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.xgbar .btn{min-height:36px;text-decoration:none}
+.xgtip{display:block;padding:8px 12px;background:var(--s2);color:var(--mu)}.xgfr{flex:1;min-height:0;position:relative}.xgfr iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;display:block}
+html.xgon,html.xgon body{overflow:hidden;overscroll-behavior:none;touch-action:none;height:100%}
+
 /* ===== v39 tasarım: gece mavisi + projektör sarısı ===== */
 .brandtop{display:grid;gap:4px;padding:2px 4px 0;margin:0 0 2px}
 .brandbar{display:flex;align-items:center;gap:10px}
@@ -616,7 +621,7 @@ const navTop=()=>!!(RM||(CURV!='lobby'&&CURV!='login')||document.querySelector('
 let NSTK=['lobby'],NEXP=-1;
 const navKey=()=>CURV=='login'?'lobby':RM?'room:'+RM:CURV=='aq'?(AQV&&AQV.nm?'aqv:'+AQV.nm:'aq'):CURV=='chat'?'chat:'+(DMOPEN||''):CURV=='user'?'user:'+(UVIEW||''):CURV;
 const navDepth=()=>NIGN>0&&NEXP>=0?NEXP:((history.state&&history.state.d)|0);
-function navFix(){try{const k=navKey(),mc=document.querySelectorAll('.mo').length,b=NSTK.filter(x=>x!='mo');let T;
+function navFix(){if(window._newV&&CURV=='lobby'&&!RM&&!document.querySelector('.mo')){window._newV=0;setTimeout(()=>location.reload(),300);return}try{const k=navKey(),mc=document.querySelectorAll('.mo').length,b=NSTK.filter(x=>x!='mo');let T;
  if(k=='lobby')T=['lobby'];else if(/^(feed|inbox|profile|admin|aq)$|^room:/.test(k))T=['lobby',k];
  else{const bb=b.filter(x=>!/^room:/.test(x)),i=bb.indexOf(k);T=i>=0?bb.slice(0,i+1):bb.concat([k]);if(T.length>8)T=['lobby'].concat(T.slice(-7))}
  for(let i=0;i<mc;i++)T.push('mo');NSTK=T;const D=T.length-1,c=navDepth();
@@ -626,15 +631,15 @@ function navRestore(k){if(k=='lobby')return viewLobby();if(k=='feed')return view
  if(/^chat:/.test(k))return viewChat(k.slice(5));if(/^user:/.test(k))return viewUser(k.slice(5));if(/^room:/.test(k)){if(RM!==k.slice(5))viewLobby();return}if(/^aqv:/.test(k))return;viewLobby()}
 function navBack(){const ms=document.querySelectorAll('.mo');if(ms.length){ms[ms.length-1].remove();return true}if(CURV=='aq'&&AQV){AQV=null;AQMODE='';AQP=[];AQSIM={};aqSyncSim();aqModeBar();aqRender();return true}if(CURV=='chat'){viewInbox();return true}if(RM||CURV=='profile'||CURV=='admin'||CURV=='aq'||CURV=='feed'||CURV=='inbox'||CURV=='user'){viewLobby();return true}return false}
 try{if(!history.state)history.replaceState({b:1},'')}catch(e){}
-window.addEventListener('popstate',()=>{if(NIGN>0){NIGN--;if(!NIGN)NEXP=-1;return}const n=(history.state&&history.state.d)|0;
+window.addEventListener('popstate',()=>{window._lastPop=Date.now();if(NIGN>0){NIGN--;if(!NIGN)NEXP=-1;return}const n=(history.state&&history.state.d)|0;
  if(n>NSTK.length-1){NIGN++;NEXP=NSTK.length-1;history.go(NSTK.length-1-n);return}
  const ms=document.querySelectorAll('.mo');if(ms.length&&NSTK[NSTK.length-1]=='mo'){NSTK=NSTK.slice(0,n+1);ms[ms.length-1].remove();return}
  const k=NSTK[n]||'lobby';NSTK=NSTK.slice(0,n+1);for(const m of ms)m.remove();navRestore(k);setTimeout(navFix,0)});
 // iPhone'da ana ekrandan açılan uygulamada tarayıcının kenardan geri kaydırması yok: aynısını biz yapıyoruz
 if(navigator.standalone===true||window.FORCE_EDGE){let sx=0,sy=0,on=0,ind=null;
-document.addEventListener('touchstart',e=>{on=0;const t=e.touches[0];if(e.touches.length!=1||t.clientX>24||!navTop())return;const g=e.target;if(g&&g.closest&&g.closest('#pcv,.bgrid.live,.cboard,.wc,.rk,canvas,input,textarea,video'))return;sx=t.clientX;sy=t.clientY;on=1;if(!ind){ind=h('div',{class:'edgeb'},ic('back',20));document.body.append(ind)}},{passive:true});
+document.addEventListener('touchstart',e=>{on=0;window._edgeT=Date.now();const t=e.touches[0];if(e.touches.length!=1||t.clientX>24||!navTop())return;const g=e.target;if(g&&g.closest&&g.closest('#pcv,.bgrid.live,.cboard,.wc,.rk,canvas,input,textarea,video'))return;sx=t.clientX;sy=t.clientY;on=1;if(!ind){ind=h('div',{class:'edgeb'},ic('back',20));document.body.append(ind)}},{passive:true});
 document.addEventListener('touchmove',e=>{if(!on)return;const t=e.touches[0],dx=t.clientX-sx,dy=Math.abs(t.clientY-sy);if(dy>50&&dy>dx){on=0;ind.style.cssText='';ind.classList.remove('go');return}const d=Math.max(0,Math.min(dx,96));ind.style.transform='translate('+d+'px,-50%)';ind.style.opacity=String(Math.min(1,d/70));ind.classList.toggle('go',dx>80)},{passive:true});
-const end=()=>{if(!on)return;on=0;const go=ind.classList.contains('go');ind.style.cssText='';ind.classList.remove('go');if(go){if(navigator.vibrate)try{navigator.vibrate(8)}catch(x){}if(((history.state&&history.state.d)|0)>0)history.back();else{navBack();setTimeout(navFix,0)}}};
+const end=()=>{if(!on)return;on=0;const go=ind.classList.contains('go');ind.style.cssText='';ind.classList.remove('go');if(go){const t0=window._edgeT||0;setTimeout(()=>{if((window._lastPop||0)>=t0)return;if(navigator.vibrate)try{navigator.vibrate(8)}catch(x){}if(((history.state&&history.state.d)|0)>0)history.back();else{navBack();setTimeout(navFix,0)}},380)}};
 document.addEventListener('touchend',end,{passive:true});document.addEventListener('touchcancel',()=>{on=0;if(ind){ind.style.cssText='';ind.classList.remove('go')}},{passive:true})}
 function curSave(){try{if(RM)localStorage.cur=JSON.stringify({k:RM,m:ROOM_MODE,tab:TAB,ts:Date.now()})}catch(e){}}
 function curClear(){try{localStorage.removeItem('cur')}catch(e){}}
@@ -971,7 +976,14 @@ let GSEL='duel',GSW=null,GSP=null,GPB=null,GSPT=0;
 const GNM={word:'Kelimelik',duel:'Kelime Düellosu',bs:'Amiral Battı',chess:'Satranç',fw:'Alev ve Dalga',kt:'Pati Timi',br:'Sopa Savaşı',yk:'Yalancılar Kahvesi'};
 function gameSwitch(){const c=h('div',{class:'chips',id:'gsw'});GPB=h('div',{class:'gprop',style:'display:none'});
 GSW=()=>{c.replaceChildren(...[['word','Kelimelik'],['duel','Kelime Düellosu'],['bs','Amiral Battı'],['chess','Satranç'],['fw','Alev ve Dalga'],['kt','Pati Timi'],['br','Sopa Savaşı'],['yk','Yalancılar Kahvesi']].map(([k,t])=>{const pend=GSP&&GSP.to==k;return h('button',{type:'button',class:(GSEL==k?'on':'')+(pend?' pend':''),onclick:()=>{if(k==GSEL)return;if(GSP){if(GSP.by==ME.name)return toast('Önce bekleyen isteğin yanıtlanmalı');return toast('Önce bekleyen isteği yanıtla',1)}send({t:'gsel',g:k})}},t+(pend?' ⏳':''))}));gpRender()};
-GSW();return h('div',{class:'card',style:'padding:12px;gap:10px'},c,GPB)}
+GSW();return h('div',{class:'card',style:'padding:12px;gap:10px'},c,GPB,h('div',{class:'xgrow'},h('button',{type:'button',class:'btn sec sm xgbtn',onclick:()=>xgOpen()},'🏎️ Need for Speed U2'),h('small',{class:'mu',text:'Dış site (nfsu2.xyz), burada tam ekran açılır'})))}
+// ---- dış site oyunu: sitemizin içinde tam ekran pencere ----
+const XG={u:'https://nfsu2.xyz/',t:'Need for Speed U2'};
+function xgOpen(){if(document.querySelector('.xg'))return;const fr=h('iframe',{src:XG.u,title:XG.t,allow:'fullscreen; gamepad; autoplay; clipboard-write; cross-origin-isolated',allowfullscreen:'',referrerpolicy:'no-referrer-when-downgrade'}),
+ tip=h('small',{class:'xgtip',style:'display:none',text:'Ekran boş kalırsa o site kendini başka sitelerin içinde açtırmıyor demektir: sağ üstteki “Yeni sekmede aç”a bas.'}),
+ m=h('div',{class:'mo xg',role:'dialog','aria-label':XG.t},h('div',{class:'xgbar'},h('button',{type:'button',class:'btn sec sq','aria-label':'Kapat',onclick:()=>m.remove()},ic('back')),h('b',{text:XG.t}),h('a',{class:'btn sec sm',href:XG.u,target:'_blank',rel:'noopener'},'Yeni sekmede aç')),tip,h('div',{class:'xgfr'},fr));
+ document.body.append(m);document.documentElement.classList.add('xgon');const rm0=m.remove.bind(m);m.remove=()=>{document.documentElement.classList.remove('xgon');rm0();setTimeout(navFix,0)};setTimeout(navFix,0);setTimeout(()=>{if(document.body.contains(m))tip.style.display=''},9000);
+ try{if(RM)send({t:'chat',x:'🏎️ Need for Speed U2 açtım (Oyunlar sekmesi)'})}catch(e){}}
 function gpRender(){const B=GPB;if(!B)return;const p=GSP;if(!p){B.style.display='none';B.replaceChildren();return}B.style.display='';
 const mine=p.by==ME.name,iOk=p.ok.includes(ME.name),s=Math.ceil(p.end-Date.now())/1000|0;
 if(mine||iOk)B.replaceChildren(h('div',{class:'grow'},h('b',{text:''+GNM[p.to]+' oyununa geçiş'}),h('small',{class:'mu',text:(p.need.length?p.need.join(', ')+' bekleniyor… ':'')+'('+Math.max(0,s)+' sn)'})),mine?h('button',{type:'button',class:'btn sec sm',onclick:()=>send({t:'gcancel'})},'İptal'):null);
@@ -4936,9 +4948,11 @@ function wrej(m){wbusy(0);WQ=null;wqGone();WP=new Map();WS=-1;PSL='';toast(m.e,1
 if(qs.get('oda')){PEND=cleanCode(qs.get('oda'));PM=0;if(qs.get('k'))window._pkj={c:PEND,k:String(qs.get('k')).slice(0,20)}}if(qs.get('dm')){window._pdm=String(qs.get('dm')).toLowerCase().slice(0,32);history.replaceState(null,'',location.pathname)}if(qs.get('ekle'))history.replaceState(null,'',location.pathname);if(/^m/.test(os)&&(oc||qs.get('error'))){history.replaceState(null,'',location.pathname);const rr=cleanCode(os.slice(1));if(rr){PEND=rr;PM=0;AUTO=1}if(oc)SPC=oc;else setTimeout(()=>toast('Spotify bağlantısı iptal edildi',1),500)}}
 if(PEND)history.replaceState(null,'',location.pathname);
 if(T&&ME)enter();else viewLogin();
+// yeni sürüm: ana ekrandaki uygulama da kendini yeniler (oda/oyun/akvaryum sırasında değil, ana ekrana dönünce)
+(()=>{let V0='';const chk=async()=>{try{const r=await fetch('/appv',{cache:'no-store'});if(!r.ok)return;const v=(await r.text()).trim();if(!v||v.length>40)return;if(!V0){V0=v;return}if(v!==V0){window._newV=1;if(CURV=='lobby'&&!RM&&!document.querySelector('.mo'))navFix()}}catch(e){}};chk();document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible')chk()});addEventListener('pageshow',chk);setInterval(chk,10*60*1000)})();
 `;
 const HTML = '<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#0A1120"><meta name="color-scheme" content="dark"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Bizim Sinema"><link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icon-180.png?v=39"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&family=Baloo+2:wght@600;700;800&display=swap"><title>Bizim Sinema</title><link rel="icon" href="/icon-192.png?v=39"><style>' + CSS + CSS39 + '</style></head><body><div id="app"></div><div id="tt"></div><script>' + JS + '</script></body></html>';
-const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.youtube.com https://s.ytimg.com https://js-cdn.music.apple.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https: http:; media-src * data: blob:; connect-src * wss: ws: data: blob:; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://*.apple.com; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
+const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.youtube.com https://s.ytimg.com https://js-cdn.music.apple.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https: http:; media-src * data: blob:; connect-src * wss: ws: data: blob:; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://*.apple.com https://nfsu2.xyz https://*.nfsu2.xyz; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
 // ---------- kripto ----------
@@ -4978,7 +4992,9 @@ self.addEventListener('push',e=>{let d={};try{d=e.data?e.data.json():{}}catch(x)
 e.waitUntil(self.registration.showNotification(d.title||'Bizim Sinema',{body:d.body||'',tag:d.tag||'bs',renotify:true,icon:'/icon-192.png?v=39',badge:'/icon-192.png?v=39',data:{url:d.url||'/'}}))});
 self.addEventListener('notificationclick',e=>{e.notification.close();const url=new URL((e.notification.data&&e.notification.data.url)||'/',self.location.origin).href;
 e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{for(const c of cs){if('focus' in c&&'navigate' in c)return c.focus().then(w=>(w||c).navigate(url)).catch(()=>self.clients.openWindow(url))}return self.clients.openWindow(url)}))});`;
+let APPVC='';const appV=()=>{if(!APPVC){let h=0;for(let i=0;i<HTML.length;i+=3)h=(h*31+HTML.charCodeAt(i))|0;APPVC=(h>>>0).toString(36)+'-'+HTML.length.toString(36)}return APPVC};
 function pwaAsset(p) {
+  if (p == '/appv') return new Response(appV(), { headers: { 'content-type': 'text/plain', 'cache-control': 'no-store' } });
   if (p == '/manifest.webmanifest') return new Response(MANIFEST, { headers: { 'content-type': 'application/manifest+json', 'cache-control': 'public, max-age=3600' } });
   if (p == '/sw.js') return new Response(SW, { headers: { 'content-type': 'application/javascript; charset=utf-8', 'cache-control': 'no-cache' } });
   const m = p.match(/^\/icon-(180|192|512)\.png$/); if (m) return new Response(Uint8Array.from(atob(ICONS[m[1]]), c => c.charCodeAt(0)), { headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=604800' } });
