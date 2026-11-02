@@ -446,7 +446,7 @@ body.hasnav #tt{bottom:calc(max(18px,env(safe-area-inset-bottom)) + 84px)}
 .kswrap.full{border:0;border-radius:0}
 .kscv{display:block;width:100%;aspect-ratio:16/10;max-height:74vh;background:#9fc4ec}
 .fwwrap.full .kscv{width:100vw;height:100dvh;max-height:none;aspect-ratio:auto}.fwwrap.full.rot .kscv{width:100dvh;height:100vw}
-@media (max-width:640px){.kscv{aspect-ratio:4/5;max-height:62vh}.kswrap.play .kscv{aspect-ratio:3/4;max-height:72vh}}
+@media (max-width:640px){.kscv{aspect-ratio:4/5;max-height:62vh}.kswrap.play:not(.full) .kscv{aspect-ratio:auto;height:min(82svh,760px);max-height:none}.kswrap:not(.full) .kstm{top:54px}}
 .kstagl{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .kstag{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;gap:2px;will-change:transform}
 .kstag span{font:700 12px/1 Inter,system-ui,sans-serif;color:#fff;background:#0A1120cc;border:1.5px solid var(--c,#F5B83D);border-radius:999px;padding:3px 8px;white-space:nowrap}
@@ -522,6 +522,13 @@ body.hasnav #tt{bottom:calc(max(18px,env(safe-area-inset-bottom)) + 84px)}
 .ksrules div{display:flex;gap:8px;align-items:center;background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:7px 10px}
 .ksrules span,.ksrules b{font-size:1.05rem;flex:none;min-width:24px;text-align:center}.ksrules small{color:var(--mu);font-size:.78rem}
 .ksp{font-variant-numeric:tabular-nums;color:var(--ac,#F5B83D)}
+.kswrap:not(.play) .ksexb{display:none}
+.kswrap.spec .kspad{display:none!important}
+.ksex{position:absolute;inset:0;display:grid;place-items:center;background:#0A1120b8;z-index:6;padding:16px;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.ksexc{display:grid;gap:10px;width:min(320px,100%);background:var(--s1,#111A2B);border:1px solid var(--bd,#223050);border-radius:18px;padding:18px;text-align:center;box-shadow:0 18px 40px #0009}
+.ksexc b{font-size:1.15rem}.ksexc small{color:var(--mu,#8D9AB2);line-height:1.4}.ksexc .btn{width:100%;justify-content:center}
+.ksexc .btn.ksqb{background:#b91c1c;color:#fff;border-color:#ef4444}
+.ksexb{background:#b91c1cd0!important;color:#fff!important}
 .fwintro{display:flex;align-items:center;gap:10px;justify-content:center;padding:6px 0}
 .fwface{width:26px;height:26px;border-radius:50%;display:inline-block;flex:none}.fwface.big{width:44px;height:44px}
 .fwface.f{background:radial-gradient(circle at 38% 35%,#fff0a0,#ffa53a 50%,#e2461a);box-shadow:0 0 14px #ff7a2a88}.fwface.w{background:radial-gradient(circle at 38% 35%,#e8fbff,#6fd0ff 45%,#1f78d0);box-shadow:0 0 14px #3ab8ff66}
@@ -1055,7 +1062,7 @@ function gameSwitch(){const c=h('div',{class:'chips',id:'gsw'});GPB=h('div',{cla
 GSW=()=>{c.replaceChildren(...[['word','Kelimelik'],['duel','Kelime Düellosu'],['bs','Amiral Battı'],['chess','Satranç'],['fw','Alev ve Dalga'],['kt','Pati Timi'],['br','Sopa Savaşı'],['yk','Yalancılar Kahvesi'],['ks','Kart Savaşı']].map(([k,t])=>{const pend=GSP&&GSP.to==k;return h('button',{type:'button',class:(GSEL==k?'on':'')+(pend?' pend':''),onclick:()=>{if(k==GSEL)return;if(GSP){if(GSP.by==ME.name)return toast('Önce bekleyen isteğin yanıtlanmalı');return toast('Önce bekleyen isteği yanıtla',1)}send({t:'gsel',g:k})}},t+(pend?' ⏳':''))}));gpRender()};
 GSW();
 const xgL=(t,u)=>h('a',{class:'btn sec sm xgbtn',href:u,target:'_blank',rel:'noopener',style:'text-decoration:none',onclick:()=>{try{if(RM)send({t:'chat',x:'🎮 '+t.replace(/^\S+\s/,'')+' açtım (yeni sekme)'})}catch(e){}}},t);
-return h('div',{class:'card',style:'padding:12px;gap:10px'},c,GPB,h('div',{class:'xgsec'},h('b',{class:'xghd',text:'Dış oyunlar'}),h('small',{class:'mu',text:'Yeni sekmede açılır; bunlar bizim sitenin içine gömülemiyor. Konuşarak oynamak için önce WhatsApp/FaceTime araması aç (bilgisayarda bizim sesli sohbet arkada çalışır).'}),h('div',{class:'xglist'},xgL('🏎️ Need for Speed U2','https://nfsu2.xyz/'),xgL('🏎️ Smash Karts','https://smashkarts.io/'),xgL('🎮 Poki — oyun merkezi','https://poki.com/'),xgL('🎮 CrazyGames','https://www.crazygames.com/'))))}
+return h('div',{class:'card',style:'padding:12px;gap:10px'},c,GPB,h('div',{class:'xgsec'},h('b',{class:'xghd',text:'Dış oyunlar'}),h('small',{class:'mu',text:'Yeni sekmede açılır; bunlar bizim sitenin içine gömülemiyor. Konuşarak oynamak için önce WhatsApp/FaceTime araması aç (bilgisayarda bizim sesli sohbet arkada çalışır).'}),h('div',{class:'xglist'},xgL('🏎️ Need for Speed U2','https://nfsu2.xyz/'),xgL('🏎️ Smash Karts','https://smashkarts.io/'))))}
 function gpRender(){const B=GPB;if(!B)return;const p=GSP;if(!p){B.style.display='none';B.replaceChildren();return}B.style.display='';
 const mine=p.by==ME.name,iOk=p.ok.includes(ME.name),s=Math.ceil(p.end-Date.now())/1000|0;
 if(mine||iOk)B.replaceChildren(h('div',{class:'grow'},h('b',{text:''+GNM[p.to]+' oyununa geçiş'}),h('small',{class:'mu',text:(p.need.length?p.need.join(', ')+' bekleniyor… ':'')+'('+Math.max(0,s)+' sn)'})),mine?h('button',{type:'button',class:'btn sec sm',onclick:()=>send({t:'gcancel'})},'İptal'):null);
@@ -4428,7 +4435,7 @@ function ksBake(PK,GEO,parts){let nv=0,ni=0;const src=p=>p.g?GEO[p.g]:PK[p.k];fo
  return{P,C,I}}
 
 // ---------- Kart Savaşı: dünya, fizik, silahlar, botlar, ağ ----------
-const KSA=24,KSP=6,KSPH=2.2,KSRW=2.4,KSRL=7.5,KSCR=.95,KSDUR=180000;
+const KSA=31,KSP=6,KSPH=2.2,KSRW=2.4,KSRL=7.5,KSCR=.95,KSDUR=180000;
 const KSCAR=[{k:'toy/vehicle-racer-low',n:'Şimşek',d:'Dengeli',st:[.8,.62,.74,.56],sp:1,ac:1,tu:1,mg:3},
  {k:'toy/vehicle-racer',n:'Kupa',d:'Sağlam',st:[.66,.58,.66,.9],sp:.96,ac:.95,tu:.95,mg:4},
  {k:'toy/vehicle-vintage-racer',n:'Klasik',d:'Çevik',st:[.7,.8,.92,.5],sp:.97,ac:1.07,tu:1.12,mg:3},
@@ -4436,15 +4443,15 @@ const KSCAR=[{k:'toy/vehicle-racer-low',n:'Şimşek',d:'Dengeli',st:[.8,.62,.74,
 const KSCOL=[['Sarı','#F5B83D',[1,.74,.16]],['Pembe','#F472B6',[1,.40,.70]],['Turkuaz','#2DD4BF',[.2,.8,.74]],['Mor','#A78BFA',[.58,.46,1]],['Mavi','#60A5FA',[.28,.55,1]],['Turuncu','#FB923C',[1,.48,.26]],['Kırmızı','#EF4444',[.95,.22,.22]],['Beyaz','#F1F5F9',[.95,.96,.98]]];
 const KSW={roket:{n:'Roket',am:2,w:30},mak:{n:'Makineli',am:1,w:24},mayin:{n:'Mayın',am:3,w:15},buz:{n:'Buz topu',am:2,w:15},kalkan:{n:'Kalkan',am:1,w:10},bomba:{n:'Bomba',am:1,w:6}};
 const KSDIR=[[0,1],[1,0],[0,-1],[-1,0]],KSKW=1.3,KSKL=3.4,KSKH=1.55;
-const KSKICK=[{x:-17,z:-10,d:0},{x:-10,z:17,d:1},{x:17,z:10,d:2},{x:10,z:-17,d:3}];
-const KSPAD=[{x:-17,z:3,d:0},{x:3,z:17,d:1},{x:17,z:-3,d:2},{x:-3,z:-17,d:3},{x:0,z:3.7,d:0},{x:0,z:-3.7,d:2}];
-const KSIB=[[3.7,-3.2],[-3.7,3.2],[0,16.5],[0,-16.5],[16.5,0],[-16.5,0],[12.5,12.5],[-12.5,-12.5],[12.5,-12.5],[-12.5,12.5]];
-const KSSP=[[-20,-20],[20,20],[-20,20],[20,-20],[0,-21],[0,21],[-21,0],[21,0]];
-const KSCRATE=[[-14.5,-5],[14.5,5],[5,-14.5],[-5,14.5]];
-const KSBAR=[[-7.5,15,.5],[7.5,15,-.5],[-7.5,-15,-.5],[7.5,-15,.5],[15,7.5,1.07],[15,-7.5,-1.07],[-15,7.5,-1.07],[-15,-7.5,1.07]];
+const KSKICK=[{x:-22,z:-13,d:0},{x:-13,z:22,d:1},{x:22,z:13,d:2},{x:13,z:-22,d:3}];
+const KSPAD=[{x:-22,z:4,d:0},{x:4,z:22,d:1},{x:22,z:-4,d:2},{x:-4,z:-22,d:3},{x:0,z:3.7,d:0},{x:0,z:-3.7,d:2}];
+const KSIB=[[3.7,-3.2],[-3.7,3.2],[0,21],[0,-21],[21,0],[-21,0],[16.5,16.5],[-16.5,-16.5],[16.5,-16.5],[-16.5,16.5],[9,26],[-9,-26],[26,-9],[-26,9]];
+const KSSP=[[-26,-26],[26,26],[-26,26],[26,-26],[0,-27],[0,27],[-27,0],[27,0]];
+const KSCRATE=[[-19,-6.5],[19,6.5],[6.5,-19],[-6.5,19]];
+const KSBAR=[[-9.75,19.5,.5],[9.75,19.5,-.5],[-9.75,-19.5,-.5],[9.75,-19.5,.5],[19.5,9.75,1.07],[19.5,-9.75,-1.07],[-19.5,9.75,-1.07],[-19.5,-9.75,1.07]];
 let KSOB=[];(function(){KSOB.push({x:0,z:0,r:1.75,y0:1.4,y1:20});
  for(const [x,z] of KSCRATE)for(const [a,b] of [[0,0],[2,.25],[1,1.8]])KSOB.push({x:x+a,z:z+b,r:1.0,y0:-1,y1:2.6});
- for(const [x,z] of KSBAR)KSOB.push({x,z,r:.75,y0:-1,y1:1.2});for(const x of [-5.35,5.35])KSOB.push({x,z:-19.5,r:.4,y0:-1,y1:5})})();
+ for(const [x,z] of KSBAR)KSOB.push({x,z,r:.75,y0:-1,y1:1.2});for(const x of [-5.35,5.35])KSOB.push({x,z:-25.5,r:.4,y0:-1,y1:5})})();
 function ksT(x,z){const ax=Math.abs(x),az=Math.abs(z);if(ax<=KSP&&az<=KSP)return KSPH;
  if(ax<=KSRW&&az>KSP&&az<KSP+KSRL)return KSPH*(1-(az-KSP)/KSRL);if(az<=KSRW&&ax>KSP&&ax<KSP+KSRL)return KSPH*(1-(ax-KSP)/KSRL);
  for(const k of KSKICK){const [dx,dz]=KSDIR[k.d],u=(x-k.x)*dx+(z-k.z)*dz,w=(x-k.x)*dz-(z-k.z)*dx;if(u>=0&&u<=KSKL&&Math.abs(w)<=KSKW)return KSKH*u/KSKL}return 0}
@@ -4457,14 +4464,14 @@ function ksCarObj(n,c,k,x,z,h,own){return{n,c,k,x,z,y:ksT(x,z),h,v:0,vy:0,gnd:tr
 function ksDrive(G,K,I,dt){const C=KSCAR[K.c]||KSCAR[0];
  K.inv=Math.max(0,K.inv-dt);K.frz=Math.max(0,K.frz-dt);K.shl=Math.max(0,K.shl-dt);K.bst=Math.max(0,K.bst-dt);K.nc=Math.min(1,K.nc+dt/6);K.hn=Math.max(0,K.hn-dt);
  if(K.dead)return;const fr=K.frz>0,air=!K.gnd,go=G.live;
- let st=go&&!fr?((I.l?1:0)-(I.r?1:0)):0;const g=go&&!fr&&I.g,b=go&&!fr&&I.b;
- const top=(K.bst>0?21.5:14.5)*C.sp*(K.aisp||1);
- if(!air){if(g&&!b){K.v+=(K.v<0?28:15.5*C.ac)*dt;if(K.v>top)K.v=Math.max(top,K.v-30*dt)}
+ let st0=go&&!fr?((I.l?1:0)-(I.r?1:0)):0;K.sv=(K.sv||0)+(st0-(K.sv||0))*Math.min(1,dt*(st0?7:12));let st=Math.abs(K.sv)<.02?0:K.sv;const g=go&&!fr&&I.g,b=go&&!fr&&I.b;
+ const top=(K.bst>0?16.5:11)*C.sp*(K.aisp||1);
+ if(!air){if(g&&!b){K.v+=(K.v<0?24:11.5*C.ac)*dt;if(K.v>top)K.v=Math.max(top,K.v-30*dt)}
   else if(b){if(K.v>.6)K.v-=30*dt;else K.v=Math.max(-7,K.v-13*dt)}
   else K.v-=Math.sign(K.v)*Math.min(Math.abs(K.v),(fr?18:5.5)*dt);
   if(K.bst>0&&!fr)K.v=Math.max(K.v,top*.92)}
- const sp=Math.abs(K.v),tr=Math.min(1,sp/5.5)*(K.v>=0?1:-1);let turn=st*2.55*C.tu*tr;
- if(!air&&st&&sp>10&&g){K.dr+=dt;turn*=1.25;if(K.own)G.fxDrift(K)}else{if(K.dr>.6&&!air){K.bst=Math.max(K.bst,K.dr>1.4?1.15:.7);if(K===G.me)ksSnd('turbo')}K.dr=0}
+ const sp=Math.abs(K.v),tr=Math.min(1,sp/3.5)*(K.v>=0?1:-1);let turn=st*(2.35-Math.min(.6,sp/30))*C.tu*tr;
+ if(!air&&Math.abs(st)>.6&&sp>8&&g){K.dr+=dt;turn*=1.25;if(K.own)G.fxDrift(K)}else{if(K.dr>.6&&!air){K.bst=Math.max(K.bst,K.dr>1.4?1.15:.7);if(K===G.me)ksSnd('turbo')}K.dr=0}
  if(air)turn*=.4;K.h+=turn*dt;K.yt=turn;
  const fx=Math.sin(K.h),fz=Math.cos(K.h);let nx=K.x+fx*K.v*dt,nz=K.z+fz*K.v*dt;
  const y0=K.y;
@@ -4502,7 +4509,7 @@ function ksSetup(view,me){const now=ksNow();const G={run:view.run,id:view.id,t0:
  const all=view.pl.concat((view.bots||[]).map(b=>b.n));const chOf=n=>{const b=(view.bots||[]).find(x=>x.n===n);if(b)return{c:b.c,k:b.k};return view.ch&&view.ch[n]||{c:0,k:0}};
  all.forEach((n,i)=>{const [x,z]=KSSP[i%KSSP.length],ch=chOf(n);G.cs[n]=ksCarObj(n,ch.c|0,ch.k|0,x,z,Math.atan2(-x,-z),n===me);G.cs[n].bot=!view.pl.includes(n)});
  G.me=G.cs[me]||null;
- for(const [x,z] of [[-20,-14],[-20.8,-13.3],[20,14],[20.8,13.3],[14,-20],[13.3,-20.8],[-14,20],[-13.3,20.8],[-8,-8],[8,8],[9.2,-8.8],[-9.2,8.8],[-21,6],[21,-6],[6,21],[-6,-21]])G.cones.push({x0:x,z0:z,x,z,y:0,vx:0,vy:0,vz:0,r:ksRnd()*6,down:0,sp:0});
+ for(const [x,z] of [[-26.0,-18.2],[-27.0,-17.3],[26.0,18.2],[27.0,17.3],[18.2,-26.0],[17.3,-27.0],[-18.2,26.0],[-17.3,27.0],[-10.4,-10.4],[10.4,10.4],[12.0,-11.4],[-12.0,11.4],[-27.3,7.8],[27.3,-7.8],[7.8,27.3],[-7.8,-27.3]])G.cones.push({x0:x,z0:z,x,z,y:0,vx:0,vy:0,vz:0,r:ksRnd()*6,down:0,sp:0});
  G.cars=()=>Object.values(G.cs);
  G.bump=(K,s)=>{if(K===G.me){ksSnd('bump');G.cam.shake=Math.max(G.cam.shake,s*.35)}G.part(K.x,K.y+.5,K.z,6,[1,.85,.5],.6,3)};
  G.land=K=>{G.part(K.x,K.y+.1,K.z,8,[.82,.8,.78],.7,2.2,0);if(K===G.me){ksSnd('land');G.cam.shake=Math.max(G.cam.shake,.25)}};
@@ -4534,7 +4541,7 @@ function ksAI(G,K,dt){const I={g:1,b:0,l:0,r:0,n:0,f:0};const A=K.ai||(K.ai={t:0
   // hedef: en yakın düşman (taçlıyı biraz tercih et)
   let best=null,bd=1e9;for(const T of G.cars()){if(T===K||T.dead||T.inv>1.2)continue;let d=Math.hypot(T.x-K.x,T.z-K.z)+Math.abs(T.y-K.y)*3;if(G.crown===T.n)d*=.7;if(d<bd){bd=d;best=T}}A.tg=best?best.n:'';
   if(!K.w){let bb=null,bdd=1e9;KSIB.forEach(([x,z],i)=>{if(G.bt[i]>ksNow())return;const d=Math.hypot(x-K.x,z-K.z)+(ksT(x,z)>1&&K.y<1?14:0);if(d<bdd){bdd=d;bb=[x,z]}});A.goal=bb}else A.goal=null}
- const T=G.cs[A.tg];let gx,gz;if(A.goal){[gx,gz]=A.goal}else if(T){gx=T.x;gz=T.z}else{gx=Math.sin(A.wob)*12;gz=Math.cos(A.wob)*12}
+ const T=G.cs[A.tg];let gx,gz;if(A.goal){[gx,gz]=A.goal}else if(T){gx=T.x;gz=T.z}else{gx=Math.sin(A.wob)*15;gz=Math.cos(A.wob)*15}
  // platoya çıkmak gerekiyorsa en yakın rampanın dibine git
  if(ksT(gx,gz)>1&&K.y<1&&!(Math.abs(K.x)<=KSRW||Math.abs(K.z)<=KSRW)){const R=[[0,KSP+KSRL+1.5],[0,-KSP-KSRL-1.5],[KSP+KSRL+1.5,0],[-KSP-KSRL-1.5,0]];let b=R[0],bd=1e9;for(const r of R){const d=Math.hypot(r[0]-K.x,r[1]-K.z);if(d<bd){bd=d;b=r}}if(bd>2.5){gx=b[0];gz=b[1]}}
  let want=Math.atan2(gx-K.x,gz-K.z);
@@ -4613,8 +4620,8 @@ function ksWorld(PK,GEO){const P=[],M=KSM.trs,add=(k,p,r,s,t)=>P.push({k,M:M(p,r
  g('quad',[0,-.01,0],0,(KSA+1.4)*2,[.78,.78,.76]);g('quad',[0,0,0],0,KSA*2,[.38,.40,.46]);
  // boyalı çizgiler
  const ln=(x,z,w,l,r,c)=>g('box',[x,.005,z],r||0,[w,.02,l],c||[.93,.93,.92]);const B=KSA-3.4;ln(0,B,2*B,.18);ln(0,-B,2*B,.18);ln(B,0,.18,2*B);ln(-B,0,.18,2*B);
- for(let i=0;i<56;i++){const a=i/56*Math.PI*2,R=15.2;if(i%2)continue;ln(Math.cos(a)*R,Math.sin(a)*R,.95,.16,-a+Math.PI/2)}
- for(let i=0;i<12;i++)for(let j=0;j<2;j++)g('box',[-5.5+i,.006,-21.7+j],0,[1,.02,1],(i+j)%2?[.1,.1,.12]:[.95,.95,.95]);
+ for(let i=0;i<56;i++){const a=i/56*Math.PI*2,R=19.6;if(i%2)continue;ln(Math.cos(a)*R,Math.sin(a)*R,.95,.16,-a+Math.PI/2)}
+ for(let i=0;i<12;i++)for(let j=0;j<2;j++)g('box',[-5.5+i,.006,-28.2+j],0,[1,.02,1],(i+j)%2?[.1,.1,.12]:[.95,.95,.95]);
  // köşe bölgeleri (renkli zemin)
  [[-1,-1,[.96,.72,.2]],[1,1,[.24,.55,1]],[-1,1,[.95,.38,.62]],[1,-1,[.2,.78,.7]]].forEach(([sx,sz,c])=>{for(let i=0;i<3;i++)g('box',[sx*(KSA-3.6-i*1.1),.004,sz*(KSA-3.6)],0,[.5,.02,4.2],c.map(v=>v*.85));for(let i=0;i<3;i++)g('box',[sx*(KSA-3.6),.004,sz*(KSA-3.6-i*1.1)],0,[4.2,.02,.5],c.map(v=>v*.85))});
  // plato
@@ -4632,16 +4639,16 @@ function ksWorld(PK,GEO){const P=[],M=KSM.trs,add=(k,p,r,s,t)=>P.push({k,M:M(p,r
  // kırmızı-beyaz bariyerler
  for(let i=0;i<KSA*2;i++){const t=-KSA+.5+i,k=i%2?'race/barrierRed':'race/barrierWhite';add(k,[t,0,KSA+.26],0,4);add(k,[t,0,-KSA-.26],Math.PI,4);add(k,[KSA+.26,0,t],Math.PI/2,4);add(k,[-KSA-.26,0,t],-Math.PI/2,4)}
  // kapı
- add('race/overheadLights',[0,0,-19.5],0,[8.5,5.5,6]);for(const x of [-7.2,7.2])add('race/flagCheckers',[x,0,-21.8],0,3.4);
+ add('race/overheadLights',[0,0,-25.5],0,[8.5,5.5,6]);for(const x of [-7.2,7.2])add('race/flagCheckers',[x,0,-28.3],0,3.4);
  // dışarısı: tribünler, çadırlar, kuleler, direkler, ağaçlar, dağlar
- for(let i=0;i<8;i++)add('race/grandStandCovered',[-12.25+i*3.5,0,KSA+4.6],0,3.5);
- for(let i=0;i<8;i++)add('race/grandStandCovered',[-KSA-4.6,0,-12.25+i*3.5],-Math.PI/2,3.5);
- for(let i=0;i<5;i++)add(i%2?'race/tentLong':'race/tent',[KSA+5.2,0,-12+i*6],-Math.PI/2,3.4);
- for(let i=0;i<5;i++)add(i%2?'race/tent':'race/tentLong',[-12+i*6,0,-KSA-5.2],0,3.4);
+ for(let i=0;i<10;i++)add('race/grandStandCovered',[-15.75+i*3.5,0,KSA+4.6],0,3.5);
+ for(let i=0;i<10;i++)add('race/grandStandCovered',[-KSA-4.6,0,-15.75+i*3.5],-Math.PI/2,3.5);
+ for(let i=0;i<5;i++)add(i%2?'race/tentLong':'race/tent',[KSA+5.2,0,-14+i*7],-Math.PI/2,3.4);
+ for(let i=0;i<5;i++)add(i%2?'race/tent':'race/tentLong',[-14+i*7,0,-KSA-5.2],0,3.4);
  for(const [x,z] of [[1,1],[-1,1],[1,-1],[-1,-1]])add(x*z>0?'race/bannerTowerRed':'race/bannerTowerGreen',[x*(KSA+2.4),0,z*(KSA+2.4)],Math.atan2(x,z),3.4);
  for(let i=0;i<9;i++){const t=-KSA+3+i*((2*KSA-6)/8);add('race/lightPostModern',[t,0,KSA+1.5],Math.PI,3.6);add('race/lightPostModern',[KSA+1.5,0,t],-Math.PI/2,3.6)}
  let sd=11;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
- for(let i=0;i<90;i++){const a=R()*Math.PI*2,d=36+R()*46;add(R()<.55?'race/treeLarge':'race/treeSmall',[Math.cos(a)*d,0,Math.sin(a)*d],R()*6,3.2+R()*1.8)}
+ for(let i=0;i<90;i++){const a=R()*Math.PI*2,d=44+R()*46;add(R()<.55?'race/treeLarge':'race/treeSmall',[Math.cos(a)*d,0,Math.sin(a)*d],R()*6,3.2+R()*1.8)}
  for(let i=0;i<16;i++){const a=i/16*Math.PI*2+R()*.3,d=120+R()*60,hh=16+R()*26,rr=26+R()*26,c=[.42+R()*.08,.55+R()*.08,.62+R()*.1];g('cone',[Math.cos(a)*d,-1,Math.sin(a)*d],R()*3,[rr*2,hh,rr*2],c);if(hh>30)g('cone',[Math.cos(a)*d,hh*.62-1,Math.sin(a)*d],R()*3,[rr*.76,hh*.38,rr*.76],[.95,.97,1])}
  return ksBake(PK,GEO,P)}
 // ---- dinamik nesneler: her kare çizim listesi ----
@@ -4691,7 +4698,7 @@ function ksCam(G,dt){const cam=G.cam,W=KSU.cv.clientWidth||1,H=KSU.cv.clientHeig
  if(!T||T.dead){const k=G.killer&&G.cs[G.killer];T=k&&!k.dead?k:null}
  let eye,at;if(T){const fx=Math.sin(T.h),fz=Math.cos(T.h),back=port?9.5:7.4,up=port?5:3.9;eye=[T.x-fx*back,T.y+up,T.z-fz*back];at=[T.x+fx*5,T.y+.9,T.z+fz*5];
   if(G.me&&G.me.dead&&T!==G.me){eye=[T.x-fx*10,T.y+6,T.z-fz*10]}}
- else{const a=ksNow()/4000;eye=[Math.sin(a)*30,18,Math.cos(a)*30];at=[0,1,0]}
+ else{const a=ksNow()/4000;eye=[Math.sin(a)*38,22,Math.cos(a)*38];at=[0,1,0]}
  if(!cam.ok){cam.e=eye.slice();cam.a=at.slice();cam.ok=1}const ke=1-Math.exp(-dt*(T&&!T.gnd?3.5:6)),ka=1-Math.exp(-dt*10);for(let i=0;i<3;i++){cam.e[i]+=(eye[i]-cam.e[i])*ke;cam.a[i]+=(at[i]-cam.a[i])*ka}
  cam.e[1]=Math.max(cam.e[1],ksT(cam.e[0],cam.e[2])+1.2);
  cam.shake*=Math.exp(-dt*5);const s=cam.shake;cam.eye=[cam.e[0]+(Math.random()-.5)*s,cam.e[1]+(Math.random()-.5)*s,cam.e[2]+(Math.random()-.5)*s];cam.at=cam.a;
@@ -4700,13 +4707,13 @@ let KSFT=[],KSQ=0,KSAG=(()=>{try{return localStorage.ksag=='1'}catch(e){return f
 // vitrin: lobi (arabalar sıralı), bitiş (kürsü), boşta (tur)
 function ksShow(dt,t){const U=KSU,v=KS||{ph:'idle',pl:[]},M=KSM.trs,L=[{m:'world',M:KSM.id()}],cam=U.scam||(U.scam={a:0});let ctr=[0,1,0],R=30,hy=16,yaw=t*.12,tags=[];
  const chOf=n=>{const b=(v.bots||[]).find(x=>x.n===n);return b?{c:b.c,k:b.k}:(v.ch||{})[n]||{c:0,k:0}};
- if(v.ph=='pick'){const all=v.pl.concat((v.bots||[]).map(b=>b.n)),mi=Math.max(0,all.indexOf(ME.name));all.forEach((n,i)=>{const x=(i-(all.length-1)/2)*2.9,z=-17.5,ch=chOf(n),C=KSCAR[ch.c]||KSCAR[0],me=i===mi;L.push({m:'disc',M:M([x,0,z],0,[2.9,.08,2.9]),tint:me?[1,.74,.16]:[.3,.34,.42],e:me?[.25,.17,0]:[0,0,0]});
+ if(v.ph=='pick'){const all=v.pl.concat((v.bots||[]).map(b=>b.n)),mi=Math.max(0,all.indexOf(ME.name));all.forEach((n,i)=>{const x=(i-(all.length-1)/2)*2.9,z=-22.5,ch=chOf(n),C=KSCAR[ch.c]||KSCAR[0],me=i===mi;L.push({m:'disc',M:M([x,0,z],0,[2.9,.08,2.9]),tint:me?[1,.74,.16]:[.3,.34,.42],e:me?[.25,.17,0]:[0,0,0]});
    L.push({m:C.k,M:M([x,.08+(me?Math.sin(t*2)*.03:0),z],Math.PI+(me?t*.7:Math.sin(t*.5+i)*.4),2.4),tint:KSCOL[ch.k][2],rec:1});tags.push([n,[x,1.5,z],KSCOL[ch.k][1]])});
-  const mx=(mi-(all.length-1)/2)*2.9;ctr=[mx*.6,.6,-17.5];R=6.4;hy=2.0;yaw=Math.sin(t*.35)*.7}
- else if(v.ph=='over'){const res=v.res||[];const P=[[0,1.1],[-3.1,.7],[3.1,.4]];res.slice(0,3).forEach((r,i)=>{const [x,hh]=P[i],z=-17.5,ch=chOf(r.n),C=KSCAR[ch.c]||KSCAR[0];L.push({m:'box',M:M([x,0,z],0,[2.8,hh,2.8]),tint:[[1,.78,.2],[.82,.85,.9],[.85,.55,.3]][i]});
+  const mx=(mi-(all.length-1)/2)*2.9;ctr=[mx*.6,.6,-22.5];R=6.4;hy=2.0;yaw=Math.sin(t*.35)*.7}
+ else if(v.ph=='over'){const res=v.res||[];const P=[[0,1.1],[-3.1,.7],[3.1,.4]];res.slice(0,3).forEach((r,i)=>{const [x,hh]=P[i],z=-22.5,ch=chOf(r.n),C=KSCAR[ch.c]||KSCAR[0];L.push({m:'box',M:M([x,0,z],0,[2.8,hh,2.8]),tint:[[1,.78,.2],[.82,.85,.9],[.85,.55,.3]][i]});
    L.push({m:C.k,M:M([x,hh,z],Math.PI+(i==0?t*.8:0),2.4),tint:KSCOL[ch.k][2],rec:1});tags.push([(i==0?'👑 ':'')+r.n,[x,hh+1.5,z],KSCOL[ch.k][1]]);if(i==0&&Math.random()<.3){const c=KSCOL[(Math.random()*8)|0][2];(U.conf||(U.conf=[])).push({x:(Math.random()-.5)*6,y:6,z:z+(Math.random()-.5)*3,vy:0,c,l:2.4})}});
   for(const c of U.conf||[]){c.l-=dt;c.y-=dt*2.2;L.push({m:'box',M:M([c.x,c.y,c.z],c.l*5,[.12,.02,.2],c.l*3),tint:c.c,e:c.c.map(x=>x*.3),ns:1})}if(U.conf)U.conf=U.conf.filter(c=>c.l>0&&c.y>0);
-  ctr=[0,1.2,-17.5];R=9;hy=3.0;yaw=Math.sin(t*.3)*.6}
+  ctr=[0,1.2,-22.5];R=9;hy=3.0;yaw=Math.sin(t*.3)*.6}
  const e=[ctr[0]+Math.sin(yaw)*R,ctr[1]+hy,ctr[2]+Math.cos(yaw)*R];const c={eye:e,at:ctr,fov:(U.cv.clientHeight>U.cv.clientWidth?70:52)*Math.PI/180,yaw:Math.atan2(ctr[0]-e[0],ctr[2]-e[2])};
  KSL.lc=v.ph=='idle'?[0,0,0]:[ctr[0],0,ctr[2]];KSL.lr=v.ph=='idle'?34:14;KSE.render(L,c,KSL);
  const cw=U.cv.clientWidth,ch=U.cv.clientHeight,seen={};for(const [n,p,col] of tags){let el=U.tags['$'+n];if(!el){el=h('div',{class:'kstag'},h('span'),h('i'));U.tagl.append(el);U.tags['$'+n]=el}seen['$'+n]=1;const q=KSE.proj(p,cw,ch);if(!q){el.style.display='none';continue}
@@ -4714,7 +4721,7 @@ function ksShow(dt,t){const U=KSU,v=KS||{ph:'idle',pl:[]},M=KSM.trs,L=[{m:'world
  for(const k in U.tags)if(!seen[k])U.tags[k].style.display='none'}
 function ksFrame(dt,t){const G=KSG,U=KSU;if(!KSE||!U.cv)return;const cv=U.cv,dpr=Math.min(2,window.devicePixelRatio||1)*[1,.8,.65][KSQ],W=Math.max(2,Math.round(cv.clientWidth*dpr)),H=Math.max(2,Math.round(cv.clientHeight*dpr));if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
  KSL.t+=dt*.004;KSE.shadows=KSQ<2;
- const play=G&&KS&&KS.ph=='play'&&KS.run===G.run;U.wrap.classList.toggle('play',!!play);
+ const play=G&&KS&&KS.ph=='play'&&KS.run===G.run;U.wrap.classList.toggle('play',!!play);U.wrap.classList.toggle('spec',!!play&&!G.me);
  if(!play){ksShow(dt,t);ksEngineSnd(null);return}
  let acc=dt;while(acc>0){const s=Math.min(1/60,acc);ksStep(G,s);acc-=s}
  ksCam(G,dt);const F=G.me&&!G.me.dead?G.me:null;KSL.lc=F?[F.x+Math.sin(F.h)*6,0,F.z+Math.cos(F.h)*6]:[0,0,0];KSL.lr=F?26:34;
@@ -4722,8 +4729,11 @@ function ksFrame(dt,t){const G=KSG,U=KSU;if(!KSE||!U.cv)return;const cv=U.cv,dpr
  for(const k in U.tags)if(k[0]=='$')U.tags[k].style.display='none';
  // kalite: yavaşsa çözünürlüğü / gölgeyi düşür
  KSFT.push(dt);if(KSFT.length>90){const a=KSFT.reduce((x,y)=>x+y,0)/KSFT.length;KSFT=[];if(a>.026&&KSQ<2)KSQ++}}
-function ksLoop(){if(KSRAF)return;let last=performance.now();const tick=n=>{KSRAF=0;if(!KSU.root||!document.body.contains(KSU.root)||TAB!=3||GSEL!='ks'||document.hidden){ksEngineSnd(null);return}
- if(KSE&&KSE.lost){KSE=null;ksStart();return}
+let KSAON=false;
+function ksQuiet(){KSAON=false;ksEngineSnd(null);ksMusStop()}
+function ksNewCv(){const U=KSU,o=U.cv,n=h('canvas',{class:'kscv'});if(o&&o.parentNode)o.parentNode.replaceChild(n,o);U.cv=n;KSE=null;KSLD=0}
+function ksLoop(){if(KSRAF)return;let last=performance.now();const tick=n=>{KSRAF=0;if(!KSU.root||!document.body.contains(KSU.root)||TAB!=3||GSEL!='ks'||document.hidden){ksQuiet();return}
+ KSAON=!(KS&&KS.ph=='play'&&!KS.pl.includes(ME.name));if(!KSAON){ksEngineSnd(null);ksMusStop()}if(KSE&&KSE.lost){ksNewCv();ksStart()}if(!KSE&&!KSLD&&KSU.cv)ksStart();ksMusStart();
  const dt=Math.min(.25,(n-last)/1000);last=n;try{ksFrame(dt,n/1000)}catch(e){console.error(e)}KSRAF=requestAnimationFrame(tick)};KSRAF=requestAnimationFrame(tick)}
 // ---- HUD ----
 const KSICON={roket:'<svg viewBox="0 0 24 24"><g transform="rotate(45 12 12)"><path d="M12 2c2.6 2.2 3.6 5 3.6 8.2V16H8.4v-5.8C8.4 7 9.4 4.2 12 2z" fill="currentColor"/><circle cx="12" cy="9" r="1.7" fill="#0A1120"/><path d="M8.4 12.5L5.5 16v2.2l2.9-1.4zM15.6 12.5l2.9 3.5v2.2l-2.9-1.4z" fill="currentColor"/><path d="M10 17h4l-.6 3.2-1.4 1.8-1.4-1.8z" fill="#E8551E"/></g></svg>',
@@ -4765,7 +4775,7 @@ function ksHud(G,t){const U=KSU,now=ksNow(),sc=(KS&&KS.sc)||{};
  G.feed=G.feed.filter(f=>now-f.t<7000)}
 // ---- ses (cihazda üretilir) ----
 function ksAC(){if(typeof FWMUTE!='undefined'&&FWMUTE)return null;try{FWAC=FWAC||new (window.AudioContext||window.webkitAudioContext)();if(FWAC.state=='suspended')FWAC.resume();return FWAC}catch(e){return null}}
-function ksSnd(k,v){const a=ksAC();if(!a)return;v=v==null?1:v;const t=a.currentTime,o=a.destination;
+function ksSnd(k,v){if(!KSAON)return;const a=ksAC();if(!a)return;v=v==null?1:v;const t=a.currentTime,o=a.destination;
  const tone=(f0,f1,d,g,ty,dl)=>{const x=a.createOscillator(),gn=a.createGain();x.type=ty||'sine';x.frequency.setValueAtTime(f0,t+(dl||0));if(f1)x.frequency.exponentialRampToValueAtTime(f1,t+(dl||0)+d);gn.gain.setValueAtTime(0,t+(dl||0));gn.gain.linearRampToValueAtTime(g*v,t+(dl||0)+.01);gn.gain.exponentialRampToValueAtTime(.0001,t+(dl||0)+d);x.connect(gn);gn.connect(o);x.start(t+(dl||0));x.stop(t+(dl||0)+d+.05)};
  const noise=(d,f,q,g,f1,dl)=>{const b=a.createBuffer(1,Math.ceil(a.sampleRate*d),a.sampleRate),x=b.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=Math.random()*2-1;const s=a.createBufferSource();s.buffer=b;const fl=a.createBiquadFilter();fl.type='bandpass';fl.frequency.setValueAtTime(f,t+(dl||0));if(f1)fl.frequency.exponentialRampToValueAtTime(f1,t+(dl||0)+d);fl.Q.value=q;const gn=a.createGain();gn.gain.setValueAtTime(g*v,t+(dl||0));gn.gain.exponentialRampToValueAtTime(.0001,t+(dl||0)+d);s.connect(fl);fl.connect(gn);gn.connect(o);s.start(t+(dl||0))};
  if(k=='boom'){noise(1.1,900,.6,.9,90);tone(120,30,.8,.6,'sine')}else if(k=='rocket'){noise(.6,600,1,.35,2400);tone(300,900,.25,.08,'sawtooth')}else if(k=='gun'){noise(.06,2500,2,.25)}else if(k=='mine'){tone(520,260,.15,.18,'square')}
@@ -4776,15 +4786,15 @@ function ksSnd(k,v){const a=ksAC();if(!a)return;v=v==null?1:v;const t=a.currentT
  else if(k=='horn'){tone(392,0,.32,.22,'square');tone(494,0,.32,.16,'square')}else if(k=='beep'){tone(660,0,.15,.2,'square')}else if(k=='go'){tone(990,0,.4,.22,'square')}
  else if(k=='alarm'){[880,660,880,660].forEach((f,i)=>tone(f,0,.13,.14,'square',i*.15))}else if(k=='end'){[784,659,523,392].forEach((f,i)=>tone(f,0,.2,.18,'triangle',i*.14))}
  else if(k=='kill'){[784,1047].forEach((f,i)=>tone(f,0,.14,.18,'square',i*.07))}else if(k=='crown'){[523,659,784,1047].forEach((f,i)=>tone(f,0,.18,.16,'triangle',i*.08))}}
-let KSENG=null;function ksEngineSnd(G){const K=G&&G.me;if(!K||K.dead||!G.live||(typeof FWMUTE!='undefined'&&FWMUTE)){if(KSENG){try{KSENG.g.gain.setTargetAtTime(0,KSENG.a.currentTime,.05)}catch(e){}}return}
+let KSENG=null;function ksEngineSnd(G){const K=G&&G.me;if(!KSAON||!K||K.dead||!G.live||(typeof FWMUTE!='undefined'&&FWMUTE)){if(KSENG){const E=KSENG;KSENG=null;try{E.g.gain.cancelScheduledValues(E.a.currentTime);E.g.gain.setValueAtTime(0,E.a.currentTime);E.o.stop();E.o2.stop();E.g.disconnect()}catch(e){}}return}
  const a=ksAC();if(!a)return;if(!KSENG){const o=a.createOscillator(),o2=a.createOscillator(),f=a.createBiquadFilter(),g=a.createGain();o.type='sawtooth';o2.type='square';f.type='lowpass';f.frequency.value=600;g.gain.value=0;o.connect(f);o2.connect(f);f.connect(g);g.connect(a.destination);o.start();o2.start();KSENG={a,o,o2,f,g}}
- const s=Math.min(1,Math.abs(K.v)/21),T=a.currentTime;KSENG.o.frequency.setTargetAtTime(48+s*95+(K.bst>0?30:0),T,.05);KSENG.o2.frequency.setTargetAtTime(24+s*48,T,.05);KSENG.f.frequency.setTargetAtTime(380+s*1400,T,.08);KSENG.g.gain.setTargetAtTime((KSIN.g||KSKEY.g?.075:.04)*(K.gnd?1:.6),T,.08)}
+ const s=Math.min(1,Math.abs(K.v)/16),T=a.currentTime;KSENG.o.frequency.setTargetAtTime(48+s*95+(K.bst>0?30:0),T,.05);KSENG.o2.frequency.setTargetAtTime(24+s*48,T,.05);KSENG.f.frequency.setTargetAtTime(380+s*1400,T,.08);KSENG.g.gain.setTargetAtTime((KSIN.g||KSKEY.g?.075:.04)*(K.gnd?1:.6),T,.08)}
 // ---- motor kurulumu ----
 let KSLD=0;
 function ksStart(){const U=KSU;if(!U.cv)return;if(KSE&&KSE.cv===U.cv&&!KSE.lost)return;if(KSLD)return;KSLD=1;U.load.style.display='';U.load.textContent='Arena hazırlanıyor…';
- let E=null;try{E=ksEngine(U.cv)}catch(e){console.error(e)}
+ let E=null;try{E=ksEngine(U.cv)}catch(e){console.error(e)}if(E&&E.gl.isContextLost()){ksNewCv();KSLD=1;try{E=ksEngine(KSU.cv)}catch(e){E=null}}if(E)E.cv=KSU.cv;
  if(!E){KSLD=0;U.load.textContent='Bu cihaz 3B çizimi (WebGL2) desteklemiyor. Tarayıcını güncelleyip tekrar dene.';return}
- ksPack().then(PK=>{for(const k in PK)E.up(k,PK[k]);KSGEO=KSGEO||ksGeo();for(const k in KSGEO)E.up(k,KSGEO[k]);E.up('world',ksWorld(PK,KSGEO),true);E.cv=U.cv;KSE=E;KSLD=0;U.load.style.display='none';ksLoop()})
+ ksPack().then(PK=>{if(E.cv&&E.cv!==KSU.cv||E.gl.isContextLost()){KSLD=0;return}for(const k in PK)E.up(k,PK[k]);KSGEO=KSGEO||ksGeo();for(const k in KSGEO)E.up(k,KSGEO[k]);E.up('world',ksWorld(PK,KSGEO),true);E.cv=U.cv;KSE=E;KSLD=0;U.load.style.display='none';ksLoop()})
   .catch(e=>{console.error(e);KSLD=0;U.load.textContent='Oyun dosyaları yüklenemedi. Bağlantını kontrol edip sayfayı yenile.'})}
 // ---- kontroller ----
 function ksPad(){const B=(k,cls,lab,aria)=>h('button',{type:'button',class:'ksb '+cls,'data-k':k,'aria-label':aria,html:lab});
@@ -4806,28 +4816,38 @@ if(!window._kskey){window._kskey=1;
   const k=KSKM[e.code];if(k){KSKEY[k]=1;e.preventDefault();ksAC();return}if(e.repeat)return;
   if(e.code=='Space'||e.code=='KeyJ'||e.code=='Enter'){KSIN.f=1;e.preventDefault()}else if(e.code=='ShiftLeft'||e.code=='ShiftRight'||e.code=='KeyK'){KSIN.n=1;e.preventDefault()}else if(e.code=='KeyH'){KSIN.h=1}});
  addEventListener('keyup',e=>{const k=KSKM[e.code];if(k)KSKEY[k]=0});addEventListener('blur',()=>{KSKEY={};if(KSU.reset)KSU.reset()});
- document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'&&TAB==3&&GSEL=='ks'&&KSU.root){cancelAnimationFrame(KSRAF);KSRAF=0;ksLoop()}else{KSKEY={};if(KSU.reset)KSU.reset()}})}
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'&&TAB==3&&GSEL=='ks'&&KSU.root){cancelAnimationFrame(KSRAF);KSRAF=0;ksLoop()}else{KSKEY={};if(KSU.reset)KSU.reset();ksQuiet()}});addEventListener('pagehide',()=>ksQuiet())}
 // ---- kart ----
 function ksCard(){const st=h('div',{class:'lbl',style:'margin:0;text-align:center'}),area=h('div',{class:'stack',style:'gap:10px'}),acts=h('div',{class:'row wrap',style:'justify-content:center'});
  const cv=h('canvas',{class:'kscv'}),tagl=h('div',{class:'kstagl'}),load=h('div',{class:'ksload',text:'Arena hazırlanıyor…'}),ban=h('div',{class:'ksban'});
  const icn=p=>'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';
  const big=h('button',{type:'button',class:'fwtb','aria-label':'Büyük ekran',onclick:()=>ksBig(!KSB),html:icn('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>')});
  const menu=h('button',{type:'button',class:'fwtb','aria-label':'Menü',onclick:ksMenu,html:icn('<path d="M4 6h16M4 12h16M4 18h16"/>')});
- const snd=h('button',{type:'button',class:'fwtb','aria-label':'Ses',onclick:()=>{FWMUTE=!FWMUTE;try{localStorage.fwmute=FWMUTE?'1':'0'}catch(e){}snd.innerHTML=icn(FWMUTE?'<path d="M11 5L6 9H2v6h4l5 4zM23 9l-6 6M17 9l6 6"/>':'<path d="M11 5L6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>');if(FWMUTE)ksEngineSnd(null)},html:icn(FWMUTE?'<path d="M11 5L6 9H2v6h4l5 4zM23 9l-6 6M17 9l6 6"/>':'<path d="M11 5L6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>')});
+ const snd=h('button',{type:'button',class:'fwtb','aria-label':'Ses',onclick:()=>{FWMUTE=!FWMUTE;try{localStorage.fwmute=FWMUTE?'1':'0'}catch(e){}if(FWMUTE)ksMusStop();snd.innerHTML=icn(FWMUTE?'<path d="M11 5L6 9H2v6h4l5 4zM23 9l-6 6M17 9l6 6"/>':'<path d="M11 5L6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>');if(FWMUTE)ksEngineSnd(null)},html:icn(FWMUTE?'<path d="M11 5L6 9H2v6h4l5 4zM23 9l-6 6M17 9l6 6"/>':'<path d="M11 5L6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>')});
  const tm=h('div',{class:'kstm'},h('b',{text:'3:00'})),lb=h('div',{class:'kslb'}),mm=h('canvas',{class:'ksmm',width:'120',height:'120'}),feed=h('div',{class:'ksfeed'}),wn=h('div',{class:'kswn'}),dead=h('div',{class:'ksdead',style:'display:none'},h('b',{text:'ELENDİN'}),h('small'));
  const C=ksPad();const hud=h('div',{class:'kshud'},tm,lb,mm,feed,wn,dead);
- const wrap=h('div',{class:'fwwrap kswrap'},cv,tagl,hud,C.pad,h('div',{class:'fwtools'},snd,menu,big),load,ban);
+ const ex=h('button',{type:'button',class:'fwtb ksexb','aria-label':'Oyundan çık',onclick:e=>{e.stopPropagation();ksExit(true)},html:icn('<path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/>')});
+ const exs=h('div',{class:'ksex',style:'display:none'});exs.addEventListener('pointerdown',e=>e.stopPropagation());
+ const wrap=h('div',{class:'fwwrap kswrap'},cv,tagl,hud,C.pad,h('div',{class:'fwtools'},ex,snd,menu,big),load,ban,exs);
  const root=h('div',{class:'card ksc',id:'ksp'},h('div',{class:'row',style:'justify-content:space-between;flex-wrap:wrap'},h('h3',{class:'sftl',text:'Kart Savaşı'})),st,wrap,area,acts);
- KSU={root,st,area,acts,cv,tagl,load,ban,wrap,hud,tm,lb,mm,feed,wn,dead,fire:C.f,nit:C.n,pad:C.pad,reset:C.reset,tags:{}};
+ KSU={root,st,area,acts,cv,tagl,load,ban,wrap,exs,hud,tm,lb,mm,feed,wn,dead,fire:C.f,nit:C.n,pad:C.pad,reset:C.reset,tags:{}};
  ctlReg('ks',wrap,C.pad,{l:C.l,r:C.r,g:C.g,b:C.b,f:C.f,n:C.n,h:C.hn});ksRender();return root}
-function ksBig(on){KSB=on;const w=KSU.wrap;if(!w)return;gameFull(w,on);if(KSU.reset)KSU.reset()}
+function ksBig(on){KSB=on;const w=KSU.wrap;if(!w)return;gameFull(w,on);if(KSU.reset)KSU.reset();if(KSU.exs)KSU.exs.style.display='none'}
+function ksExit(on){const U=KSU,x=U.exs;if(!x)return;if(!on){x.style.display='none';return}const v=KS||{pl:[]},inG=v.ph=='play'&&v.pl.includes(ME.name);if(U.reset)U.reset();KSKEY={};
+ const b=(t,fn,c)=>h('button',{type:'button',class:'btn '+(c||'sec'),onclick:e=>{e.stopPropagation();fn()}},t);
+ x.replaceChildren(h('div',{class:'ksexc'},h('b',{text:inG?'Maç sürüyor':'Kart Savaşı'}),
+  inG?h('small',{text:'Çıkarsan bu maçtaki puanın silinir. Diğerleri botlarla devam eder.'}):null,
+  b(inG?'Maça devam et':'Kapat',()=>ksExit(false),' '),
+  KSB?b('Küçük ekrana geç',()=>{ksExit(false);ksBig(false)}):b('Büyük ekran',()=>{ksExit(false);ksBig(true)}),
+  inG?b('Maçtan çık',()=>{ksExit(false);ksBig(false);ksQuiet();send({t:'ksquit'})},'ksqb'):null));x.style.display=''}
 function ksMenu(){const v=KS||{ph:'idle',pl:[]};const ag=h('button',{type:'button',class:'btn sec sm',onclick:()=>{KSAG=!KSAG;try{localStorage.ksag=KSAG?'1':'0'}catch(e){}ag.textContent='Otomatik gaz: '+(KSAG?'Açık':'Kapalı')}},'Otomatik gaz: '+(KSAG?'Açık':'Kapalı'));
+ const mu=h('button',{type:'button',class:'btn sec sm',onclick:()=>{KSMUS=!KSMUS;try{localStorage.ksmus=KSMUS?'1':'0'}catch(e){}mu.textContent='Müzik: '+(KSMUS?'Açık':'Kapalı');if(KSMUS)ksMusStart();else ksMusStop()}},'Müzik: '+(KSMUS?'Açık':'Kapalı'));
  const m=modal('Kart Savaşı',h('div',{class:'stack',style:'gap:8px'},
   h('small',{class:'mu',text:'Kutulardan silah topla, rakipleri patlat. Her eleme 1 puan; taçlı lideri elersen +1 bonus, son 30 saniyede her eleme 2 puan. 3 dakika sonunda en çok puanı olan kazanır.'}),
   h('div',{class:'ksrules'},...[['◀ ▶','Sola / sağa dön'],['GAZ','İleri git · hızlıyken dönersen drift yaparsın, bırakınca turbo'],['FREN','Yavaşla, durunca geri git'],['⚡','Nitro: dolunca bas, hız patlaması'],['🎯','Silah: kutudan çıkanı ateşle'],['📢','Korna: sadece eğlence']].map(([a,b])=>h('div',{},h('b',{text:a}),h('small',{text:b})))),
   h('small',{class:'mu',text:'Klavye: oklar ya da WASD sürüş, Boşluk ateş, Shift nitro, H korna.'}),
   h('small',{class:'mu',text:'Silahlar: Roket (2 atış, tek vuruşta patlatır) · Makineli (kısa seri, 3-4 isabet) · Mayın (3 tane, arkana bırakır) · Buz topu (dondurur; donmuş arabaya çarpan onu kırar) · Kalkan (5 sn dokunulmazlık, çarptığını patlatır) · Bomba (platodaki kutularda daha sık, uzağa atılır, geniş patlama).'}),
-  h('div',{class:'row wrap',style:'gap:6px'},ag,h('button',{type:'button',class:'btn sec sm',onclick:()=>{m.remove();const U=CTLL.find(u=>u.k=='ks'&&u.wrap===KSU.wrap);if(U)ctlPanel(U)}},'⚙ Düğmeleri ayarla'))),
+  h('div',{class:'row wrap',style:'gap:6px'},ag,mu,h('button',{type:'button',class:'btn sec sm',onclick:()=>{m.remove();const U=CTLL.find(u=>u.k=='ks'&&u.wrap===KSU.wrap);if(U)ctlPanel(U)}},'⚙ Düğmeleri ayarla'))),
  [h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Devam'),v.ph=='play'&&v.pl.includes(ME.name)?h('button',{type:'button',class:'btn',onclick:()=>{m.remove();send({t:'ksquit'})}},'Oyundan çık'):null].filter(Boolean))}
 function ksSeat(v,n,host){const me=ME.name,bot=(v.bots||[]).find(b=>b.n===n),ch=bot?{c:bot.c,k:bot.k}:(v.ch||{})[n]||{c:0,k:0},mine=n===me,C=KSCAR[ch.c]||KSCAR[0],bt=(t,fn,a)=>h('button',{type:'button',class:'btn sec sm','aria-label':a||t,onclick:fn},t);
  const bars=h('div',{class:'ksbars'},...[['Hız',0],['Hızlanma',1],['Dönüş',2],['Dayanıklılık',3]].map(([l,i])=>h('div',{},h('small',{text:l}),h('i',{style:'--v:'+C.st[i]}))));
@@ -4854,7 +4874,7 @@ function ksRender(){const U=KSU;if(!U.root)return;const v=KS||{ph:'idle',pl:[]},
 function ksIntro(){return h('div',{class:'ksintro'},h('div',{class:'sftitle'},h('b',{text:'KART SAVAŞI'}),h('small',{text:'2-6 araba · 3 dakika · botlarla ya da arkadaşlarınla'})),
  h('div',{class:'ksrules'},...[['📦','Kutulardan rastgele silah topla'],['🚀','Roket, makineli, mayın, buz, kalkan, bomba'],['🌀','Drift yap, bırakınca turbo kazan'],['🦘','Rampalardan uç, platoya tırman'],['👑','Lideri elersen taç bonusu'],['⏱️','Son 30 saniye: her eleme 2 puan']].map(([i,t])=>h('div',{},h('span',{text:i}),h('small',{text:t})))))}
 // ---- sunucu iletileri ----
-function ksSync(G,g){const all=g.pl.concat((g.bots||[]).map(b=>b.n));for(const n in G.cs)if(!all.includes(n)){delete G.cs[n];if(KSU.tags[n]){KSU.tags[n].remove();delete KSU.tags[n]}}
+function ksSync(G,g){const all=g.pl.concat((g.bots||[]).map(b=>b.n));if(G.me&&!all.includes(ME.name))G.me=null;for(const n in G.cs)if(!all.includes(n)){delete G.cs[n];if(KSU.tags[n]){KSU.tags[n].remove();delete KSU.tags[n]}}
  all.forEach((n,i)=>{if(G.cs[n])return;const b=(g.bots||[]).find(x=>x.n===n),ch=b?{c:b.c,k:b.k}:(g.ch||{})[n]||{c:0,k:0},[x,z]=KSSP[i%KSSP.length];G.cs[n]=ksCarObj(n,ch.c|0,ch.k|0,x,z,Math.atan2(-x,-z),n===ME.name);G.cs[n].bot=!!b;if(n===ME.name)G.me=G.cs[n]})}
 function ksSet(g){const p=KS;KS=g;try{
  if(g.ph=='play'){if(!KSG||KSG.run!==g.run||KSG.id!==g.id){KSG=ksSetup(g,ME.name);KSG.seen={};KSG.df=g.df|0;KSG.cd=null;KSG.l30=0;for(const k in KSU.tags){KSU.tags[k].remove()}KSU.tags={};KSU.lbk='';KSU.fdk='';KSU.fw=null;if(KSU.reset)KSU.reset();KSKEY={};
@@ -4874,6 +4894,30 @@ function ksKill(m){const G=KSG;if(!G||m.run!==G.run)return;if(KS)KS.sc=m.sc||KS.
  else if(m.stk>=3&&m.by)ksBanner(G,m.by+' coştu!',m.stk+' eleme üst üste','',1300);
  if(m.crown&&m.crown!==m.pcrown){if(m.crown===me){ksSnd('crown');setTimeout(()=>ksBanner(G,'TAÇ SENDE!','Herkes seni avlayacak','gold',1600),m.by===me?1700:0)}}}
 function ksMsgIn(m){if(m.t=='ks')ksSet(m.g);else if(m.t=='ksp')ksPos(m);else if(m.t=='kse')ksOnE(m);else if(m.t=='ksk')ksKill(m);else if(m.t=='kserr')toast(m.e,1)}
+
+// ---- arka plan müziği (cihazda üretilen, özgün neşeli döngü) ----
+let KSMUS=(()=>{try{return localStorage.ksmus!='0'}catch(e){return true}})(),KSM2=null;
+const KSMC=[[48,0],[45,1],[41,0],[43,0],[41,0],[43,0],[40,1],[48,0]];
+const KSMM=[[76,79,84,79,76,0,74,76],[72,0,76,72,69,72,76,0],[77,76,74,72,74,0,69,72],[74,0,71,74,79,0,0,0],[81,0,77,81,84,81,77,0],[79,0,74,79,83,79,74,0],[76,79,76,74,72,74,76,0],[74,72,71,74,72,0,0,0]];
+function ksMusStart(){if(!KSMUS||(typeof FWMUTE!='undefined'&&FWMUTE)||KSM2||!KSAON)return;const a=ksAC();if(!a)return;const g=a.createGain();g.gain.setValueAtTime(0,a.currentTime);g.gain.linearRampToValueAtTime(1,a.currentTime+2);g.connect(a.destination);
+ KSM2={a,g,t:a.currentTime+.15,st:0,nb:null};KSM2.iv=setInterval(ksMusTick,80);ksMusTick()}
+function ksMusStop(){const m=KSM2;if(!m)return;KSM2=null;clearInterval(m.iv);try{m.g.gain.cancelScheduledValues(m.a.currentTime);m.g.gain.setTargetAtTime(0,m.a.currentTime,.08);setTimeout(()=>{try{m.g.disconnect()}catch(e){}},600)}catch(e){}}
+function ksMusTick(){const m=KSM2;if(!m)return;const a=m.a;if(a.state!='running')return;if(m.t<a.currentTime)m.t=a.currentTime+.05;
+ const hot=KSG&&KSG.live&&KSG.t1-ksNow()<30000,D=60/(hot?132:116)/4,mf=x=>440*Math.pow(2,(x-69)/12);
+ const nt=(f,t,d,g,ty,att)=>{const o=a.createOscillator(),gn=a.createGain();o.type=ty;o.frequency.setValueAtTime(f,t);gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(g,t+(att||.008));gn.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(gn);gn.connect(m.g);o.start(t);o.stop(t+d+.03)};
+ const nz=(t,d,g,f,ty)=>{if(!m.nb){const b=a.createBuffer(1,a.sampleRate*.3|0,a.sampleRate),x=b.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=Math.random()*2-1;m.nb=b}const s=a.createBufferSource();s.buffer=m.nb;const fl=a.createBiquadFilter();fl.type=ty;fl.frequency.value=f;const gn=a.createGain();gn.gain.setValueAtTime(g,t);gn.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(fl);fl.connect(gn);gn.connect(m.g);s.start(t);s.stop(t+d+.02)};
+ while(m.t<a.currentTime+.4){const st=m.st,t=m.t,bar=(st>>4)%8,p=st&15,[root,mi]=KSMC[bar],tri=[0,mi?3:4,7];
+  // davul
+  if(p==0||p==8||p==10&&bar%2)nt(130,t,.18,.22,'sine'),nt(55,t,.16,.18,'sine');
+  if(p==4||p==12)nz(t,.12,.09,1800,'bandpass');
+  if(p%2==0)nz(t,.035,p%4==2?.035:.02,7000,'highpass');
+  // bas: zıplayan kök + oktav
+  if(p%4==0)nt(mf(root-12+(p%8==4?12:0)),t,D*3,.13,'triangle');
+  // akor vuruşları (ara zamanlarda)
+  if(p==2||p==6||p==10||p==14)for(const k of tri)nt(mf(root+12+k),t,D*1.4,.022,'square');
+  // melodi (sekizlik), son 30 saniyede bir oktav parlak
+  if(p%2==0){const n=KSMM[bar][p>>1];if(n){nt(mf(n),t,D*2.6,.055,'triangle');nt(mf(n+12),t,D*1.6,.014,'sine')}}
+  m.t+=D;m.st=(st+1)%128}}
 
 // ---------- profil ----------
 async function myCode(){if(FR&&FR.me&&FR.me.tag)return FR.me.n+'#'+FR.me.tag;try{const j=await api('me');if(j.tag){if(FR)FR.me={n:j.name,tag:j.tag};return j.name+'#'+j.tag}}catch(e){}return ''}
