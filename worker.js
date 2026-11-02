@@ -978,10 +978,10 @@ function gameSwitch(){const c=h('div',{class:'chips',id:'gsw'});GPB=h('div',{cla
 GSW=()=>{c.replaceChildren(...[['word','Kelimelik'],['duel','Kelime Düellosu'],['bs','Amiral Battı'],['chess','Satranç'],['fw','Alev ve Dalga'],['kt','Pati Timi'],['br','Sopa Savaşı'],['yk','Yalancılar Kahvesi']].map(([k,t])=>{const pend=GSP&&GSP.to==k;return h('button',{type:'button',class:(GSEL==k?'on':'')+(pend?' pend':''),onclick:()=>{if(k==GSEL)return;if(GSP){if(GSP.by==ME.name)return toast('Önce bekleyen isteğin yanıtlanmalı');return toast('Önce bekleyen isteği yanıtla',1)}send({t:'gsel',g:k})}},t+(pend?' ⏳':''))}));gpRender()};
 GSW();return h('div',{class:'card',style:'padding:12px;gap:10px'},c,GPB,h('div',{class:'xgrow'},h('button',{type:'button',class:'btn sec sm xgbtn',onclick:()=>xgOpen()},'🏎️ Need for Speed U2'),h('small',{class:'mu',text:'Dış site (nfsu2.xyz), burada tam ekran açılır'})))}
 // ---- dış site oyunu: sitemizin içinde tam ekran pencere ----
-const XG={u:'/xg/',ext:'https://nfsu2.xyz/',t:'Need for Speed U2'};
-function xgOpen(){if(document.querySelector('.xg'))return;const fr=h('iframe',{src:XG.u,title:XG.t,allow:'fullscreen; gamepad; autoplay; clipboard-write; cross-origin-isolated',allowfullscreen:''}),
- tip=h('small',{class:'xgtip',style:'display:none',text:'Oyun sunucusuna bağlanılıyor... Yüklenmezse sağ üstten yeni sekmede açabilirsin.'}),
- m=h('div',{class:'mo xg',role:'dialog','aria-label':XG.t},h('div',{class:'xgbar'},h('button',{type:'button',class:'btn sec sq','aria-label':'Kapat',onclick:()=>m.remove()},ic('back')),h('b',{text:XG.t}),h('a',{class:'btn sec sm',href:XG.ext,target:'_blank',rel:'noopener'},'Yeni sekmede aç')),tip,h('div',{class:'xgfr'},fr));
+const XG={u:'/xg/',t:'Need for Speed U2'};
+function xgOpen(){if(document.querySelector('.xg'))return;const fr=h('iframe',{src:XG.u,title:XG.t,allow:'fullscreen; gamepad; autoplay; clipboard-write; cross-origin-isolated',allowfullscreen:'',referrerpolicy:'no-referrer-when-downgrade'}),
+ tip=h('small',{class:'xgtip',style:'display:none',text:'Ekran boş kalırsa o site kendini başka sitelerin içinde açtırmıyor demektir: sağ üstteki “Yeni sekmede aç”a bas.'}),
+ m=h('div',{class:'mo xg',role:'dialog','aria-label':XG.t},h('div',{class:'xgbar'},h('button',{type:'button',class:'btn sec sq','aria-label':'Kapat',onclick:()=>m.remove()},ic('back')),h('b',{text:XG.t}),h('a',{class:'btn sec sm',href:XG.u,target:'_blank',rel:'noopener'},'Yeni sekmede aç')),tip,h('div',{class:'xgfr'},fr));
  document.body.append(m);document.documentElement.classList.add('xgon');const rm0=m.remove.bind(m);m.remove=()=>{document.documentElement.classList.remove('xgon');rm0();setTimeout(navFix,0)};setTimeout(navFix,0);setTimeout(()=>{if(document.body.contains(m))tip.style.display=''},9000);
  try{if(RM)send({t:'chat',x:'🏎️ Need for Speed U2 açtım (Oyunlar sekmesi)'})}catch(e){}}
 function gpRender(){const B=GPB;if(!B)return;const p=GSP;if(!p){B.style.display='none';B.replaceChildren();return}B.style.display='';
@@ -4952,7 +4952,7 @@ if(T&&ME)enter();else viewLogin();
 (()=>{let V0='';const chk=async()=>{try{const r=await fetch('/appv',{cache:'no-store'});if(!r.ok)return;const v=(await r.text()).trim();if(!v||v.length>40)return;if(!V0){V0=v;return}if(v!==V0){window._newV=1;if(CURV=='lobby'&&!RM&&!document.querySelector('.mo'))navFix()}}catch(e){}};chk();document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible')chk()});addEventListener('pageshow',chk);setInterval(chk,10*60*1000)})();
 `;
 const HTML = '<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#0A1120"><meta name="color-scheme" content="dark"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Bizim Sinema"><link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icon-180.png?v=39"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&family=Baloo+2:wght@600;700;800&display=swap"><title>Bizim Sinema</title><link rel="icon" href="/icon-192.png?v=39"><style>' + CSS + CSS39 + '</style></head><body><div id="app"></div><div id="tt"></div><script>' + JS + '</script></body></html>';
-const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.youtube.com https://s.ytimg.com https://js-cdn.music.apple.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https: http:; media-src * data: blob:; connect-src * wss: ws: data: blob:; frame-src 'self' https: http: blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
+const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.youtube.com https://s.ytimg.com https://js-cdn.music.apple.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https: http:; media-src * data: blob:; connect-src * wss: ws: data: blob:; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://*.apple.com https://nfsu2.xyz https://*.nfsu2.xyz; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
 // ---------- kripto ----------
@@ -7168,20 +7168,13 @@ export class Do {
 }
 
 async function xgProxy(req, u, isAsset = false) {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-methods': '*', 'access-control-allow-headers': '*' } });
-  }
   const subPath = isAsset ? u.pathname : (u.pathname.replace(/^\/xg\/?/, '/') || '/');
   const targetUrl = new URL(subPath + u.search, 'https://nfsu2.xyz');
-  const hd = new Headers();
-  hd.set('User-Agent', req.headers.get('user-agent') || UA);
-  hd.set('Accept', req.headers.get('accept') || '*/*');
-  hd.set('Accept-Language', req.headers.get('accept-language') || 'tr-TR,tr;q=0.9,en;q=0.8');
-  hd.set('Referer', 'https://nfsu2.xyz/');
+  const hd = new Headers(req.headers);
+  hd.set('Host', 'nfsu2.xyz');
   hd.set('Origin', 'https://nfsu2.xyz');
-  if (req.headers.get('range')) hd.set('Range', req.headers.get('range'));
-  if (req.headers.get('content-type')) hd.set('Content-Type', req.headers.get('content-type'));
-
+  hd.set('Referer', 'https://nfsu2.xyz/');
+  ['cf-connecting-ip', 'cf-ipcountry', 'cf-ray', 'cf-visitor'].forEach(k => hd.delete(k));
   try {
     const up = await fetch(targetUrl.href, {
       method: req.method,
@@ -7190,25 +7183,11 @@ async function xgProxy(req, u, isAsset = false) {
       redirect: 'follow'
     });
     const oh = new Headers(up.headers);
-    ['x-frame-options', 'content-security-policy', 'content-security-policy-report-only', 'cross-origin-resource-policy', 'cross-origin-embedder-policy', 'cross-origin-opener-policy', 'clear-site-data'].forEach(k => oh.delete(k));
+    ['x-frame-options', 'content-security-policy', 'content-security-policy-report-only', 'cross-origin-resource-policy'].forEach(k => oh.delete(k));
     oh.set('access-control-allow-origin', '*');
-    oh.set('access-control-allow-methods', '*');
-    oh.set('access-control-allow-headers', '*');
-
-    const ct = (oh.get('content-type') || '').toLowerCase();
-    if (ct.includes('text/html')) {
+    if ((oh.get('content-type') || '').toLowerCase().includes('text/html')) {
       let html = await up.text();
-      const inject = `<base href="/xg/"><script>
-        try {
-          Object.defineProperty(window, 'top', { get: function() { return window.self; } });
-          Object.defineProperty(window, 'parent', { get: function() { return window.self; } });
-        } catch(e) {}
-      <\/script>`;
-      if (/<head[^>]*>/i.test(html)) {
-        html = html.replace(/<head([^>]*)>/i, '<head$1>' + inject);
-      } else {
-        html = inject + html;
-      }
+      html = html.replace(/<head([^>]*)>/i, '<head$1><base href="https://nfsu2.xyz/">');
       return new Response(html, { status: up.status, headers: oh });
     }
     return new Response(up.body, { status: up.status, headers: oh });
