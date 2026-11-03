@@ -529,6 +529,14 @@ body.hasnav #tt{bottom:calc(max(18px,env(safe-area-inset-bottom)) + 84px)}
 .ksexc b{font-size:1.15rem}.ksexc small{color:var(--mu,#8D9AB2);line-height:1.4}.ksexc .btn{width:100%;justify-content:center}
 .ksexc .btn.ksqb{background:#b91c1c;color:#fff;border-color:#ef4444}
 .ksexb{background:#b91c1cd0!important;color:#fff!important}
+.lvseg{margin:0 0 2px}
+.lvif{width:100%;height:100%;border:0;display:block;background:#000}
+.yt .lvmsg{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:7px;padding:10px 14px;overflow:auto;text-align:center;background:#0A1120;color:var(--tx)}
+.lvmsg small{color:var(--mu);max-width:440px;line-height:1.45}
+.yt{position:relative}.lvfound{position:absolute;left:10px;bottom:10px;z-index:2}
+.fpltm.lvtm{color:#fff;font-weight:800;letter-spacing:.04em}.fpltm.lvtm:not(.behind){color:#ff4d4d}
+.fplb.lvb{width:auto;padding:0 10px;font-size:.8rem;font-weight:700;border-radius:999px;background:#ff4d4d;color:#fff}
+.lvmsg b{font-size:.95rem;line-height:1.3}.lvmsg small{font-size:.78rem}
 .fwintro{display:flex;align-items:center;gap:10px;justify-content:center;padding:6px 0}
 .fwface{width:26px;height:26px;border-radius:50%;display:inline-block;flex:none}.fwface.big{width:44px;height:44px}
 .fwface.f{background:radial-gradient(circle at 38% 35%,#fff0a0,#ffa53a 50%,#e2461a);box-shadow:0 0 14px #ff7a2a88}.fwface.w{background:radial-gradient(circle at 38% 35%,#e8fbff,#6fd0ff 45%,#1f78d0);box-shadow:0 0 14px #3ab8ff66}
@@ -4997,6 +5005,54 @@ function reconnectNow(){if(!RM)return;clearTimeout(wsTm);wsTm=0;if(ws&&ws.readyS
 if(!window._netBind){window._netBind=1;document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'&&RM)reconnectNow()});window.addEventListener('pageshow',()=>{if(RM)reconnectNow()});window.addEventListener('online',()=>{if(RM){wsTry=0;reconnectNow()}})}
 const lk=()=>{lock=Date.now()+900};
 const exp=()=>st.pos+((st.playing&&!st.held)?(Date.now()+off-st.at)/1e3:0);
+// ---------- canlı yayın: m3u8 canlı akış senkronu, YouTube canlı, Twitch, Kick, yayın sayfası ----------
+let FMODE=(()=>{try{return localStorage.fmode=='2'?2:1}catch(e){return 1}})(),LVSK=0,LVREP=0,LVDET='',EMB=0,LVU={};
+const LVMEDIA=/\.(m3u8|mp4|webm|mov|mkv|m4v|ts|mpd)(\?|#|$)|m3u8|\/hls\/|\/live\//i;
+function lvEmbed(u,lv){let x;try{x=new URL(u)}catch(e){return null}const H=x.hostname.replace(/^www\.|^m\./,''),P=x.pathname.split('/').filter(Boolean),host=location.hostname;
+ if(H=='twitch.tv'&&P[0]){if(P[0]=='videos'&&P[1])return{k:'twitch',u:'https://player.twitch.tv/?video=v'+P[1]+'&parent='+host+'&autoplay=true',n:'Twitch'};return{k:'twitch',u:'https://player.twitch.tv/?channel='+encodeURIComponent(P[0])+'&parent='+host+'&autoplay=true',n:'Twitch'}}
+ if(H=='player.twitch.tv'){x.searchParams.set('parent',host);return{k:'twitch',u:x.href,n:'Twitch'}}
+ if(H=='kick.com'&&P[0])return{k:'kick',u:'https://player.kick.com/'+encodeURIComponent(P[0]),n:'Kick'};
+ if(H=='player.kick.com')return{k:'kick',u:x.href,n:'Kick'};
+ if(lv&&!LVMEDIA.test(u)&&!/youtu\.?be/i.test(H))return{k:'page',u:x.href,n:x.hostname};return null}
+function lvIframe(u){return h('iframe',{src:u,allow:'autoplay; fullscreen; encrypted-media; picture-in-picture',allowfullscreen:'',referrerpolicy:'origin',class:'lvif'})}
+function loadEmb(em,s){const my=lt;V.style.display='none';yw.style.display='block';EMB=1;if(syncEl){syncEl.textContent='';syncEl.className='sync'}
+ if(em.k!='page'){yw.replaceChildren(lvIframe(em.u));fst('ok');return}
+ yw.replaceChildren(h('div',{class:'lvmsg'},h('b',{text:'Sayfa kontrol ediliyor…'})));
+ api('emb?u='+encodeURIComponent(em.u)).then(r=>r,()=>null).then(r=>{if(my!=lt)return;const found=(r&&r.found)||[];
+  const useF=()=>send({t:'set',url:found[0],ref:em.u,title:st&&st.title||'',lv:1});
+  if(r&&r.ok===false){fst('err','sayfa gömülemiyor');yw.replaceChildren(h('div',{class:'lvmsg'},h('b',{text:'Bu sayfa başka sitelerin içinde açılmaya izin vermiyor'}),
+   h('small',{text:found.length?'Ama sayfanın içinde bir yayın linki bulundu; onu bizim oynatıcıda açabiliriz.':'Yayının .m3u8 linkini alırsan bizim oynatıcıda herkes aynı anda izler: Aloha tarayıcısında sayfayı açıp yayını başlat, indirme simgesinden linki kopyala, buraya yapıştır.'}),
+   h('div',{class:'row wrap',style:'justify-content:center;gap:8px'},found.length?h('button',{type:'button',class:'btn sm',onclick:useF},'▶ Bulunan yayını oynat'):null,h('a',{class:'btn sec sm',href:em.u,target:'_blank',rel:'noopener',style:'text-decoration:none'},'Yeni sekmede aç'))));return}
+  if(found.length&&!(r&&r.ok)){useF();return}
+  yw.replaceChildren(lvIframe(em.u),found.length?h('button',{type:'button',class:'btn sm lvfound',onclick:useF},'▶ Sayfadaki yayını bizim oynatıcıda aç'):null);fst('ok')})}
+// canlı mı? (film sekmesinden yapıştırılan canlı linkler de kendiliğinden tanınır)
+function lvDetect(){if(!st||st.lv||!st.sid||LVDET===st.sid)return;LVDET=st.sid;send({t:'lvon'})}
+// gecikme ölçümü: yayın saatine (PROGRAM-DATE-TIME) göre ya da canlı uca göre
+function lvSeek(){const s=V&&V.seekable;if(!s||!s.length)return null;return[s.start(0),s.end(s.length-1)]}
+function lvLat(){if(!V)return null;const now=Date.now()+off;let d=null;
+ try{if(hls&&hls.playingDate&&hls.playingDate.getTime()>1e12)d=hls.playingDate.getTime();else if(!hls&&V.getStartDate){const sd=V.getStartDate().getTime();if(sd>1e12)d=sd+V.currentTime*1000}}catch(e){}
+ const sk=lvSeek();if(d){const lat=(now-d)/1000,lsp=hls&&isFinite(hls.liveSyncPosition)&&hls.liveSyncPosition>0?hls.liveSyncPosition:sk?sk[1]-3:null;return{k:'pdt',v:lat,min:lsp!=null?lat-(lsp-V.currentTime)+1:null,sk}}
+ if(sk)return{k:'edge',v:sk[1]-V.currentTime,min:3,sk};return null}
+function lvTarget(L){const base=L.k=='pdt'?(st.dl?Math.max(st.dl,4):Math.max(L.min||8,6)):Math.max(hls&&hls.targetLatency?hls.targetLatency:8,4);return base+(+st.pos||0)}
+function lvPos(t){if(!st||!st.lv||Y)return V?V.currentTime:0;const L=lvLat();if(!L)return 0;const base=lvTarget(L)-(+st.pos||0);
+ if(t=='pause')return Math.max(0,Math.round((L.v-base)*10)/10);
+ const want=(+st.pos||0)+(st.playing?0:Math.max(0,(Date.now()+off-st.at)/1000)),mx=L.sk?Math.max(0,L.v+(V.currentTime-L.sk[0])-base-3):0;return Math.max(0,Math.min(mx,Math.round(want*10)/10))}
+function lvTick(){const play=st.playing&&!st.held;if(!play){if(!V.paused)pl.pause();pl.rate(1);if(syncEl&&FS.s!='err'){syncEl.textContent='⏸ Durduruldu';syncEl.className='sync'}return}
+ const L=lvLat();if(!L){if(pl.paused())pl.play();return}const n=Date.now();
+ if(L.k=='pdt'&&L.min!=null&&n-LVREP>8000){LVREP=n;send({t:'lvd',d:Math.round(L.min*10)/10})}
+ const T=lvTarget(L),err=L.v-T,ae=Math.abs(err);
+ if(ae>2.5&&n-LVSK>4000&&L.sk){LVSK=n;const to=Math.max(L.sk[0]+.5,Math.min(L.sk[1]-.5,V.currentTime+err));pl.seek(to);pl.rate(1)}
+ else if(ae>.35)pl.rate(Math.max(.9,Math.min(1.1,1+err*.06)));else pl.rate(1);
+ if(pl.paused())pl.play();
+ if(syncEl){const solo=(prevWho||[]).length<=1,ok=ae<1.2;syncEl.textContent=solo?'● Canlı':ok?'● Canlı · senkron':'Eşitleniyor…';syncEl.className='sync'+(ok?' ok':'')}}
+function lvGoLive(){send({t:'play',pos:0});toast('Canlıya dönülüyor')}
+// film kartındaki Film / Canlı yayın seçimi
+function lvSeg(u,vt,help){const b=(n,t)=>h('button',{type:'button',class:FMODE==n?'on':'',onclick:()=>{FMODE=n;try{localStorage.fmode=n}catch(e){}lvSegApply()}},t);
+ const seg=h('div',{class:'seg lvseg'},b(1,'🎬 Film'),b(2,'🔴 Canlı yayın'));LVU={seg,u,vt,help};lvSegApply();return seg}
+function lvSegApply(){const U=LVU;if(!U.seg)return;[...U.seg.children].forEach((x,i)=>x.classList.toggle('on',i+1==FMODE));const L=FMODE==2;
+ U.u.placeholder=L?'Canlı yayın: .m3u8, YouTube, Twitch, Kick ya da yayın sayfası':'YouTube, .mp4 veya .m3u8 linki';U.vt.placeholder=L?'Yayın adı (isteğe bağlı), örn. Final maçı':'Film adı (isteğe bağlı), örn. Spider-Man';
+ if(U.help)U.help.textContent=L?'Canlı yayında herkes canlının aynı saniyesine kilitlenir; biri durdurursa herkes durur. Devam edince kaldığınız yerden sürer, “Canlıya dön” ile en güncel ana geçilir.':'Oynat, durdur ve ileri sarma ikinizde de anında uygulanır. Biri takılırsa diğeri bekler.'}
+
 const ytId=u=>{const m=String(u).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/)|youtube-nocookie\.com\/embed\/)([\w-]{11})/i);return m?m[1]:''};
 const pl={ready(){return Y?!!yr:!!(V&&V.readyState>0)},time(){return Y?(yr?Y.getCurrentTime():0):V.currentTime},
 paused(){if(Y){const s=Y.getPlayerState();return s!=1&&s!=3}return V.paused},busy(){return Y?false:V.seeking},
@@ -5004,7 +5060,7 @@ play(){lk();if(Y){Y.playVideo();setTimeout(()=>{if(Y&&st&&st.playing&&!st.held&&
 pause(){lk();Y?Y.pauseVideo():V.pause()},seek(t){lk();Y?Y.seekTo(t,true):(V.currentTime=t)},rate(r){if(!Y&&V.playbackRate!=r)V.playbackRate=r}};
 const px=(u,r)=>'/proxy?u='+encodeURIComponent(u)+'&t='+encodeURIComponent(PT)+(r?'&r='+encodeURIComponent(r):'');
 const getHls=()=>hp||(hp=new Promise((ok,no)=>{if(window.Hls)return ok();const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js';s.onload=ok;s.onerror=()=>{hp=null;no()};document.head.append(s)}));
-function teardown(){lt++;if(hls){try{hls.destroy()}catch(e){}hls=null}if(Y){try{Y.destroy()}catch(e){}Y=null;yr=0}if(V){V.onerror=null;try{V.pause();V.removeAttribute('src');V.load()}catch(e){}V.style.display=''}if(yw)yw.style.display='none';clearTimeout(bufT);bufT=0;if(bs){try{send({t:'buf',b:0})}catch(e){}}bs=0}
+function teardown(){lt++;if(hls){try{hls.destroy()}catch(e){}hls=null}if(Y){try{Y.destroy()}catch(e){}Y=null;yr=0}if(V){V.onerror=null;try{V.pause();V.removeAttribute('src');V.load()}catch(e){}V.style.display=''}if(yw){yw.style.display='none';if(EMB){yw.replaceChildren();EMB=0}}clearTimeout(bufT);bufT=0;if(bs){try{send({t:'buf',b:0})}catch(e){}}bs=0}
 function ytNeed(on){on=on?1:0;if(on===YNEED&&!(on&&FS.s!='tap'))return;YNEED=on;if(YTH)YTH.style.display=on?'':'none';const g=$('#stg');if(g)g.classList.toggle('tap',!!on);if(on){fst('tap');if(YTH)YTH.scrollIntoView({block:'nearest',behavior:'smooth'})}}
 function fst(s,e){if(!st||!st.sid)return;if(FS.s===s&&FS.k===st.sid)return;FS={s,k:st.sid};send({t:'fst',s,k:st.sid,e:e||''});flsRender()}
 const FLM={ok:['✓ hazır','ok'],load:['⏳ yükleniyor',''],err:['✗ açılamadı','err'],tap:['👆 dokunması gerekiyor','tap']};
@@ -5089,9 +5145,9 @@ const pic=(k,s)=>'<svg viewBox="0 0 24 24" width="'+(s||22)+'" height="'+(s||22)
 function plCtl(){const B=(cl,l,html)=>h('button',{type:'button',class:cl,'aria-label':l,html:html||''});
  const big=B('fplbig','Oynat',pic('play',34)),play=B('fplb','Oynat',pic('play')),rw=B('fplb fplt','10 saniye geri','−10'),fw=B('fplb fplt','10 saniye ileri','+10'),tm=h('span',{class:'fpltm',text:'0:00 / 0:00'}),
   buf=h('i',{class:'fplbuf'}),fill=h('i',{class:'fplfill'}),knob=h('b',{class:'fplknob'}),tip=h('span',{class:'fpltip'}),bar=h('div',{class:'fplbar'},h('i',{class:'fpltrack'}),buf,fill,knob,tip),
-  vol=B('fplb','Sesi kapat/aç',pic('vol')),mic=B('fplb fplmic','Mikrofon',pic('mic')),syn=B('fplb fplsyn','Altyazıyı oturt: az önce söylenen satırı seç','🎯'),cc=B('fplb','Altyazı',pic('cc')),fs=B('fplb','Tam ekran',pic('fs')),flash=h('div',{class:'fplflash'});
- const root=h('div',{class:'fpl on'},flash,big,h('div',{class:'fplbot'},bar,h('div',{class:'fplrow'},play,rw,fw,tm,h('span',{class:'grow'}),syn,mic,cc,vol,fs)));
- PCT={root,big,play,tm,buf,fill,knob,tip,bar,vol,cc,fs,flash,mic,syn,hideT:0,drag:null};
+  vol=B('fplb','Sesi kapat/aç',pic('vol')),mic=B('fplb fplmic','Mikrofon',pic('mic')),syn=B('fplb fplsyn','Altyazıyı oturt: az önce söylenen satırı seç','🎯'),cc=B('fplb','Altyazı',pic('cc')),fs=B('fplb','Tam ekran',pic('fs')),flash=h('div',{class:'fplflash'}),lvb=h('button',{type:'button',class:'fplb lvb','aria-label':'Canlıya dön',onclick:e=>{e.stopPropagation();lvGoLive()}},'Canlıya dön ⏭');
+ const root=h('div',{class:'fpl on'},flash,big,h('div',{class:'fplbot'},bar,h('div',{class:'fplrow'},play,rw,fw,tm,lvb,h('span',{class:'grow'}),syn,mic,cc,vol,fs)));
+ PCT={root,big,play,tm,buf,fill,knob,tip,bar,vol,cc,fs,flash,mic,syn,rw,fw,lvb,hideT:0,drag:null};
  const dur=()=>V&&isFinite(V.duration)?V.duration:0,show=()=>{root.classList.add('on');clearTimeout(PCT.hideT);if(V&&!V.paused)PCT.hideT=setTimeout(()=>{if(V&&!V.paused&&!PCT.drag)root.classList.remove('on')},2800)};
  const toggle=()=>{if(!V)return;if(V.paused){const p=V.play();if(p&&p.catch)p.catch(()=>{})}else V.pause();show()},jump=d=>{if(!V||!dur())return;V.currentTime=Math.max(0,Math.min(dur()-.5,V.currentTime+d));fl(d>0?'+'+d+' sn':'−'+(-d)+' sn');show()};
  const fl=t=>{flash.textContent=t;flash.classList.remove('go');void flash.offsetWidth;flash.classList.add('go')};
@@ -5118,30 +5174,32 @@ function plBind(){if(!V||!PCT||V._pcb)return;V._pcb=1;V.controls=false;V.removeA
 function plRender(){const P=PCT;if(!P||!V)return;const vis=!Y&&st&&st.url&&V.style.display!='none';P.root.style.display=vis?'':'none';if(!vis)return;
  const d=isFinite(V.duration)?V.duration:0,c=P.drag?P.drag.f*d:V.currentTime,f=d?c/d:0;P.fill.style.width=(f*100).toFixed(2)+'%';P.knob.style.left=(f*100).toFixed(2)+'%';
  let be=0;try{for(let i=0;i<V.buffered.length;i++)if(V.buffered.start(i)<=V.currentTime+1)be=Math.max(be,V.buffered.end(i))}catch(e){}P.buf.style.width=(d?Math.min(100,be/d*100):0).toFixed(2)+'%';
- P.tm.textContent=pfmt(c)+' / '+(d?pfmt(d):'--:--');P.tip.textContent=P.drag?pfmt(c):'';P.tip.style.left=(f*100).toFixed(2)+'%';
+ const LV=!!st.lv,bh=LV&&(+st.pos||0)>1.5;P.bar.style.visibility=LV?'hidden':'';P.rw.style.display=P.fw.style.display=LV?'none':'';P.lvb.style.display=bh?'':'none';P.tm.classList.toggle('lvtm',LV);P.tm.classList.toggle('behind',bh);
+P.tm.textContent=LV?(bh?'● '+pfmt(st.pos)+' geride':'● CANLI'):pfmt(c)+' / '+(d?pfmt(d):'--:--');P.tip.textContent=P.drag?pfmt(c):'';P.tip.style.left=(f*100).toFixed(2)+'%';
  const pz=V.paused;P.play.innerHTML=pic(pz?'play':'pause');P.play.setAttribute('aria-label',pz?'Oynat':'Durdur');P.big.style.display=pz?'':'none';P.vol.innerHTML=pic(V.muted?'mute':'vol');
  P.mic.style.display=VC.on?'':'none';if(VC.on){const live=VC.fp?!!VC.live:!VC.mu;P.mic.innerHTML=pic(live?'mic':'micoff');P.mic.classList.toggle('live',live);P.mic.classList.toggle('wait',!!VC.mon)}
  P.syn.style.display=typeof subMine=='function'&&subMine()&&SUB.on&&!SUBE?'':'none';
  const ccOn=(typeof subMine=='function'&&subMine()&&SUB.on&&!SUBE)||(st&&SUBESID===st.sid&&SUBE);P.cc.classList.toggle('on',!!ccOn)}
 if(!window._pcIv){window._pcIv=setInterval(()=>{try{plRender()}catch(e){}},500)}
 
-function load(s){teardown();try{subOnLoad(s)}catch(e){}ov.classList.remove('on');ytNeed(0);YSK=null;if(s.url&&s.sid){FS={s:'',k:''};fst('load')}if(EMPTY)EMPTY.style.display=s.url?'none':'';if(!s.url){if(syncEl)syncEl.textContent='';return}const id=ytId(s.url);if(id)return loadYT(id);loadVid(s,false)}
+function load(s){teardown();try{subOnLoad(s)}catch(e){}ov.classList.remove('on');ytNeed(0);YSK=null;if(s.url&&s.sid){FS={s:'',k:''};fst('load')}if(EMPTY)EMPTY.style.display=s.url?'none':'';if(!s.url){if(syncEl)syncEl.textContent='';return}const em=lvEmbed(s.url,s.lv);if(em)return loadEmb(em,s);const id=ytId(s.url);if(id)return loadYT(id);loadVid(s,false)}
 function loadVid(s,vp){const my=lt,isH=/\.m3u8/i.test(s.url),src=vp?px(s.url,s.ref):s.url;let nr=0;
 const fail=w=>{if(my!=lt)return;if(vp)return bad(w);getPT().then(()=>{if(my!=lt)return;teardown();loadVid(s,true)}).catch(()=>bad(w))};
-if(isH&&!V.canPlayType('application/vnd.apple.mpegurl')){getHls().then(()=>{if(my!=lt)return;if(!window.Hls||!Hls.isSupported())return bad('tarayıcı HLS desteklemiyor');
-hls=new Hls({maxBufferLength:30,backBufferLength:30});hls.on(Hls.Events.ERROR,(_,d)=>{if(!d.fatal||my!=lt)return;if(!vp)return fail(d.details);if(d.type==Hls.ErrorTypes.NETWORK_ERROR&&nr++<3)hls.startLoad();else if(d.type==Hls.ErrorTypes.MEDIA_ERROR&&nr++<3)hls.recoverMediaError();else bad(d.details)});hls.loadSource(src);hls.attachMedia(V);try{subHls(hls)}catch(e){}}).catch(()=>bad('hls.js yüklenemedi'))}
+if(isH&&(!V.canPlayType('application/vnd.apple.mpegurl')||(s.lv&&!V.getStartDate&&(window.MediaSource||window.ManagedMediaSource)))){getHls().then(()=>{if(my!=lt)return;if(!window.Hls||!Hls.isSupported())return bad('tarayıcı HLS desteklemiyor');
+hls=new Hls({maxBufferLength:30,backBufferLength:30});hls.on(Hls.Events.ERROR,(_,d)=>{if(!d.fatal||my!=lt)return;if(!vp)return fail(d.details);if(d.type==Hls.ErrorTypes.NETWORK_ERROR&&nr++<3)hls.startLoad();else if(d.type==Hls.ErrorTypes.MEDIA_ERROR&&nr++<3)hls.recoverMediaError();else bad(d.details)});hls.on(Hls.Events.LEVEL_LOADED,(_,d)=>{if(my==lt&&d&&d.details&&d.details.live)lvDetect()});hls.loadSource(src);hls.attachMedia(V);try{subHls(hls)}catch(e){}}).catch(()=>bad('hls.js yüklenemedi'))}
 else{V.onerror=()=>fail('erişim/format');V.src=src;V.load()}}
 function withYT(cb){if(window.YT&&YT.Player)return cb();(window.ytq=window.ytq||[]).push(cb);if(!window.ytl){window.ytl=1;window.onYouTubeIframeAPIReady=()=>{(window.ytq||[]).forEach(f=>f());window.ytq=[]};const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';s.onerror=()=>{window.ytl=0;toast('YouTube yüklenemedi',1)};document.head.append(s)}}
 function loadYT(id){const my=lt;V.style.display='none';yw.style.display='block';yw.replaceChildren(h('div',{id:'ytp'}));yr=0;
-withYT(()=>{if(my!=lt)return;Y=new YT.Player('ytp',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,origin:location.origin},events:{onReady:()=>{if(my==lt){yr=1;fst('ok');tick();try{fdur(Y.getDuration())}catch(e){}}},onStateChange:ytState,onError:()=>{fst('err','YouTube gömmeye izin vermiyor');toast('YouTube: bu video gömülemiyor, başka bir video dene',1)}}})})}
+withYT(()=>{if(my!=lt)return;Y=new YT.Player('ytp',{videoId:id,width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,origin:location.origin},events:{onReady:()=>{if(my==lt){yr=1;fst('ok');try{const vd=Y.getVideoData&&Y.getVideoData();if(vd&&vd.isLive)lvDetect()}catch(e){}tick();try{fdur(Y.getDuration())}catch(e){}}},onStateChange:ytState,onError:()=>{fst('err','YouTube gömmeye izin vermiyor');toast('YouTube: bu video gömülemiyor, başka bir video dene',1)}}})})}
 function ytState(e){if(!st)return;const s=e.data,t=Y?Y.getCurrentTime():0;
 if(s==1){bufEnd();ytNeed(0);fst('ok');if(Date.now()>=lock&&!st.playing){uact=Date.now();send({t:'play',pos:t})}}
 else if(s==2){if(Date.now()>=lock&&st.playing){uact=Date.now();send({t:'pause',pos:t})}}
 else if(s==3){if(!(YSK&&Date.now()-YSK.t<3500))bufStart()}else if(s==0){if(st.playing)send({t:'pause',pos:t})}}
-let ytLast=0;function ytPoll(){if(!Y||!yr||!st)return;const t=Y.getCurrentTime(),d=t-ytLast;ytLast=t;if(Date.now()<lock||Date.now()-uact<1500)return;if(Math.abs(d-(Y.getPlayerState()==1?.5:0))>1.6&&Math.abs(t-exp())>1.6){uact=Date.now();send({t:'seek',pos:t})}}
+let ytLast=0;function ytPoll(){if(!Y||!yr||!st||st.lv)return;const t=Y.getCurrentTime(),d=t-ytLast;ytLast=t;if(Date.now()<lock||Date.now()-uact<1500)return;if(Math.abs(d-(Y.getPlayerState()==1?.5:0))>1.6&&Math.abs(t-exp())>1.6){uact=Date.now();send({t:'seek',pos:t})}}
 function bufStart(){if(!st||!st.playing||bufT||bs)return;bufT=setTimeout(()=>{bufT=0;if(!bs){bs=1;send({t:'buf',b:1})}},1300)}
 function bufEnd(){clearTimeout(bufT);bufT=0;if(bs){bs=0;send({t:'buf',b:0})}}
 function tick(){if(!RM||!st||!st.url||!pl.ready())return;
+if(st.lv){if(Date.now()-uact<1200)return;if(Y){if(st.playing&&!st.held){if(pl.paused())pl.play()}else if(!pl.paused())pl.pause();if(syncEl){syncEl.textContent='● Canlı';syncEl.className='sync ok'}return}if(pl.busy())return;lvTick();return}
 if(syncEl&&st.playing&&!st.held){const d=pl.time()-exp(),solo=(prevWho||[]).length<=1,ok=solo||Math.abs(d)<(Y?.9:1.2);syncEl.textContent=solo?'':ok?'● Senkron':'Eşitleniyor…';syncEl.className='sync'+(ok?' ok':'')}else if(syncEl&&FS.s!='err')syncEl.textContent='';
 if(Date.now()-uact<1200||pl.busy())return;
 const play=st.playing&&!st.held,e=exp(),d=pl.time()-e;
@@ -5166,8 +5224,8 @@ let PVO=0,PVK='';function pvRender(){const b=$('#pvb');if(!b)return;b.textConten
 function pvToggle(){const on=!PVO;const m=modal(on?'Odayı özel yap 🔒':'Odayı arkadaşlara aç 🌐',h('div',{class:'stack',style:'gap:8px'},h('small',{class:'mu',text:on?'Arkadaşların odanı listede göremez ve katılamaz. Sadece şu an odada olanlar ve davet ettiklerin (bildirimle ya da davet linkiyle) girebilir.':'Arkadaşların seni listede bu odada görür ve “Katıl” ile gelebilir.'})),[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),h('button',{type:'button',class:'btn',onclick:()=>{m.remove();send({t:'priv',on:on?1:0})}},on?'Özel yap':'Arkadaşlara aç')])}
 function onState(m){LASTM=m;PVO=m.pv?1:0;PVK=m.pk||'';pvRender();gsState(m.gs);FSH=m.fh||{};const pu=st&&st.url;st=m.st;if(pu!==st.url&&WLU.list)setTimeout(wlRender,0);mqSet(m.mq);hb=m.hb||[];HR=m.hr||{};const who=m.who||[];MSH=m.mh||{};musicState(m.ms||null);
 if(prevWho){for(const x of who)if(!prevWho.includes(x)&&x!=ME.name)toast(x+' odaya katıldı');for(const x of prevWho)if(!who.includes(x))toast(x+' ayrıldı')}prevWho=who;setPres(who);
-const key=st.url+'|'+st.ref+'|'+(st.sid||'');if(canUse('film')&&key!=loadedKey){loadedKey=key;FRY=0;load(st);const u=$('#vu');if(u&&document.activeElement!==u)u.value=st.url;const t=$('#vt');if(t&&document.activeElement!==t)t.value=st.title||''}
-if(FTT){FTT.style.display=st.url&&st.title?'':'none';FTT.textContent='🎬 '+(st.title||'')}
+const key=st.url+'|'+st.ref+'|'+(st.sid||'')+(st.lv?'|L':'');if(canUse('film')&&key!=loadedKey){loadedKey=key;FRY=0;load(st);const u=$('#vu');if(u&&document.activeElement!==u)u.value=st.url;const t=$('#vt');if(t&&document.activeElement!==t)t.value=st.title||''}
+if(FTT){FTT.style.display=st.url&&st.title?'':'none';FTT.textContent=(st.lv?'🔴 ':'🎬 ')+(st.title||'')}
 holdUI();flsRender();tick()}
 function connect(k,mode){clearTimeout(wsTm);wsTm=0;const qs='room='+encodeURIComponent(k)+'&mode='+encodeURIComponent(mode||ROOM_MODE||1)+(ROOM_NEW?'&new=1':'')+(window._pkj&&window._pkj.c===k?'&k='+encodeURIComponent(window._pkj.k):'');const w=RTP?new PollSock(qs):new WebSocket((location.protocol=='https:'?'wss://':'ws://')+location.host+'/ws?'+qs+'&t='+encodeURIComponent(T));ws=w;if(!RTP)w.tmo=setTimeout(()=>{if(w.readyState==0){w.tmoHit=1;try{w.close()}catch(e){}}},8000);wsLast=Date.now();const smp=[];
 w.onopen=()=>{clearTimeout(w.tmo);w.opened=1;setTimeout(netShow,0);wsFail=0;PSL='';if(VC.on)setTimeout(()=>send({t:'vjoin',id:VC.id,m:VC.mu}),50);wsTry=0;wsLast=Date.now();const d=$('#dot');if(d)d.className='dot on';const p=()=>{if(w.readyState!=1)return;if(Date.now()-wsLast>11000){reconnectNow();return}try{w.send(JSON.stringify({t:'ping',i:Date.now()}))}catch(e){}};p();setTimeout(p,600);setTimeout(p,1500);w.p=setInterval(p,5000);while(wsq.length&&w.readyState==1){try{w.send(wsq.shift())}catch(e){break}}setTimeout(chatResend,900)};
@@ -5207,9 +5265,9 @@ h('div',{class:'row wrap'},demo('YouTube','https://www.youtube.com/watch?v=aqz-K
 function viewRoom(k,mode,isNew){leaveRoom();closeLive();CURV='room';RM=k;ROOM_MODE=([1,2,3].includes(+mode)?+mode:1);ROOM_NEW=isNew?1:0;localStorage.rm=k;try{localStorage.lastr=JSON.stringify({k,ts:Date.now()})}catch(e){}st=null;loadedKey=null;seen=new Set();touched=0;done=0;Z={};
 V=h('video',{playsinline:'',controls:'',preload:'auto'});yw=h('div',{class:'yt'});EMPTY=h('div',{class:'empty'},h('span',{html:ART.proj,style:'opacity:.7'}),h('span',{text:'Perde hazır. Aşağıya bir video linki yapıştır.'}));
 holdEl=h('div',{class:'hold'},h('i',{class:'sp'}),h('span'));syncEl=h('div',{class:'sync'});FLS=h('div',{class:'fls'});YTH=h('div',{class:'mu-hint',style:'display:none',text:'👇 Telefonun videoyu kendiliğinden başlatmana izin vermiyor. Aşağıdaki videonun ortasındaki ▶ düğmesine bir kez dokun; sonra herkesle eşitlenir.'});YNEED=0;
-for(const [ev,t] of [['play','play'],['pause','pause']])V.addEventListener(ev,()=>{if(Date.now()<lock||!st||!st.url||V.ended)return;uact=Date.now();if(t=='play'&&!st.playing)send({t:'play',pos:V.currentTime});if(t=='pause'&&st.playing)send({t:'pause',pos:V.currentTime})});
-V.addEventListener('seeked',()=>{if(Date.now()<lock||!st||!st.url)return;if(Math.abs(V.currentTime-exp())>1){uact=Date.now();send({t:'seek',pos:V.currentTime})}});
-V.addEventListener('ended',()=>{if(st&&st.playing)send({t:'pause',pos:V.currentTime})});
+for(const [ev,t] of [['play','play'],['pause','pause']])V.addEventListener(ev,()=>{if(Date.now()<lock||!st||!st.url||V.ended)return;uact=Date.now();if(t=='play'&&!st.playing)send({t:'play',pos:lvPos('play')});if(t=='pause'&&st.playing)send({t:'pause',pos:lvPos('pause')})});
+V.addEventListener('seeked',()=>{if(Date.now()<lock||!st||!st.url||st.lv)return;if(Math.abs(V.currentTime-exp())>1){uact=Date.now();send({t:'seek',pos:V.currentTime})}});
+V.addEventListener('ended',()=>{if(st&&st.playing&&!st.lv)send({t:'pause',pos:V.currentTime})});V.addEventListener('loadedmetadata',()=>{if(V.duration===Infinity)lvDetect()});
 V.addEventListener('waiting',bufStart);V.addEventListener('playing',bufEnd);V.addEventListener('canplay',bufEnd);V.addEventListener('canplay',()=>fst('ok'));V.addEventListener('playing',()=>fst('ok'));V.addEventListener('loadedmetadata',tick);V.addEventListener('loadedmetadata',()=>fdur(V.duration));
 const dot=h('i',{class:'dot',id:'dot'}),pres=h('span',{id:'pres',text:'Bağlanıyor…'});
 const mk=(n,i,t)=>h('button',{class:n==mode?'on':'',id:'t'+n,onclick:()=>{touched=1;tab(n)}},ic(i,16),t,h('span',{class:'lkm'}));
@@ -5218,8 +5276,9 @@ const head=h('div',{class:'card rhead'},h('div',{class:'row'},h('button',{class:
 const u=h('input',{class:'in',id:'vu',type:'url',placeholder:'YouTube, .mp4 veya .m3u8 linki',inputmode:'url',autocapitalize:'none',autocorrect:'off',spellcheck:'false',enterkeyhint:'go'});
 const rf=h('input',{class:'in',id:'rfin',type:'url',placeholder:'https://kaynak-site.com/',inputmode:'url',autocapitalize:'none',autocorrect:'off'});
 const vt=h('input',{class:'in',id:'vt',placeholder:'Film adı (isteğe bağlı), örn. Spider-Man',maxlength:100,enterkeyhint:'go'});vt.onkeydown=e=>{if(e.key=='Enter')ld()};FTT=h('div',{class:'ftt',style:'display:none'});
-const ld=()=>{let v=fixLink(u.value.trim());if(v!==u.value.trim())u.value=v;if(!/^https?:\/\//i.test(v))return toast('Link http:// veya https:// ile başlamalı',1);const bx=(WL||[]).find(x=>x.u!==v&&wlBaseC(x.u)===wlBaseC(v));if(bx&&(bx.p||0)>60&&!bx.done){const pos=Math.max(0,bx.p-3);send({t:'set',url:v,ref:rf.value.trim()||bx.r||'',pos,title:vt.value.trim()||bx.t||''});toast('Listedeki “'+(bx.t||'film')+'” için yeni link: kaldığınız yerden ('+fmt(pos)+') açılıyor');return}send({t:'set',url:v,ref:rf.value.trim(),title:vt.value.trim()});toast('Yükleniyor…')};u.onkeydown=e=>{if(e.key=='Enter')ld()};
-const fp=h('div',{class:'card',id:'fp'},FTT,YTH,h('div',{class:'stage',id:'stg'},V,yw,EMPTY,syncEl,holdEl,subOv(),plCtl()),FLS,subBox(),h('div',{class:'row'},u,h('button',{class:'btn',onclick:ld},ic('play',16),'Yükle')),vt,h('details',{},h('summary',{text:'Gelişmiş: Referer (link açılmazsa)'}),rf),h('small',{text:'Oynat, durdur ve ileri sarma ikinizde de anında uygulanır. Biri takılırsa diğeri bekler.'}),wlBox());
+const ld=()=>{let v=fixLink(u.value.trim());if(v!==u.value.trim())u.value=v;if(!/^https?:\/\//i.test(v))return toast('Link http:// veya https:// ile başlamalı',1);const bx=FMODE==2?null:(WL||[]).find(x=>x.u!==v&&wlBaseC(x.u)===wlBaseC(v));if(bx&&(bx.p||0)>60&&!bx.done){const pos=Math.max(0,bx.p-3);send({t:'set',url:v,ref:rf.value.trim()||bx.r||'',pos,title:vt.value.trim()||bx.t||''});toast('Listedeki “'+(bx.t||'film')+'” için yeni link: kaldığınız yerden ('+fmt(pos)+') açılıyor');return}send({t:'set',url:v,ref:rf.value.trim(),title:vt.value.trim(),lv:FMODE==2?1:0});toast('Yükleniyor…')};u.onkeydown=e=>{if(e.key=='Enter')ld()};
+{const hp=h('small',{});lvSeg(u,vt,hp);LVU.help0=LVU.seg}
+const fp=h('div',{class:'card',id:'fp'},FTT,YTH,h('div',{class:'stage',id:'stg'},V,yw,EMPTY,syncEl,holdEl,subOv(),plCtl()),FLS,subBox(),LVU.help0,h('div',{class:'row'},u,h('button',{class:'btn',onclick:ld},ic('play',16),'Yükle')),vt,h('details',{},h('summary',{text:'Gelişmiş: Referer (link açılmazsa)'}),rf),LVU.help,wlBox());
 const cnt=h('div',{class:'chips'},[100,250,500,1000].map(n=>h('button',{class:n==PN?'on':'','data-n':n,onclick:e=>{PN=n;cnt.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x==e.currentTarget))}},n+' parça')));
 const pf=h('input',{type:'file',accept:'image/*',style:'display:none',onchange:e=>{if(e.target.files[0])pnew(e.target.files[0]);e.target.value=''}});
 const cv=h('canvas',{id:'pcv'});
@@ -5607,7 +5666,7 @@ if(T&&ME)enter();else viewLogin();
 (()=>{let V0='';const chk=async()=>{try{const r=await fetch('/appv',{cache:'no-store'});if(!r.ok)return;const v=(await r.text()).trim();if(!v||v.length>40)return;if(!V0){V0=v;return}if(v!==V0){window._newV=1;if(CURV=='lobby'&&!RM&&!document.querySelector('.mo'))navFix()}}catch(e){}};chk();document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible')chk()});addEventListener('pageshow',chk);setInterval(chk,10*60*1000)})();
 `;
 const HTML = '<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#0A1120"><meta name="color-scheme" content="dark"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Bizim Sinema"><link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icon-180.png?v=39"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&family=Baloo+2:wght@600;700;800&display=swap"><title>Bizim Sinema</title><link rel="icon" href="/icon-192.png?v=39"><style>' + CSS + CSS39 + '</style></head><body><div id="app"></div><div id="tt"></div><script>' + JS + '</script></body></html>';
-const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.youtube.com https://s.ytimg.com https://js-cdn.music.apple.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https: http:; media-src * data: blob:; connect-src * wss: ws: data: blob:; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://*.apple.com; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
+const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.youtube.com https://s.ytimg.com https://js-cdn.music.apple.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https: http:; media-src * data: blob:; connect-src * wss: ws: data: blob:; frame-src https:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
 // ---------- kripto ----------
@@ -6003,6 +6062,18 @@ export default {
         return J(await r.json(), r.status);
       }
       // ---- kayıtlı şarkı listeleri ----
+      if (p == '/api/emb') {
+        const u = String(new URL(req.url).searchParams.get('u') || '').trim().slice(0, 2000); if (!/^https?:\/\//i.test(u)) return J({ error: 'Geçersiz link' }, 400);
+        let ok = null, why = '', found = [];
+        try { const r = await fetch(u, { headers: { 'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1', 'accept': 'text/html,*/*' }, redirect: 'follow', signal: AbortSignal.timeout(6000) });
+          const xf = (r.headers.get('x-frame-options') || '').toLowerCase(), csp = (r.headers.get('content-security-policy') || '').toLowerCase(), fa = csp.match(/frame-ancestors([^;]*)/);
+          ok = true; if (/deny|sameorigin/.test(xf)) { ok = false; why = 'xfo' } if (fa && !/(^|\s)(\*|https:)(\s|$)/.test(fa[1].trim() + ' ')) { ok = false; why = 'csp' }
+          const ct = (r.headers.get('content-type') || '').toLowerCase();
+          if (/mpegurl/.test(ct)) found = [r.url || u];
+          else if (/html/.test(ct)) { const t = (await r.text()).slice(0, 1500000); const re = /https?:(?:\\?\/){2}[^"'\s<>()]+?\.m3u8[^"'\s<>()]*/gi; found = [...new Set((t.match(re) || []).map(x => x.replace(/\\\//g, '/').replace(/&amp;/g, '&')))].slice(0, 5) }
+        } catch (e) { why = 'unreach' }
+        return J({ ok, why, found });
+      }
       if (p == '/api/pl') {
         if (req.method == 'GET') return J(await (await dbf(env, '/plget', { name: me.n })).json());
         const b = await req.json().catch(() => ({})); let r;
@@ -7016,7 +7087,7 @@ export class Do {
   async report() {
     if (!this.code) return; const who = [...new Set(this.socks().map(w => (w.deserializeAttachment() || {}).n))]; let site = '';
     try { site = this.st.url ? (/youtu/i.test(this.st.url) ? 'YouTube' : new URL(this.st.url).hostname) : '' } catch (e) { }
-    const md = this.roomMode, act = md == 1 ? (this.st.url ? (this.st.title ? 'İzliyor: ' + this.st.title : 'Film izliyor') : 'Film odasında') : md == 2 ? (this.ms && this.ms.tr && this.ms.playing ? 'Dinliyor: ' + (this.ms.tr.title || 'müzik') : 'Yapboz ve müzik odasında') : (GNAME[this.gsel] || 'Oyun') + ' odasında';
+    const md = this.roomMode, act = md == 1 ? (this.st.url ? (this.st.lv ? (this.st.title ? 'Canlı izliyor: ' + this.st.title : 'Canlı yayın izliyor') : this.st.title ? 'İzliyor: ' + this.st.title : 'Film izliyor') : 'Film odasında') : md == 2 ? (this.ms && this.ms.tr && this.ms.playing ? 'Dinliyor: ' + (this.ms.tr.title || 'müzik') : 'Yapboz ve müzik odasında') : (GNAME[this.gsel] || 'Oyun') + ' odasında';
     try { await this.env.DO.get(this.env.DO.idFromName('db')).fetch('https://do/presence', { method: 'POST', body: JSON.stringify({ room: this.code, who, site, playing: this.st.playing && !this.st.held, act: String(act).slice(0, 70), priv: this.pv && this.pv.on ? 1 : 0 }) }) } catch (e) { }
   }
   // --- oda ---
@@ -7066,7 +7137,7 @@ export class Do {
   names(extra) { return [...new Set([...this.socks().filter(w => !this.tg(w).includes('admin')).map(w => (w.deserializeAttachment() || {}).n), ...(extra || [])].filter(Boolean))] }
   // Birlikte izlenen videonun konumunu, odadakilerin izleme listelerine kaydet (kalıcı: kaldığınız yer)
   async wlSave(extra) {
-    const st = this.st; if (!st || !st.url) return; const now = Date.now(); this.wlT = now;
+    const st = this.st; if (!st || !st.url || st.lv) return; const now = Date.now(); this.wlT = now;
     const names = this.names(extra); if (!names.length) return;
     const fd = this.fd && this.fd.u === st.url ? this.fd.d : 0;
     try { const r = await (await this.env.DO.get(this.env.DO.idFromName('db')).fetch('https://do/wlprog', { method: 'POST', body: JSON.stringify({ names, u: st.url, r: st.ref || '', p: this.exp(now), d: fd }) })).json(); if (r.ch) this.all(JSON.stringify({ t: 'wlchg' })) } catch (e) { }
@@ -7561,7 +7632,7 @@ export class Do {
     }
     if (T == 'react') { const e = String(m.e || ''); if (!['❤️', '😂', '😮', '👏', '🔥', '😢'].includes(e)) return; return this.all(JSON.stringify({ t: 'react', e, n })) }
     if (T == 'pzn' || T == 'pzm') { if (!this.can('puzzle', a)) return this.deny(ws) }
-    if (T == 'set' || T == 'play' || T == 'pause' || T == 'seek') { if (!this.can('film', a)) return this.deny(ws) }
+    if (T == 'set' || T == 'play' || T == 'pause' || T == 'seek' || T == 'lvon' || T == 'lvd') { if (!this.can('film', a)) return this.deny(ws) }
     if (T == 'mqadd' || T == 'mqrm' || T == 'mqup' || T == 'mqnext' || T == 'mqload' || T == 'mqclr' || T == 'mend') {
       if (!this.can('music', a)) return this.deny(ws);
       const q = this.mq, nid = () => crypto.randomUUID().slice(0, 8);
@@ -7653,14 +7724,16 @@ export class Do {
       let ref = String(m.ref || '').trim().slice(0, 500); if (ref && !/^https?:\/\//i.test(ref)) ref = '';
       await this.wlSave(); this.fd = null; try { await this.subClear() } catch (e) { }
       const title = String(m.title || '').replace(/[\u0000-\u001f]/g, '').trim().slice(0, 100);
-      ns = { url, ref, title, playing: false, held: false, pos: Math.max(0, Math.min(1e6, +m.pos || 0)), at: now, by: n };
+      ns = { url, ref, title, playing: false, held: false, pos: m.lv ? 0 : Math.max(0, Math.min(1e6, +m.pos || 0)), at: now, by: n }; if (m.lv) ns.lv = 1; this.lvd = {};
       this.socks().forEach(w => { const q = w.deserializeAttachment() || {}; q.b = 0; delete q.fs; w.serializeAttachment(q) });
       ns.sid = now.toString(36) + Math.random().toString(36).slice(2, 6);
-      this.all(JSON.stringify({ t: 'sys', x: n + ' ' + (title ? '“' + title + '” filmini' : 'yeni bir video') + ' yükledi' }));
+      this.all(JSON.stringify({ t: 'sys', x: n + ' ' + (m.lv ? '🔴 ' + (title ? '“' + title + '” canlı yayınını' : 'bir canlı yayın') + ' açtı' : (title ? '“' + title + '” filmini' : 'yeni bir video') + ' yükledi') }));
     }
     else if (T == 'play') { ns = { ...st, playing: true, pos, at: now, by: n } }
     else if (T == 'pause') { ns = { ...st, playing: false, held: false, pos, at: now, by: n } }
-    else if (T == 'seek') ns = { ...st, pos, at: now, by: n };
+    else if (T == 'seek') { if (st.lv) return; ns = { ...st, pos, at: now, by: n } }
+    else if (T == 'lvon') { if (!st || !st.url || st.lv) return; ns = { ...st, lv: 1, pos: 0, at: now }; this.lvd = {} }
+    else if (T == 'lvd') { if (!st || !st.lv) return; const d = Math.max(0, Math.min(120, +m.d || 0)); this.lvd = this.lvd || {}; this.lvd[n] = [d, now]; let D = 0; for (const k in this.lvd) if (now - this.lvd[k][1] < 30000) D = Math.max(D, this.lvd[k][0]); D = Math.round((D + 1.5) * 10) / 10; if (Math.abs(D - (st.dl || 0)) < 1) return; ns = { ...st, dl: D } }
     else return;
     ns.rev = (st.rev || 0) + 1; this.st = ns; this.hold(now);
     await S.put('st', this.st); this.bcast(); if (T == 'set') await this.report(); if (T == 'pause') await this.wlSave();
