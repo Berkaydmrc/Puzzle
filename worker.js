@@ -644,7 +644,7 @@ small,.mu{color:var(--mu)}
 .mu-now{display:flex;gap:12px;align-items:center}
 .mu-art{width:58px;height:58px;border-radius:12px;object-fit:cover;background:var(--s3);flex:none;display:grid;place-items:center;font-size:1.6rem}
 .mu-t{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mu-res{display:grid;gap:6px}
+.mu-res{display:grid;gap:6px;max-height:46vh;overflow:auto}
 .wlb{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;border-top:1px solid var(--bd);padding-top:12px;min-width:0}.wll{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;max-height:440px;overflow-y:auto;overflow-x:hidden;min-width:0}.wli,.mqi{min-width:0}
 .pvbtn{font-size:1.1rem}.pvbtn.on{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 18%,transparent)}
 html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -654,7 +654,7 @@ html,body{overflow-x:clip;max-width:100%}
 .seg{min-width:0}.seg>button{min-width:0}
 #pres{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .pill{min-width:0;max-width:100%}
-.mqbox{position:static;display:grid;gap:8px;margin-top:12px;padding:12px;border:1px solid var(--bd);border-radius:12px;background:var(--s1);text-align:left}
+.mqbox{position:static;display:grid;gap:8px;margin-top:12px;padding:12px;border:1px solid var(--bd);border-radius:12px;background:var(--s1);text-align:left;max-height:64vh;overflow:auto}.mqbox>.row:first-child{position:sticky;top:-12px;background:var(--s1);z-index:2;padding:8px 0}
 .mqbox>.row>b{font-size:1rem;font-weight:800;letter-spacing:0;color:var(--tx)}.wli>button,.mqi>button{flex:none}.wli{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;background:var(--s2);border:1px solid var(--bd)}.wli.on{border-color:var(--ac)}.wli img,.wlth{width:72px;height:40px;object-fit:cover;border-radius:8px;flex:none;background:#000;display:grid;place-items:center;color:var(--mu)}.wli .grow,.mqi .grow{min-width:0}.wli b,.mqi b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem}.wli small,.mqi small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wlpb{height:4px;background:var(--bd);border-radius:2px;margin-top:5px;overflow:hidden}.wlpb i{display:block;height:100%;background:var(--ac)}
 .mq{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;border-top:1px solid var(--bd);padding-top:10px;min-width:0}.mqi{display:flex;gap:8px;align-items:center;padding:6px;border-radius:10px;background:var(--s2)}.mqi img,.mqi .mu-art{width:36px;height:36px;border-radius:6px;object-fit:cover;flex:none;font-size:1rem}.mu-rw{display:flex;gap:6px;align-items:stretch}.mu-rw .mu-r{flex:1;min-width:0}.mu-rw>button.btn{flex:none}
 .mu-r{display:flex;gap:10px;align-items:center;background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:6px;cursor:pointer;text-align:left;color:var(--tx);font:inherit;width:100%}
@@ -706,7 +706,7 @@ let TH=0;const toast=(m,bad)=>{const t=$('#tt');t.textContent=m;t.className='on'
 let T=localStorage.t||sessionStorage.t||'',ME=null,PT='',PTe=0,PEND=cleanCode(new URLSearchParams(location.search).get('oda')),PADD=(new URLSearchParams(location.search).get('ekle')||'').slice(0,30);
 try{ME=JSON.parse(localStorage.me||sessionStorage.me||'null')}catch(e){}
 let LK={film:0,puzzle:0,music:0,word:2,games:0},PM=0,MS=null,WG=null,CFG=null,WP=new Map(),WS=-1,WU={};
-let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0,ROOM_MODE=1,ROOM_NEW=0,AUTO=0,LASTM=null,FTT=null,YTH=null,YNEED=0,WPO=null,PSL='',PST=0,FSH={},FS={s:'',k:''},FRY=0,FLS=null,YLEAD=.6,YSK=null,MQ=[],MQS='',WL=null,WLU={},WLT=0,MSH={},WPQ={mv:0,s:0},WQ=null,WQT=0,PSEQ=0,WPV=null,WBZ=0,WBT=0;
+let ws=null,RM='',V=null,yw=null,EMPTY=null,holdEl=null,syncEl=null,Y=null,yr=0,lt=0,hls=null,hp=null,st=null,off=0,hb=[],bs=0,bufT=0,lock=0,uact=0,tk=0,prevWho=null,loadedKey=null,seen=new Set(),touched=0,lws=null,LT=0,ROOM_MODE=1,ROOM_NEW=0,AUTO=0,LASTM=null,FTT=null,YTH=null,YNEED=0,WPO=null,PSL='',PST=0,FSH={},FS={s:'',k:''},FRY=0,FLS=null,YLEAD=.6,YSK=null,MQ=[],MQS='',WL=null,WLU={},WLT=0,MSH={},WPQ={mv:0,s:0},WQ=null,WQT=0,PSEQ=0,WPV=null,WBZ=0,WBT=0,OBSMODE=0;
 const ov=h('div',{class:'ov',onclick:()=>{ov.classList.remove('on');if(st&&(st.url||st.sh)){pl.play();if(FS.s=='tap')setTimeout(()=>fst('ok'),300)}}},ic('play',34),h('span',{text:'Dokun ve başlat'}));document.body.append(ov);
 const mount=(...n)=>{A.replaceChildren(...n);window.scrollTo(0,0);setTimeout(navFix,0);try{uiApply();bnavUpd();if(CURV!='login')hubStart()}catch(e){}};
 async function api(p,m,b){let r;try{r=await fetch('/api/'+p,{method:m||'GET',headers:{authorization:'Bearer '+T,'content-type':'application/json'},body:b?JSON.stringify(b):undefined})}catch(e){throw 'Sunucuya ulaşılamadı. Bağlantını kontrol et.'}
@@ -790,8 +790,8 @@ h('label',{class:'chk'},rm,h('span',{text:'Bu cihazda beni hatırla'})),go,err);
 mount(h('div',{class:'narrow stack login'},marquee('Arkadaşlarınla film, müzik ve oyun'),f))}
 // ---------- ana ekran ----------
 const newCode=()=>Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
-const modeOk=m=>m==1?canUse('film'):m==2?(canUse('puzzle')||canUse('music')):canUse('word');
-const MODEN={1:'Film',2:'Yapboz / Müzik',3:'Kelimelik'};
+const modeOk=m=>m==1?canUse('film'):m==2?(canUse('puzzle')||canUse('music')):(canUse('word')||canUse('games'));
+const MODEN={1:'Film',2:'Yapboz / Müzik',3:'Oyunlar'};
 async function joinByCode(raw){const v=cleanCode(raw);if(!v)return toast('Önce oda kodunu yaz',1);
 let r;try{r=await api('roomq?code='+encodeURIComponent(v))}catch(e){return toast(String(e),1)}
 if(!r.exists)return toast('Bu kodla açık bir oda bulunamadı. Kodu kontrol et.',1);
@@ -844,7 +844,7 @@ const an=h('input',{class:'in',placeholder:'Tüm odalara duyuru yaz…',maxlengt
 const ann=h('form',{class:'card',onsubmit:async e=>{e.preventDefault();const x=an.value.trim();if(!x)return;try{await api('announce','POST',{x});an.value='';toast('Duyuru gönderildi ✓')}catch(z){toast(z,1)}}},h('h3',{text:'Duyuru gönder'}),h('div',{class:'row'},an,h('button',{class:'btn sq',type:'submit','aria-label':'Gönder'},ic('send'))));
 const kill=async c=>{if(!confirm('Oda '+c+' kapatılsın mı? İçindekiler çıkarılır ve oda sıfırlanır.'))return;try{await api('room','DELETE',{room:c});toast('Oda kapatıldı')}catch(z){toast(z,1)}};
 const draw=m=>{const rs=m.rooms||[],ppl=new Set(rs.flatMap(r=>r.who));tiles.replaceChildren(tile(rs.length,'Aktif oda'),tile(ppl.size,'Çevrimiçi kişi'));
-list.replaceChildren(...(rs.length?rs.map(r=>h('div',{class:'card'},h('div',{class:'row'},h('div',{class:'grow'},h('b',{text:'Oda '+r.room}),h('div',{class:'mu',text:r.who.join(', ')})),h('span',{class:'tag'+(r.playing?' ok':''),text:r.playing?'Oynuyor':'Beklemede'}),h('button',{class:'btn dng sm',onclick:()=>kill(r.room)},'Kapat')),r.site?h('small',{text:'Kaynak: '+r.site+' · '+ago(r.ts)}):null)):[h('div',{class:'card'},h('small',{text:'Şu an aktif oda yok. Biri oda açınca burada anında görünür.'}))]))};
+list.replaceChildren(...(rs.length?rs.map(r=>h('div',{class:'card'},h('div',{class:'row'},h('div',{class:'grow'},h('b',{text:(r.priv?'🔒 ':'')+'Oda '+r.room}),h('div',{class:'mu',text:r.who.join(', ')}),h('div',{class:'mu',text:r.act||(r.mode==1?'Film odası':r.mode==2?'Yapboz ve müzik':r.mode==3?('Oyun'+(r.game&&GNM[r.game]?': '+GNM[r.game]:'')):'')})),h('span',{class:'tag'+(r.playing?' ok':''),text:r.playing?'Oynuyor':'Beklemede'})),h('div',{class:'row wrap',style:'gap:6px'},h('button',{class:'btn sec sm',onclick:()=>observeRoom(r.room,r.mode||1)},'👁 Gözle'),h('button',{class:'btn dng sm',onclick:()=>kill(r.room)},'Kapat')),r.site?h('small',{text:'Kaynak: '+r.site+' · '+ago(r.ts)}):null)):[h('div',{class:'card'},h('small',{text:'Şu an aktif oda yok. Biri oda açınca burada anında görünür.'}))]))};
 body.append(tiles,list,ann);draw({rooms:[]});
 const con=()=>{const w=new WebSocket((location.protocol=='https:'?'wss://':'ws://')+location.host+'/api/live?t='+encodeURIComponent(T));lws=w;w.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.t=='live')draw(m)}catch(x){}};w.onclose=()=>{if(lws===w)setTimeout(()=>{if(lws===w)con()},2000)}};con()}
 async function adminUsers(body){let us=[];try{us=await api('users')}catch(x){toast(x,1);return}
@@ -5119,7 +5119,7 @@ x.room&&x.room!=RM?bt('Katıl',()=>joinByCode(x.room),' '):null,bt('💬',()=>vi
 $('#fro').replaceChildren(...(FR.out.length?[h('small',{class:'lbl',text:'Yanıt bekleyen istekler'}),...FR.out.map(n=>h('div',{class:'frr'},h('div',{class:'grow'},h('b',{},n,frTagEl(FR.tags&&FR.tags[n])),h('small',{class:'mu',text:'istek gönderildi'})),bt('İptal',()=>frAct('cancel',n))))]:[]));
 $('#frb').replaceChildren(...(FR.bl.length?[h('details',{},h('summary',{text:'Engellenenler ('+FR.bl.length+')'}),...FR.bl.map(n=>h('div',{class:'frr'},h('div',{class:'grow'},h('b',{text:n})),bt('Engeli kaldır',()=>frAct('unblock',n)))))]:[]))}
 
-function leaveRoom(){vLeave(1);clearInterval(LT);LT=0;RM='';clearTimeout(wsTm);wsTm=0;wsq=[];wsTry=0;if(ws){const w=ws;ws=null;w.onclose=null;clearInterval(w.p);try{w.close()}catch(e){}}teardown();mstop();MS=null;WG=null;WP=new Map();WS=-1;st=null;PZ=null;IM=null;PC=[];PP=[];PU=0;clearInterval(tk);tk=0;hb=[];V=null;yw=null;ov.classList.remove('on')}
+function leaveRoom(){OBSMODE=0;vLeave(1);clearInterval(LT);LT=0;RM='';clearTimeout(wsTm);wsTm=0;wsq=[];wsTry=0;if(ws){const w=ws;ws=null;w.onclose=null;clearInterval(w.p);try{w.close()}catch(e){}}teardown();mstop();MS=null;WG=null;WP=new Map();WS=-1;st=null;PZ=null;IM=null;PC=[];PP=[];PU=0;clearInterval(tk);tk=0;hb=[];V=null;yw=null;ov.classList.remove('on')}
 let wsq=[],wsTry=0,wsTm=0,wsLast=0,wsFail=0,RTP=(()=>{try{return +localStorage.rtp>Date.now()}catch(e){return false}})();
 // Yedek bağlantı: bazı ağlar/operatörler WebSocket'i engelliyor. O zaman aynı mesajlar normal HTTPS istekleriyle taşınır.
 class PollSock{constructor(qs){this.readyState=0;this.sid='';this.qs=qs;this.oq=[];this.busy=0;this.fails=0;this.done=0;this.onopen=this.onmessage=this.onclose=this.onerror=null;this.go()}
@@ -5396,15 +5396,16 @@ function netProbe(){if(!RTP||!RM||!ws||ws.readyState!=1||document.visibilityStat
 if(!window._netPr){window._netPr=1;setInterval(netProbe,45000);setInterval(netShow,3000)}
 // mp4/m3u8 videoda ilk dokunuşta oynatma iznini önceden al (telefonun "dokun ve başlat" engeline takılmamak için)
 if(!window._vPrime){window._vPrime=1;document.addEventListener('pointerdown',e=>{try{if((e&&e.target&&e.target.closest&&e.target.closest('.fpl'))||!RM||!V||Y||!st||!st.url||st.playing||!V.paused||V.dataset.pr===String(st.sid))return;V.dataset.pr=String(st.sid);lk();V.muted=true;const p=V.play();const back=()=>{lk();try{V.pause()}catch(e){}V.muted=false};if(p&&p.then)p.then(back,()=>{V.muted=false});else back()}catch(e){}},true)}
-function setPres(who){setTimeout(advStrip,0);const s=$('#pres');if(s)s.textContent=(who.length>2?who.join(', '):who.join(' & '))+(who.length>1?' · '+(who.length>2?who.length+' kişi ':'')+'birlikte':' · diğer kişi bekleniyor')}
+function setPres(who){setTimeout(advStrip,0);const s=$('#pres');const W=who.map(pn=>ADMW.has(pn)?pn+' 👁':pn);if(s)s.textContent=(W.length>2?W.join(', '):W.join(' & '))+(who.length>1?' · '+(who.length>2?who.length+' kişi ':'')+'birlikte':' · diğer kişi bekleniyor')}
 let PVO=0,PVK='';function pvRender(){const b=$('#pvb');if(!b)return;b.textContent=PVO?'🔒':'🌐';b.classList.toggle('on',!!PVO);b.setAttribute('aria-label',PVO?'Oda özel (dokun: arkadaşlara aç)':'Oda arkadaşlara açık (dokun: özel yap)')}
 function pvToggle(){const on=!PVO;const m=modal(on?'Odayı özel yap 🔒':'Odayı arkadaşlara aç 🌐',h('div',{class:'stack',style:'gap:8px'},h('small',{class:'mu',text:on?'Arkadaşların odanı listede göremez ve katılamaz. Sadece şu an odada olanlar ve davet ettiklerin (bildirimle ya da davet linkiyle) girebilir.':'Arkadaşların seni listede bu odada görür ve “Katıl” ile gelebilir.'})),[h('button',{type:'button',class:'btn sec',onclick:()=>m.remove()},'Vazgeç'),h('button',{type:'button',class:'btn',onclick:()=>{m.remove();send({t:'priv',on:on?1:0})}},on?'Özel yap':'Arkadaşlara aç')])}
+let ADMW=new Set();
 function onState(m){LASTM=m;PVO=m.pv?1:0;PVK=m.pk||'';pvRender();gsState(m.gs);FSH=m.fh||{};const pu=st&&st.url;st=m.st;if(pu!==st.url&&WLU.list)setTimeout(wlRender,0);mqSet(m.mq);hb=m.hb||[];HR=m.hr||{};const who=m.who||[];MSH=m.mh||{};musicState(m.ms||null);
-if(prevWho){for(const x of who)if(!prevWho.includes(x)&&x!=ME.name)toast(x+' odaya katıldı');for(const x of prevWho)if(!who.includes(x))toast(x+' ayrıldı')}prevWho=who;setPres(who);
+const _adm=new Set(m.adm||[]);if(prevWho){for(const x of who)if(!prevWho.includes(x)&&x!=ME.name&&!_adm.has(x))toast(x+' odaya katıldı');for(const x of prevWho)if(!who.includes(x)&&!ADMW.has(x))toast(x+' ayrıldı')}ADMW=_adm;prevWho=who;setPres(who);
 const key=st.url+'|'+st.ref+'|'+(st.sid||'')+(st.lv?'|L':'');if(canUse('film')&&key!=loadedKey){loadedKey=key;FRY=0;load(st);const u=$('#vu');if(u&&document.activeElement!==u)u.value=st.url;const t=$('#vt');if(t&&document.activeElement!==t)t.value=st.title||''}
 if(FTT){FTT.style.display=st.url&&st.title?'':'none';FTT.textContent=(st.lv?'🔴 ':'🎬 ')+(st.title||'')}
 holdUI();flsRender();tick()}
-function connect(k,mode){clearTimeout(wsTm);wsTm=0;const qs='room='+encodeURIComponent(k)+'&mode='+encodeURIComponent(mode||ROOM_MODE||1)+(ROOM_NEW?'&new=1':'')+(window._pkj&&window._pkj.c===k?'&k='+encodeURIComponent(window._pkj.k):'');const w=RTP?new PollSock(qs):new WebSocket((location.protocol=='https:'?'wss://':'ws://')+location.host+'/ws?'+qs+'&t='+encodeURIComponent(T));ws=w;if(!RTP)w.tmo=setTimeout(()=>{if(w.readyState==0){w.tmoHit=1;try{w.close()}catch(e){}}},8000);wsLast=Date.now();const smp=[];
+function connect(k,mode){clearTimeout(wsTm);wsTm=0;const qs='room='+encodeURIComponent(k)+'&mode='+encodeURIComponent(mode||ROOM_MODE||1)+(ROOM_NEW?'&new=1':'')+(OBSMODE?'&obs=1':'')+(window._pkj&&window._pkj.c===k?'&k='+encodeURIComponent(window._pkj.k):'');const w=RTP?new PollSock(qs):new WebSocket((location.protocol=='https:'?'wss://':'ws://')+location.host+'/ws?'+qs+'&t='+encodeURIComponent(T));ws=w;if(!RTP)w.tmo=setTimeout(()=>{if(w.readyState==0){w.tmoHit=1;try{w.close()}catch(e){}}},8000);wsLast=Date.now();const smp=[];
 w.onopen=()=>{clearTimeout(w.tmo);w.opened=1;setTimeout(netShow,0);wsFail=0;PSL='';if(VC.on)setTimeout(()=>send({t:'vjoin',id:VC.id,m:VC.mu}),50);wsTry=0;wsLast=Date.now();const d=$('#dot');if(d)d.className='dot on';const p=()=>{if(w.readyState!=1)return;if(Date.now()-wsLast>11000){reconnectNow();return}try{w.send(JSON.stringify({t:'ping',i:Date.now()}))}catch(e){}};p();setTimeout(p,600);setTimeout(p,1500);w.p=setInterval(p,5000);while(wsq.length&&w.readyState==1){try{w.send(wsq.shift())}catch(e){break}}setTimeout(chatResend,900)};
 w.onmessage=e=>{wsLast=Date.now();let m;try{m=JSON.parse(e.data)}catch(x){return}
 if(m.t=='roomMode'){ROOM_NEW=0;const nm=[1,2,3].includes(+m.mode)?+m.mode:ROOM_MODE;if(nm!==ROOM_MODE){viewRoom(RM,nm,false);return}}
@@ -5439,7 +5440,8 @@ h('li',{},h('b',{text:'.m3u8 linki'}),' — bir yayının akış adresi. Çalı�
 h('li',{},h('b',{text:'m3u8 linkini nasıl bulurum?'}),' — telefonuna ',h('b',{text:'Aloha'}),' tarayıcısını indir (App Store / Google Play, ücretsiz). Videonun olduğu sayfayı Aloha’da açıp videoyu başlat; Aloha sayfadaki videoyu algılar. Çıkan video/indirme menüsünden linki kopyala (menünün adı sürüme göre değişebilir), buraya yapıştır ve Yükle’ye bas. Link açılmazsa sayfanın adresini Referer kutusuna da yaz.')),
 h('small',{text:'Denemek için aşağıdaki herkese açık test videolarını kullanabilirsin:'}),
 h('div',{class:'row wrap'},demo('YouTube','https://www.youtube.com/watch?v=aqz-KE-bpKQ'),demo('MP4','https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'),demo('M3U8','https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'))),[h('button',{class:'btn',onclick:()=>m.remove()},'Tamam')])}
-function viewRoom(k,mode,isNew){leaveRoom();closeLive();CURV='room';RM=k;ROOM_MODE=([1,2,3].includes(+mode)?+mode:1);ROOM_NEW=isNew?1:0;localStorage.rm=k;try{localStorage.lastr=JSON.stringify({k,ts:Date.now()})}catch(e){}st=null;loadedKey=null;seen=new Set();touched=0;done=0;Z={};
+function observeRoom(code,mode){toast('👁 İzleme modu: odadakiler seni listede görür, "katıldı" bildirimi gitmez.');viewRoom(code,mode,false,true)}
+function viewRoom(k,mode,isNew,obs){leaveRoom();closeLive();CURV='room';RM=k;ROOM_MODE=([1,2,3].includes(+mode)?+mode:1);ROOM_NEW=isNew?1:0;OBSMODE=obs?1:0;localStorage.rm=k;try{localStorage.lastr=JSON.stringify({k,ts:Date.now()})}catch(e){}st=null;loadedKey=null;seen=new Set();touched=0;done=0;Z={};
 V=h('video',{playsinline:'',controls:'',preload:'auto'});yw=h('div',{class:'yt'});EMPTY=h('div',{class:'empty'},h('span',{html:ART.proj,style:'opacity:.7'}),h('span',{text:'Perde hazır. Aşağıya bir video linki yapıştır.'}));
 holdEl=h('div',{class:'hold'},h('i',{class:'sp'}),h('span'));syncEl=h('div',{class:'sync'});FLS=h('div',{class:'fls'});YTH=h('div',{class:'mu-hint',style:'display:none',text:'👇 Telefonun videoyu kendiliğinden başlatmana izin vermiyor. Aşağıdaki videonun ortasındaki ▶ düğmesine bir kez dokun; sonra herkesle eşitlenir.'});YNEED=0;
 for(const [ev,t] of [['play','play'],['pause','pause']])V.addEventListener(ev,()=>{if(Date.now()<lock||!st||!st.url||st.sh||V.ended)return;uact=Date.now();if(t=='play'&&!st.playing)send({t:'play',pos:lvPos('play')});if(t=='pause'&&st.playing)send({t:'pause',pos:lvPos('pause')})});
@@ -5482,7 +5484,7 @@ if(!canUse('film')&&loadedKey){teardown();loadedKey=null;if(EMPTY)EMPTY.style.di
 if(!canUse('music'))mstop();else if(MS)mapply();
 if(TAB==2&&canUse('puzzle'))pfit();if(TAB==3&&GSEL=='word'&&canUse('word'))wgRender();if(TAB==3&&GSEL=='duel')dRender();if(TAB==3&&GSEL=='bs')bRender();if(TAB==3&&GSEL=='kt')ktRender();if(TAB==3&&GSEL=='br')brRender();if(TAB==3&&GSEL=='yk')ykRender();if(TAB==3&&GSEL=='ks')ksRender()}
 // ---------- yapboz ----------
-const PO=.03,BW=.94;let PZ=null,IM=null,PN=100,Z={},zc=0,drag=null,done=0,plt=0,PC=[],PP=[],ED=null,PU=0,CAM={x:0,y:0,z:1},QK=1,VH=1.4,camSet=0,pts=new Map(),pin=null,pan=null;
+const PO=.03,BW=.94;let PZ=null,IM=null,PN=100,Z={},zc=0,drag=null,done=0,plt=0,PC=[],PP=[],ED=null,PU=0,CAM={x:0,y:0,z:1},QK=1,VH=1.4,camSet=0,pdrawR=0,pts=new Map(),pin=null,pan=null;
 function mb32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function edges(c,r,seed){const R=mb32(seed),hz=[],vt=[];for(let y=0;y<=r;y++){hz[y]=[];for(let x=0;x<c;x++)hz[y][x]=(y==0||y==r)?0:(R()<.5?1:-1)}for(let y=0;y<r;y++){vt[y]=[];for(let x=0;x<=c;x++)vt[y][x]=(x==0||x==c)?0:(R()<.5?1:-1)}return{hz,vt}}
 function side(p,x0,y0,x1,y1,nx,ny,e,L,m){if(!e){p.lineTo(x1,y1);return}const dx=(x1-x0)/L,dy=(y1-y0)/L,k=m/L;
@@ -5513,6 +5515,7 @@ const pord=()=>[...PZ.p.keys()].sort((a,b)=>(PZ.p[b][2]-PZ.p[a][2])||((Z[a]||0)-
 function pcache(i,lk2){const k=lk2?1:0;PC[i]=PC[i]||[];if(PC[i][k])return PC[i][k];const U=PU,c=PZ.c,w=BW/c*U,hh=BW*PZ.ar/PZ.r*U,m=Math.min(w,hh),mg=Math.ceil(.3*m),cx=i%c,cy=(i/c)|0;
 const o=document.createElement('canvas');o.width=Math.ceil(w+2*mg);o.height=Math.ceil(hh+2*mg);const g=o.getContext('2d');g.translate(mg,mg);g.save();g.clip(PP[i]);g.drawImage(IM,-cx*w,-cy*hh,BW*U,BW*PZ.ar*U);g.restore();
 if(!lk2){g.lineWidth=Math.max(1.5,U/450);g.strokeStyle='rgba(255,255,255,.75)';g.stroke(PP[i])}return PC[i][k]=o}
+function pdrawS(){if(pdrawR)return;pdrawR=requestAnimationFrame(()=>{pdrawR=0;pdraw()})}
 function pdraw(){const cv=$('#pcv');if(!cv||!PZ||!IM||!PU||!PP.length)return;const g=cv.getContext('2d'),U=PU,{c,r,ar,p}=PZ,mg=Math.ceil(.3*Math.min(BW/c,BW*ar/r)*U),z=CAM.z;
 g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cv.width,cv.height);g.imageSmoothingQuality='high';
 const zq=z/QK;g.setTransform(zq,0,0,zq,-CAM.x*U*zq,-CAM.y*U*zq);
@@ -5531,12 +5534,12 @@ for(const i of pord().reverse()){const q=PZ.p[i];if(q[2])continue;if(g.isPointIn
 pan={sx:e.clientX,sy:e.clientY,cx:CAM.x,cy:CAM.y,id:e.pointerId};cv.style.cursor='grabbing'};
 cv.onpointermove=e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,[e.clientX,e.clientY]);e.preventDefault();const b=cv.getBoundingClientRect();
 if(pin&&pts.size>=2){const a=[...pts.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1])||1,mx=((a[0][0]+a[1][0])/2-b.left)/b.width,my=((a[0][1]+a[1][1])/2-b.top)/b.width;CAM.z=Math.max(.3,Math.min(6,pin.z*d/pin.d));CAM.x=pin.wx-mx/CAM.z;CAM.y=pin.wy-my/CAM.z;clampCam();pdraw();return}
-if(drag&&drag.id==e.pointerId){const [sx,sy]=xy(e),[mx,my]=wp(sx,sy),q=PZ.p[drag.i],[x0,y0,x1,y1]=WB(),W=BW/PZ.c,H=BW*PZ.ar/PZ.r;q[0]=Math.max(x0,Math.min(x1-W,mx-drag.dx));q[1]=Math.max(y0,Math.min(y1-H,my-drag.dy));pdraw();if(Date.now()-plt>60){plt=Date.now();send({t:'pzm',i:drag.i,x:q[0],y:q[1],l:0,live:1})}return}
-if(pan&&pan.id==e.pointerId){CAM.x=pan.cx-(e.clientX-pan.sx)/b.width/CAM.z;CAM.y=pan.cy-(e.clientY-pan.sy)/b.width/CAM.z;clampCam();pdraw()}};
+if(drag&&drag.id==e.pointerId){const [sx,sy]=xy(e),[mx,my]=wp(sx,sy),q=PZ.p[drag.i],[x0,y0,x1,y1]=WB(),W=BW/PZ.c,H=BW*PZ.ar/PZ.r;q[0]=Math.max(x0,Math.min(x1-W,mx-drag.dx));q[1]=Math.max(y0,Math.min(y1-H,my-drag.dy));pdrawS();if(Date.now()-plt>60){plt=Date.now();send({t:'pzm',i:drag.i,x:q[0],y:q[1],l:0,live:1})}return}
+if(pan&&pan.id==e.pointerId){CAM.x=pan.cx-(e.clientX-pan.sx)/b.width/CAM.z;CAM.y=pan.cy-(e.clientY-pan.sy)/b.width/CAM.z;clampCam();pdrawS()}};
 const up=e=>{pts.delete(e.pointerId);if(drag&&drag.id==e.pointerId)drop();if(pan&&pan.id==e.pointerId){pan=null;cv.style.cursor=''}if(pin&&pts.size<2){pin=null;const r=[...pts.entries()][0];if(r)pan={sx:r[1][0],sy:r[1][1],cx:CAM.x,cy:CAM.y,id:r[0]}}};
 cv.onpointerup=cv.onpointercancel=up;
 cv.addEventListener('wheel',e=>{e.preventDefault();const [sx,sy]=xy(e);zoomAt(sx,sy,e.deltaY<0?1.12:1/1.12)},{passive:false})}
-function pzMove(m){if(!PZ||!PZ.p[m.i]||(drag&&drag.i==m.i))return;PZ.p[m.i]=[m.x,m.y,m.l];Z[m.i]=++zc;pdraw()}
+function pzMove(m){if(!PZ||!PZ.p[m.i]||(drag&&drag.i==m.i))return;PZ.p[m.i]=[m.x,m.y,m.l];Z[m.i]=++zc;pdrawS()}
 // ---------- müzik ----------
 const MU={prov:localStorage.mp||'yt',rev:-1,lp:'',loaded:'',seq:0,msg:'',need:0,dev:'',on:0,optT:0,optP:null,endSent:0,amid:''},RES={},PNM={yt:'YouTube (Ücretsiz)',au:'Önizleme (30sn)',sp:'Spotify',am:'Apple Music'};
 let AM=null,YM=null,YMr=0,YMid='',YMP=null,MA=null,MUI={},SPC='';
@@ -6173,12 +6176,12 @@ export default {
         const room = clean(u.searchParams.get('room')); if (!room) return J({ error: 'oda' }, 400);
         const lk = await getLocks(env);
         const mode = [1, 2, 3].includes(+u.searchParams.get('mode')) ? +u.searchParams.get('mode') : 1;
-        return roomStub(env, room).fetch('https://do/ws?n=' + encodeURIComponent(me.n) + '&room=' + room + '&mode=' + mode + '&new=' + (u.searchParams.get('new') == '1' ? 1 : 0) + '&a=' + (adm ? 1 : 0) + '&lk=' + encodeURIComponent(JSON.stringify(lk)) + '&k=' + encodeURIComponent((u.searchParams.get('k') || '').slice(0, 20)), req);
+        return roomStub(env, room).fetch('https://do/ws?n=' + encodeURIComponent(me.n) + '&room=' + room + '&mode=' + mode + '&new=' + (u.searchParams.get('new') == '1' ? 1 : 0) + '&a=' + (adm ? 1 : 0) + '&obs=' + (adm && u.searchParams.get('obs') == '1' ? 1 : 0) + '&lk=' + encodeURIComponent(JSON.stringify(lk)) + '&k=' + encodeURIComponent((u.searchParams.get('k') || '').slice(0, 20)), req);
       }
       if (p == '/api/rt/join') {
         const room = clean(u.searchParams.get('room')); if (!room) return J({ error: 'oda' }, 400);
         const lk = await getLocks(env), mode = [1, 2, 3].includes(+u.searchParams.get('mode')) ? +u.searchParams.get('mode') : 1;
-        const r = await roomStub(env, room).fetch('https://do/ws?poll=1&n=' + encodeURIComponent(me.n) + '&room=' + room + '&mode=' + mode + '&new=' + (u.searchParams.get('new') == '1' ? 1 : 0) + '&a=' + (adm ? 1 : 0) + '&lk=' + encodeURIComponent(JSON.stringify(lk)) + '&k=' + encodeURIComponent((u.searchParams.get('k') || '').slice(0, 20)), { method: 'POST' });
+        const r = await roomStub(env, room).fetch('https://do/ws?poll=1&n=' + encodeURIComponent(me.n) + '&room=' + room + '&mode=' + mode + '&new=' + (u.searchParams.get('new') == '1' ? 1 : 0) + '&a=' + (adm ? 1 : 0) + '&obs=' + (adm && u.searchParams.get('obs') == '1' ? 1 : 0) + '&lk=' + encodeURIComponent(JSON.stringify(lk)) + '&k=' + encodeURIComponent((u.searchParams.get('k') || '').slice(0, 20)), { method: 'POST' });
         return new Response(r.body, { headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
       }
       if (p == '/api/roomq') {
@@ -6934,7 +6937,7 @@ export class Do {
       if (this.roomModeSet && wantNew && reqMode !== this.roomMode) return refuse(4409, 'kod dolu');
       const CAP = ROOM_CAP[this.roomModeSet ? this.roomMode : reqMode] || 6, nm = u.searchParams.get('n') || '';
       { const pv = await this.pvGet(); if (nm && u.searchParams.get('a') != '1' && (!pv.on || this.names().includes(nm) || pv.allow.includes(nm))) { const t0 = Date.now(); pv.recent = pv.recent || {}; pv.recent[nm] = t0; for (const q in pv.recent) if (t0 - pv.recent[q] > 6 * 36e5) delete pv.recent[q]; await S.put('priv', pv) } if (pv.on && nm && u.searchParams.get('a') != '1' && !this.names().includes(nm) && !pv.allow.includes(nm)) { const kk = u.searchParams.get('k') || ''; if (kk && kk === pv.key) { pv.allow.push(nm); await S.put('priv', pv) } else return refuse(4403, 'özel oda') } }
-      if (nm && !this.names().includes(nm) && this.names().length >= CAP) {
+      if (nm && u.searchParams.get('obs') != '1' && !this.names().includes(nm) && this.names().length >= CAP) {
         // dolu görünüyorsa önce 90 sn'dir ses vermeyen (uykudaki/kopmuş) bağlantıları kapat, sonra yeniden say
         const now0 = Date.now(); for (const w of this.socks()) { if (this.tg(w).includes('admin')) continue; if (now0 - ((w.deserializeAttachment() || {}).ls || 0) > 90000) { try { w.close(4001, 'eski') } catch (e) { } } }
         if (this.names().length >= CAP) return refuse(4429, 'Oda dolu (en fazla ' + CAP + ' kişi)');
@@ -6945,7 +6948,7 @@ export class Do {
       if (!this.roomModeSet) { this.roomMode = reqMode; this.roomModeSet = true; await S.put('roomMode', this.roomMode) }
       const [c, sv] = poll ? [null, new VSock(crypto.randomUUID())] : Object.values(new WebSocketPair()); let lkp = null; try { lkp = JSON.parse(u.searchParams.get('lk') || 'null') } catch (e) { }
       if (lkp) await this.lkApply(lkp);
-      const att = { n: u.searchParams.get('n'), a: u.searchParams.get('a') == '1' ? 1 : 0, ls: Date.now() };
+      const att = { n: u.searchParams.get('n'), a: u.searchParams.get('a') == '1' ? 1 : 0, obs: u.searchParams.get('a') == '1' && u.searchParams.get('obs') == '1' ? 1 : 0, ls: Date.now() };
       if (poll) this.vmap().set(sv.sid, sv); else this.s.acceptWebSocket(sv); sv.serializeAttachment(att);
       await S.deleteAlarm(); this.bcast();
       sv.send(JSON.stringify({ t: 'roomMode', mode: this.roomMode }));
@@ -6954,7 +6957,7 @@ export class Do {
       sv.send(JSON.stringify({ t: 'locks', lk: this.lk }));
       if (this.can('film', att)) await this.subJoin(sv);
       if (this.pzp && this.can('puzzle', att)) sv.send(JSON.stringify({ t: 'pz', pz: { ...this.pzp, img: await this.img() } }));
-      if (this.can('games', att)) await this.gameJoin(att.n);
+      if (!att.obs && this.can('games', att)) await this.gameJoin(att.n);
       if (this.can('games', att)) { if (this.dg) sv.send(JSON.stringify({ t: 'dg', g: dView(this.dg, att.n) })); if (this.bs) sv.send(JSON.stringify({ t: 'bs', g: bView(this.bs, att.n) })); if (this.cs) sv.send(JSON.stringify({ t: 'cs', g: cView(this.cs, att.n) })); if (this.fw) sv.send(JSON.stringify({ t: 'fw', g: fwView(this.fw, att.n) })); if (this.kt) sv.send(JSON.stringify({ t: 'kt', g: this.ktView(att.n) })); if (this.br) sv.send(JSON.stringify({ t: 'br', g: this.brView() })); if (this.yk) sv.send(JSON.stringify({ t: 'yk', g: this.ykView(att.n) })); if (this.ks) sv.send(JSON.stringify({ t: 'ks', g: this.ksView() })) }
       if (this.wg && this.can('word', att)) { sv.send(JSON.stringify({ t: 'wg', g: wgView(this.wg, att.n) })); if (!this.wg.over) this.dwarm() }
       if (this.pend && this.pend.by !== att.n && this.can('word', att)) sv.send(this.pendMsg());
@@ -6973,7 +6976,7 @@ export class Do {
       v.last = Date.now(); const out = { m: v.q.splice(0) }; if (v.readyState === 3) { out.close = v.cl || [1000, '']; this.vmap().delete(v.sid) }
       return Response.json(out);
     }
-    if (p == '/hub') { const n = String(u.searchParams.get('n') || ''); if (!n) return new Response('?', { status: 400 }); const [c, sv] = Object.values(new WebSocketPair()); const first = !this.hubOn(n); this.s.acceptWebSocket(sv, ['hub', 'u:' + n]); sv.serializeAttachment({ n, ls: Date.now(), hub: 1 }); (this.seen || (this.seen = new Map())).set(n, Date.now()); sv.send(JSON.stringify({ t: 'hello', now: Date.now() })); if (first) this.hubSend(await this.hubFriends(n), { t: 'fr', pres: n }); return new Response(null, { status: 101, webSocket: c }) }
+    if (p == '/hub') { const n = String(u.searchParams.get('n') || ''); if (!n) return new Response('?', { status: 400 }); const [c, sv] = Object.values(new WebSocketPair()); const first = !this.hubOn(n); this.s.acceptWebSocket(sv, ['hub', 'u:' + n]); sv.serializeAttachment({ n, ls: Date.now(), hub: 1 }); (this.seen || (this.seen = new Map())).set(n, Date.now()); try { await this.s.storage.put('ls:' + n, Date.now()) } catch (e) { } sv.send(JSON.stringify({ t: 'hello', now: Date.now() })); if (first) this.hubSend(await this.hubFriends(n), { t: 'fr', pres: n }); return new Response(null, { status: 101, webSocket: c }) }
     if (p == '/adminws') { const [c, sv] = Object.values(new WebSocketPair()); this.s.acceptWebSocket(sv, ['admin']); sv.send(this.snap()); return new Response(null, { status: 101, webSocket: c }) }
     if (p == '/kill') {
       this.socks().forEach(w => { try { w.close(4000, 'kapatildi') } catch (e) { } });
@@ -7234,7 +7237,8 @@ export class Do {
       me.f = me.f.filter(live); me.in = me.in.filter(live); me.out = me.out.filter(live); if (JSON.stringify([me.f, me.in, me.out]) !== before) await put(nm, me);
       const subs = new Set(); const pg = await S.get(me.f.map(n => 'ps:' + n)); for (const [k, v] of pg) if (v && v.length) subs.add(k.slice(3));
       const tags = {}; for (const [n, x] of U) tags[n] = x.tag; const PRM = await S.get(me.f.map(n => 'pr:' + n));
-      const f = me.f.map(n => ({ n, tag: tags[n], room: inRoom[n] || '', act: inAct[n] || '', on: !!inRoom[n] || !!inPv[n] || this.hubOn(n) || now - (seen.get(n) || 0) < 45000, av: (PRM.get('pr:' + n) || {}).e || '', avc: (PRM.get('pr:' + n) || {}).c || '', last: Math.max(U.get(n).last || 0, seen.get(n) || 0), push: subs.has(n) }))
+      const LSM = await S.get(me.f.map(n => 'ls:' + n)); const lso = n => Math.max(seen.get(n) || 0, LSM.get('ls:' + n) || 0);
+      const f = me.f.map(n => ({ n, tag: tags[n], room: inRoom[n] || '', act: inAct[n] || '', on: !!inRoom[n] || !!inPv[n] || this.hubOn(n) || now - lso(n) < 60000, av: (PRM.get('pr:' + n) || {}).e || '', avc: (PRM.get('pr:' + n) || {}).c || '', last: Math.max(U.get(n).last || 0, lso(n)), push: subs.has(n) }))
         .sort((x, y) => (y.room ? 2 : y.on ? 1 : 0) - (x.room ? 2 : x.on ? 1 : 0) || y.last - x.last || (x.n < y.n ? -1 : 1));
       const myPr = (await S.get('pr:' + nm)) || {}; return Response.json({ me: { n: nm, tag: self.tag, av: myPr.e || '', avc: myPr.c || '' }, f, in: me.in, out: me.out, bl: me.bl, tags });
     }
@@ -7245,8 +7249,8 @@ export class Do {
   hubOn(n) { return this.s.getWebSockets('u:' + n).some(w => w.readyState === 1) }
   hubSend(names, obj) { const s = JSON.stringify({ ...obj, now: Date.now() }); for (const n of new Set(names)) for (const w of this.s.getWebSockets('u:' + n)) { try { w.send(s) } catch (e) { } } }
   async hubFriends(n) { return ((await this.s.storage.get('fr:' + n)) || {}).f || [] }
-  async hubMsg(ws, raw) { let m; try { m = JSON.parse(raw) } catch (e) { return } const a = ws.deserializeAttachment() || {}; a.ls = Date.now(); try { ws.serializeAttachment(a) } catch (e) { } if (a.n) (this.seen || (this.seen = new Map())).set(a.n, a.ls); if (m && m.t == 'ping') { try { ws.send(JSON.stringify({ t: 'pong', i: +m.i || 0, now: Date.now() })) } catch (e) { } } }
-  async hubGone(ws) { const n = (ws.deserializeAttachment() || {}).n; try { ws.close(1000) } catch (e) { } if (!n) return; if (!this.s.getWebSockets('u:' + n).some(w => w !== ws && w.readyState === 1)) { (this.seen || (this.seen = new Map())).set(n, Date.now() - 40000); this.hubSend(await this.hubFriends(n), { t: 'fr', pres: n }) } }
+  async hubMsg(ws, raw) { let m; try { m = JSON.parse(raw) } catch (e) { return } const a = ws.deserializeAttachment() || {}; a.ls = Date.now(); try { ws.serializeAttachment(a) } catch (e) { } if (a.n) { (this.seen || (this.seen = new Map())).set(a.n, a.ls); const lw = this.lsW || (this.lsW = new Map()); if (a.ls - (lw.get(a.n) || 0) > 30000) { lw.set(a.n, a.ls); this.s.storage.put('ls:' + a.n, a.ls).catch(() => { }) } } if (m && m.t == 'ping') { try { ws.send(JSON.stringify({ t: 'pong', i: +m.i || 0, now: Date.now() })) } catch (e) { } } }
+  async hubGone(ws) { const n = (ws.deserializeAttachment() || {}).n; try { ws.close(1000) } catch (e) { } if (!n) return; if (!this.s.getWebSockets('u:' + n).some(w => w !== ws && w.readyState === 1)) { (this.seen || (this.seen = new Map())).set(n, Date.now() - 40000); try { await this.s.storage.put('ls:' + n, Date.now()) } catch (e) { } this.hubSend(await this.hubFriends(n), { t: 'fr', pres: n }) } }
   async feedAdd(n, it) { const S = this.s.storage, L = (await S.get('fd:' + n)) || [], now = Date.now(); L.push({ id: now.toString(36) + Math.random().toString(36).slice(2, 6), ts: now, lk: [], cm: [], ...it }); if (L.length > 50) L.splice(0, L.length - 50); await S.put('fd:' + n, L); this.hubSend([n, ...(await this.hubFriends(n))], { t: 'feed', by: n }) }
   // --- canlı panel ---
   fresh() { const n = Date.now(); return Object.values(this.rooms).filter(r => r.ts > n - 150000).sort((a, b) => b.ts - a.ts) }
@@ -7255,7 +7259,8 @@ export class Do {
     const n = Date.now(), room = clean(b.room); if (!room) return Response.json({ ok: 0 });
     const sn = this.seen || (this.seen = new Map()); for (const w of (b.who || []).slice(0, 8)) sn.set(String(w), n);
     const oldWho = (this.rooms[room] || {}).who || [], oldAct = (this.rooms[room] || {}).act || '', oldPv = (this.rooms[room] || {}).priv || 0;
-    if (!b.who || !b.who.length) delete this.rooms[room]; else this.rooms[room] = { room, who: b.who.slice(0, 8), site: String(b.site || '').slice(0, 60), playing: !!b.playing, act: String(b.act || '').slice(0, 80), priv: b.priv ? 1 : 0, ts: n };
+    if (!b.who || !b.who.length) delete this.rooms[room]; else this.rooms[room] = { room, who: b.who.slice(0, 8), site: String(b.site || '').slice(0, 60), playing: !!b.playing, act: String(b.act || '').slice(0, 80), priv: b.priv ? 1 : 0, mode: +b.mode || 0, game: String(b.game || '').slice(0, 12), ts: n };
+    { const lw = this.lsW || (this.lsW = new Map()); for (const w of (b.who || []).slice(0, 8)) { const s = String(w); if (n - (lw.get(s) || 0) > 30000) { lw.set(s, n); this.s.storage.put('ls:' + s, n).catch(() => { }) } } for (const s of oldWho.filter(x => !(b.who || []).includes(x))) this.s.storage.put('ls:' + String(s), n).catch(() => { }) }
     for (const k in this.rooms) if (this.rooms[k].ts < n - 150000) delete this.rooms[k];
     { const nw = (this.rooms[room] || {}).who || [], ch = [...oldWho.filter(x => !nw.includes(x)), ...nw.filter(x => !oldWho.includes(x))], actCh = (this.rooms[room] || {}).act !== oldAct || ((this.rooms[room] || {}).priv || 0) !== oldPv ? nw : []; const to = new Set(); for (const x of new Set([...ch, ...actCh])) for (const f of await this.hubFriends(x)) to.add(f); if (to.size) this.hubSend([...to], { t: 'fr' }) }
     await this.s.storage.put('rooms', this.rooms); const m = this.snap(); this.s.getWebSockets('admin').forEach(w => { try { w.send(m) } catch (e) { } });
@@ -7265,7 +7270,7 @@ export class Do {
     if (!this.code) return; const who = [...new Set(this.socks().map(w => (w.deserializeAttachment() || {}).n))]; let site = '';
     try { site = this.st.url ? (/youtu/i.test(this.st.url) ? 'YouTube' : new URL(this.st.url).hostname) : '' } catch (e) { }
     const md = this.roomMode, act = md == 1 ? (this.st.url ? (this.st.lv ? (this.st.title ? 'Canlı izliyor: ' + this.st.title : 'Canlı yayın izliyor') : this.st.title ? 'İzliyor: ' + this.st.title : 'Film izliyor') : 'Film odasında') : md == 2 ? (this.ms && this.ms.tr && this.ms.playing ? 'Dinliyor: ' + (this.ms.tr.title || 'müzik') : 'Yapboz ve müzik odasında') : (GNAME[this.gsel] || 'Oyun') + ' odasında';
-    try { await this.env.DO.get(this.env.DO.idFromName('db')).fetch('https://do/presence', { method: 'POST', body: JSON.stringify({ room: this.code, who, site, playing: this.st.playing && !this.st.held, act: String(act).slice(0, 70), priv: this.pv && this.pv.on ? 1 : 0 }) }) } catch (e) { }
+    try { await this.env.DO.get(this.env.DO.idFromName('db')).fetch('https://do/presence', { method: 'POST', body: JSON.stringify({ room: this.code, who, site, playing: this.st.playing && !this.st.held, act: String(act).slice(0, 70), priv: this.pv && this.pv.on ? 1 : 0, mode: this.roomMode, game: this.roomMode == 3 ? this.gsel : '' }) }) } catch (e) { }
   }
   // --- oda ---
   async img() {
@@ -7308,10 +7313,10 @@ export class Do {
     if (held !== this.st.held) { this.st = { ...this.st, pos: this.exp(now), at: now, held, rev: (this.st.rev || 0) + 1 }; return true }
     return false;
   }
-  msg(i) { return JSON.stringify({ t: 'st', st: this.st, now: Date.now(), who: [...new Set(this.socks().map(w => (w.deserializeAttachment() || {}).n))], hb: this.hb, hr: this.hr || {}, pv: this.pv && this.pv.on ? 1 : 0, pk: this.pv && this.pv.on ? this.pv.key : '', gs: this.gsView(), fh: this.fhear(), ms: this.ms, mq: this.mq, mh: this.mhear(), i }) }
+  msg(i) { return JSON.stringify({ t: 'st', st: this.st, now: Date.now(), who: [...new Set(this.socks().map(w => (w.deserializeAttachment() || {}).n))], adm: [...new Set(this.socks().filter(w => (w.deserializeAttachment() || {}).obs).map(w => (w.deserializeAttachment() || {}).n))], hb: this.hb, hr: this.hr || {}, pv: this.pv && this.pv.on ? 1 : 0, pk: this.pv && this.pv.on ? this.pv.key : '', gs: this.gsView(), fh: this.fhear(), ms: this.ms, mq: this.mq, mh: this.mhear(), i }) }
   // Müzik dinleme durumu (yalnız bellekte/soket ekinde, kalıcı yazılmaz): ok=duyuyor, buf=yükleniyor, need=dokunması gerekiyor, pause=durdu
   advEv(k, n) { const who = this.names(); if (who.length < 2) return Promise.resolve(); return (async () => { try { const r = await (await this.env.DO.get(this.env.DO.idFromName('db')).fetch('https://do/advev', { method: 'POST', body: JSON.stringify({ who, k, n }) })).json(); if (r && r.u && r.u.length) this.all(JSON.stringify({ t: 'adv', u: r.u })) } catch (e) { } })() }
-  names(extra) { return [...new Set([...this.socks().filter(w => !this.tg(w).includes('admin')).map(w => (w.deserializeAttachment() || {}).n), ...(extra || [])].filter(Boolean))] }
+  names(extra) { return [...new Set([...this.socks().filter(w => !this.tg(w).includes('admin') && !(w.deserializeAttachment() || {}).obs).map(w => (w.deserializeAttachment() || {}).n), ...(extra || [])].filter(Boolean))] }
   // Birlikte izlenen videonun konumunu, odadakilerin izleme listelerine kaydet (kalıcı: kaldığınız yer)
   async wlSave(extra) {
     const st = this.st; if (!st || !st.url || st.lv) return; const now = Date.now(); this.wlT = now;
